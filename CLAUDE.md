@@ -75,7 +75,9 @@ page without knowing its locale.
 2. **Migration first**, then model, then controller, then view.
 3. **After any schema change**, run `php migrations/seed.php` and load the demo site.
    That is the primary regression check.
-4. **Files under 300 lines.** A controller past that means the feature is too big.
+4. **Code files under 300 lines.** Applies to PHP, templates, CSS and JS, not to
+   documentation such as `docs/SPEC.md`. A controller past that means the feature is
+   too big.
 5. Commit at the end of each slice, message naming the slice.
 
 ---

@@ -78,7 +78,7 @@ never ship in the release ZIP (built with `--no-dev`) and never exist on a user'
 server. They are allowed when they earn their place, but ask first.
 
 ```
-phpstan/phpstan           static analysis, level 6, phpVersion 8.1, no baseline
+phpstan/phpstan           static analysis, level 8, phpVersion 8.1, no baseline
 ```
 
 ---
@@ -416,6 +416,10 @@ styled multilingual site in under fifteen minutes.
 - What happens to a page whose translation does not exist yet — 404, fallback render,
   or hide from navigation? Recommend: configurable per site, default to hiding from
   navigation and 404 on direct hit.
+- `Config::get()` and `Container::get()` return `mixed`, which is what keeps the
+  project below PHPStan level 9 (~30 findings). Typed getters would fix it, but the
+  right shape is unclear from ten call sites. Revisit after Slice 3, when the
+  installer and the pages module show how these are actually used.
 
 ---
 
@@ -443,6 +447,15 @@ Rules:
 ## Changelog
 
 ```
+2026-09-15  §3 PHPStan raised from level 6 to level 8. The two level 7
+            findings were fixed: Db::all() is annotated with int keys because
+            PDO's fetchAll() is typed as plain array and cannot prove a list;
+            config/locales.php lists enabled locales as {code, label} rows
+            instead of a map keyed by code, because PHP turns numeric-string
+            keys into ints and only a value guarantees a string code.
+            §9 Open question added: Config::get() and Container::get() return
+            mixed, which blocks level 9 (~30 findings). Revisit after Slice 3.
+
 2026-09-15  §3 The closed dependency list governs runtime dependencies only.
             Dev tools go in require-dev, never ship in the release ZIP and
             never reach a user's server; allowed when they earn their place,

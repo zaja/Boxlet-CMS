@@ -23,7 +23,7 @@ new runtime dependency, stop and ask.
 
 **Dev tools live in `require-dev`.** They never ship in the release ZIP (built with
 `--no-dev`) and never exist on a user's server. They are allowed when they earn their
-place, but ask first. Currently in use: PHPStan (level 6, `vendor/bin/phpstan analyse`).
+place, but ask first. Currently in use: PHPStan (level 8, `vendor/bin/phpstan analyse`).
 
 **Frozen contracts.** The URL scheme, database schema, block definition format and
 design token schema are in `docs/SPEC.md` §5. Changing any of them after v0.1 breaks

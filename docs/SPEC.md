@@ -342,6 +342,7 @@ Layer 1  Tokens       eight decisions, not forty values:
                         radius character (none / subtle / round / pill)
                         shadow character (none / soft / hard / layered)
                         container width
+                        surface contrast (low / medium / high)
 Layer 2  Section      per block instance, stored in page_blocks.style_json:
                         surface:  plain | tinted | contrast | image | gradient
                         rhythm:   tight | normal | airy
@@ -352,11 +353,53 @@ Layer 3  Layout       per block instance, one of block.php 'layouts', stored in
                       page_blocks.layout
 ```
 
-Layers 0 and 1 compile to `/public/cache/tokens.css` on save. Layers 2 and 3 render as
-class names on the section wrapper. Nothing is inlined as a style attribute.
+Layers 0 and 1 compile, on save, to `public/cache/tokens.{hash}.css`. The content hash
+is in the file name, so a saved change is a new URL that no browser or proxy has cached.
+The current name is recorded in `settings.tokens_css`. A request only reads that
+setting; it compiles only when the recorded file is missing (a fresh deploy or a cleared
+cache). The file is a real file on disk, so Apache's file-exists rewrite condition and
+nginx's `try_files` serve it without PHP. Layers 2 and 3 render as class names on the
+section wrapper. Nothing is inlined as a style attribute.
 
-Palette generation must run a contrast check on every text/background pair it produces
-and refuse (with a clear message) combinations below WCAG AA.
+**Layer 1 storage.** `design_tokens` holds the decisions, one row per key: `seed`,
+`secondary` ('' when unused), `typography`, `scale`, `spacing`, `radius`, `shadow`,
+`container`, `surface_contrast`. Derived values are never stored.
+
+```
+typography        editorial | classic | modern | grotesk | rounded | mono
+                  heading and body family, weights, tracking, case, line heights
+scale             1.125 | 1.2 | 1.25 | 1.333 | 1.414 | 1.5    --text-sm … --text-4xl
+spacing           compact | normal | roomy | generous         --space-xs … --space-3xl
+radius            none | subtle | round | pill                --radius-s/m/l/button
+shadow            none | soft | hard | layered                --shadow-s/m/l, --border-width/card
+container         narrow | normal | wide | full               --container-width/narrow/wide
+surface_contrast  low | medium | high                         lightness of --color-surface
+```
+
+**Palette.** Derived in OKLCH from the seed: background, tinted surface, border, text and
+muted text carry a trace of its hue; the seed itself is the accent and link colour; the
+contrast surface is the second colour, or a deep shade of the seed, with its own text
+colours; the gradient runs from the seed to a neighbouring hue. Seeds are never adjusted
+to pass. Every text/background pair is checked at WCAG AA 4.5:1: text, muted text and
+links on the background and the tinted surface; button text on the accent; text and
+muted text on the contrast surface; text on both ends of the gradient. A failure refuses
+the save and names the pair, its ratio and the decision responsible. Every surface can
+hold body text, so no pair qualifies for the 3:1 large-text threshold.
+
+**Fonts.** Self-hosted from `public/assets/fonts`, never a third-party service: Inter,
+Playfair Display, Source Serif 4, Space Grotesk and Nunito as variable fonts, IBM Plex
+Mono at 400 and 700, each in latin and latin-ext subsets with its SIL OFL licence. The
+compiled stylesheet declares only the families the current pairing uses.
+
+**Layer 0.** A preset is a complete set of layer-1 values
+(`app/Modules/Design/Presets.php`). Using one fills the Design form; Save applies it.
+Nothing refers back to the preset afterwards.
+
+**Layer 2.** `page_blocks.style_json` holds all five keys. Values outside the closed sets
+fall back to the defaults (plain, normal, normal, left, none) on save and on render. The
+only CSS for these classes is `public/assets/sections.css`: each surface sets
+`--section-*` colour properties that block CSS uses, so every block works on every
+surface. The `image` surface renders like `contrast` until media exist (Slice 5).
 
 ### 5.5 Media presets
 
@@ -455,7 +498,7 @@ Pages CRUD, block registry, block editor with drag-and-drop ordering, three bloc
 (hero, text, image+text), front-end render.
 **Accept:** create a page in the admin with three blocks, view it on the front end.
 
-### Slice 4 — The design layer ← this is the demo moment
+### Slice 4 — The design layer ← this is the demo moment ✅ done
 Token schema, palette generation with contrast checks, five character presets,
 `tokens.css` compilation, layer-2 section styles in the block editor, layer-3 layout
 picker.
@@ -502,6 +545,60 @@ styled multilingual site in under fifteen minutes.
 - What happens to a page whose translation does not exist yet — 404, fallback render,
   or hide from navigation? Recommend: configurable per site, default to hiding from
   navigation and 404 on direct hit.
+- **Blog / news content**
+
+  Revisit: after Slice 4.
+
+  Small sites often need a "News" section. A separate "post" content type
+  was considered and rejected: it is not a page with a different layout, it
+  implies a chronological index, pagination, archives, RSS and prev/next
+  navigation, each multiplied by locale. Tags are a taxonomy, which §1
+  non-goals exclude.
+
+  Answer instead: a page_list block listing child pages ordered by
+  published_at, with layouts ['list', 'grid'] so one block covers a news
+  index and a card grid. parent_id and published_at already exist. No new
+  table, no second editor, no second path through translation.
+
+  Scope when built: automatic by parent only. Manually selecting which pages
+  appear is a different need (a "Featured work" grid) and would give the
+  block a mode, doubling everything inside it. Defer until someone asks.
+
+  Open within this: what a listed page contributes to its card. Title and
+  date are obvious; an excerpt and a thumbnail are not currently fields on
+  a page.
+
+  A page-level "blog container" flag was also considered and rejected. It
+  moves the behaviour out of the block and into the render path, which then
+  has to answer questions the block answers for free: does the page render
+  its own blocks as well as the list, in what order, and where do the list's
+  style layers live? It also creates invisible state — a page whose front
+  end shows twenty entries that appear nowhere in its editor.
+
+  The convenience it was reaching for is covered by a seeded "News index"
+  template containing a preconfigured page_list block.
+
+- **Nested page addresses**
+
+  Revisit: immediately after Slice 4, as its own slice.
+
+  Addresses are currently flat: one path segment, unique per locale.
+  parent_id expresses hierarchy for the admin tree and future page_list
+  blocks but never appears in the URL, so the data model says one thing and
+  the address says another.
+
+  Planned: nested paths (/about/team) together with a redirects table.
+  The two are inseparable — nested paths without redirects regenerate every
+  descendant's address when a parent is renamed, producing a site full of
+  404s. The redirects table is needed regardless, since renaming any slug
+  breaks existing addresses today.
+
+  Deliberately scheduled after Slice 4: nested paths are a known quantity
+  with a known outcome, while the design layer is the one part of the
+  project whose success is uncertain. The uncertain thing gets verified
+  before more infrastructure is built around it. Nothing in Slice 4 depends
+  on address shape.
+
 - `Config::get()` and `Container::get()` return `mixed`, which is what keeps the
   project below PHPStan level 9 (~30 findings). Typed getters would fix it, but the
   right shape is unclear from ten call sites. Revisit after Slice 3, when the
@@ -543,6 +640,28 @@ Rules:
 ## Changelog
 
 ```
+2026-09-15  Slice 4: the design layer. §5.4 documented in full.
+            Layer 1: design_tokens stores nine keys (seed, secondary and the
+            seven closed decisions; the two colours are one decision). The
+            eighth decision, surface contrast, is added to the §5.4 list.
+            The palette is derived in OKLCH; every text/background pair is
+            checked at 4.5:1 and a failure names the pair, ratio and decision.
+            Seeds are never nudged to pass. Six curated typography pairings,
+            six OFL font families self-hosted in public/assets/fonts.
+            Layer 0: five presets differing in every structural decision
+            between Editorial and Brutalist, and in at least four between any
+            two. Using a preset fills the form; Save is the confirmation.
+            Compilation: on save, to tokens.{hash}.css, name recorded in
+            settings.tokens_css; config/tokens.php removed. A request compiles
+            only if the recorded file is missing. CACHE_PATH moves the output
+            for tests.
+            Layer 2: SectionStyle validates style_json against the closed sets
+            with fallback; sections.css is the only CSS for section classes.
+            Demo site (app/Modules/Demo) covers every block, layout and section
+            style; migrations/seed.php adds it to an empty site and the
+            installer offers it.
+            §9 Open questions added: blog / news content, nested page addresses.
+
 2026-09-15  §5.2 page_blocks gains a layout column for the layer-3 value, not a
             key inside style_json: layout is the only layer whose valid values
             come from the block definition, so it is validated on save and can

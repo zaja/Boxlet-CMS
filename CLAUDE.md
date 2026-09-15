@@ -79,8 +79,9 @@ page without knowing its locale.
    build all of Core before anything renders.
 2. **Migration first**, then model, then controller, then view.
 3. **After any schema change**, run `php tests/run.php` with the MySQL test database
-   configured (`.env.test`), so migrations run on both drivers. Once
-   `migrations/seed.php` exists with the demo site, also run it and load the site.
+   configured (`.env.test`), so migrations run on both drivers. Then add the demo site
+   to an empty install (`php migrations/seed.php`, or the installer's demo option) and
+   look at it under each design character.
    All SQL must be portable between MySQL and SQLite; see SPEC §5.0.
 4. **Code files under 300 lines.** Applies to PHP, templates, CSS and JS, not to
    documentation such as `docs/SPEC.md`. A controller past that means the feature is

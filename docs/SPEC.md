@@ -179,6 +179,17 @@ URL prefix. Every additional locale always carries its prefix.
 /m/{preset}/{id}-{slug}.{ext} media
 ```
 
+**Media variants are generated on upload, not on demand.** There are five presets;
+generating them at upload costs about a second per image and means a request for a
+variant is always a request for a file that exists on disk. Serving never touches PHP,
+works identically on Apache and nginx, and needs no server rule the user may be unable
+to add. The `/m/{preset}/{id}-{slug}.{ext}` shape stays, since the files are real.
+
+Accepted cost: slower uploads, and adding a preset later requires regenerating existing
+media (Slice 8). This replaces on-demand generation, which does not work on a managed
+nginx: a request for a missing `.webp` is answered from disk with nginx's own 404 and
+PHP never runs — the same cause as the unstyled Design preview in Slice 4.
+
 A first path segment is a locale **only if it is an enabled locale**. It is never
 detected by its shape. Anything else is part of a primary-locale slug.
 
@@ -355,11 +366,18 @@ Layer 3  Layout       per block instance, one of block.php 'layouts', stored in
 
 Layers 0 and 1 compile, on save, to `public/cache/tokens.{hash}.css`. The content hash
 is in the file name, so a saved change is a new URL that no browser or proxy has cached.
-The current name is recorded in `settings.tokens_css`. A request only reads that
-setting; it compiles only when the recorded file is missing (a fresh deploy or a cleared
-cache). The file is a real file on disk, so Apache's file-exists rewrite condition and
-nginx's `try_files` serve it without PHP. Layers 2 and 3 render as class names on the
-section wrapper. Nothing is inlined as a style attribute.
+The current name is recorded in `settings.tokens_css`. An ordinary request only reads
+that setting. It compiles in exactly one other case, deliberately kept: the recorded
+file is missing, after a fresh deploy or a cleared cache. That guard is what stops a
+site rendering unstyled, so "a request never compiles CSS" is not true and must not be
+written anywhere. The file is a real file on disk, so Apache's file-exists rewrite
+condition and nginx's `try_files` serve it without PHP. Layers 2 and 3 render as class
+names on the section wrapper. Nothing is inlined as a style attribute.
+
+`site.css` and `sections.css` are shipped files rather than generated ones, so they
+cannot carry a hash in the name without a build step the install cannot run. They are
+linked with a hash of their content in the query string instead, which busts the same
+caches and is still served from disk (`Url::versioned()`).
 
 **Layer 1 storage.** `design_tokens` holds the decisions, one row per key: `seed`,
 `secondary` ('' when unused), `typography`, `scale`, `spacing`, `radius`, `shadow`,
@@ -391,9 +409,24 @@ Playfair Display, Source Serif 4, Space Grotesk and Nunito as variable fonts, IB
 Mono at 400 and 700, each in latin and latin-ext subsets with its SIL OFL licence. The
 compiled stylesheet declares only the families the current pairing uses.
 
-**Layer 0.** A preset is a complete set of layer-1 values
-(`app/Modules/Design/Presets.php`). Using one fills the Design form; Save applies it.
-Nothing refers back to the preset afterwards.
+**Layer 0.** A character is a complete set of layer-1 values **and the composition it
+gives a page** (`app/Modules/Design/Presets.php`): the layer-2 section style every block
+starts from, a surface per block type, and the layer-3 layout of block types that offer
+several. The five differ in measure, vertical rhythm, alignment, section edge and hero
+arrangement, so changing character changes how a page is composed and not only how it is
+painted.
+
+Using a character fills the Design form; Save applies it. Because new blocks have to be
+composed somehow, the name of the character last applied is remembered in
+`settings.design_character`; a site that never chose one composes like the default
+character, whose tokens it is already rendering with. That setting is the only thing
+that refers back to a character, and it is never read to render an existing block.
+
+Applying a character to a site that already has blocks offers two explicit actions,
+never one silent one: **save the design only**, which changes layer 1 and leaves every
+section as its author left it, or **save the design and reset section styles**, which
+also rewrites layers 2 and 3 of every block on the site. The second is destructive and
+is only ever reached by choosing it.
 
 **Layer 2.** `page_blocks.style_json` holds all five keys. Values outside the closed sets
 fall back to the defaults (plain, normal, normal, left, none) on save and on render. The
@@ -415,11 +448,12 @@ full    max 2400 wide, no crop
 ```
 
 Pipeline: upload original untouched → validate with finfo against a MIME whitelist →
-sha1 for dedup → generate variants lazily on first request → cache to
+sha1 for dedup → generate every variant during the upload request → write to
 `/public/cache/media/` → serve via `<picture>` with AVIF → WebP → original.
 
-The .htaccess rewrite must check for the cached file on disk and serve it directly,
-bypassing PHP entirely on a cache hit. Same pattern for the page cache.
+Variants are generated on upload, never on demand (§5.1). Every media URL therefore
+points at a file that already exists, so the web server serves it without PHP and
+without a rewrite rule. The page cache still uses the file-exists rewrite.
 
 AVIF is best-effort. If the server cannot produce it, ship WebP and move on. Never
 block on it.
@@ -504,6 +538,14 @@ Token schema, palette generation with contrast checks, five character presets,
 picker.
 **Accept:** switch the character preset and the same page looks like a different site.
 Change one section's surface and rhythm and only that section changes.
+
+### Slice 4.5 — The admin's own design system, and composition ✅ done
+A fixed admin design system (`--ui-*` tokens defined in `public/assets/admin*.css`,
+never derived from `design_tokens`), the Design screen rebuilt as controls beside a wide
+sticky preview, and characters extended to carry layer-2 and layer-3 composition with an
+explicit choice when applying them to a site that has pages.
+**Accept:** switching character changes how the page is composed — measure, rhythm, hero
+arrangement, section edges — and the admin looks identical whatever the site is set to.
 
 ### Slice 5 — Media
 Upload, presets, lazy variant generation, `<picture>` output, focal point picker,
@@ -606,6 +648,34 @@ styled multilingual site in under fifteen minutes.
 
 ---
 
+- **Header, logo, navigation and footer**
+
+  Revisit: immediately after Slice 4.5, likely as its own slice.
+
+  Nothing in the spec defines site chrome. Pages currently render as a bare
+  sequence of blocks with no header and no footer, which is visible in every
+  Slice 4 screenshot. {{menu:main}} appears in the §5.6 replacement tags but
+  no menu exists: no table, no admin, no definition.
+
+  Open questions when it is built:
+  - Is a menu a first-class entity with its own table and ordering, or is it
+    derived from the page tree via parent_id and sort?
+  - Are header and footer blocks, rendered by the same registry and carrying
+    the same style layers, or separate chrome outside the block system?
+    A block inherits every style layer for free but must appear on every page
+    without the user adding it each time; chrome outside the block system
+    needs its own styling mechanism, which duplicates what already exists.
+  - Header variants (centred, left-aligned, transparent over a hero, sticky)
+    are a design decision, so presets should carry them like any other
+    composition default.
+  - Logo upload depends on the Media module, which arrives in Slice 5.
+  - Language switcher placement, once Slice 6 enables more than one locale.
+
+  Deferred past 4.5 deliberately: chrome is itself a design element, and it
+  should be designed once we know whether presets can carry composition.
+
+---
+
 ## 10. Testing
 
 `php tests/run.php` is the whole test runner: plain PHP, no dependencies, no
@@ -640,6 +710,33 @@ Rules:
 ## Changelog
 
 ```
+2026-09-15  Slice 4.5: the admin's own design system, and characters that carry
+            composition.
+            The admin no longer links the site's tokens.css. It has a fixed
+            token set of its own (--ui-*) defined in public/assets/admin.css,
+            admin-ui.css and admin-forms.css, with its own type stack, spacing,
+            neutral palette and widths. Inverted the stylesheet rule: the
+            front-end CSS may hold no literal colour or size, the admin CSS may
+            read no site token. Both are tested.
+            §5.4 Layer 0 now carries composition: per block type, the layer-2
+            section style and layer-3 layout new blocks start from. Applying a
+            character to a site with pages offers two explicit actions, design
+            only or design with section styles reset; the second is the only
+            path that overwrites per-section choices. The character last
+            applied is remembered in settings.design_character so new blocks
+            can be composed; it is never read to render an existing block.
+            Page::create takes a character instead of a default style.
+            §5.1 records the media decision: variants are generated on upload,
+            not on demand, because a managed nginx answers a missing .webp from
+            disk and PHP never runs. §5.5 updated to match.
+            §5.4 corrected: a request DOES compile tokens.css when the recorded
+            file is missing. That guard is deliberate and the old absolute was
+            wrong. site.css and sections.css now carry a content hash in the
+            query string (Url::versioned), since shipped files cannot be
+            renamed without a build step.
+            §9: header, logo, navigation and footer recorded as an open
+            question, deferred deliberately.
+
 2026-09-15  Slice 4: the design layer. §5.4 documented in full.
             Layer 1: design_tokens stores nine keys (seed, secondary and the
             seven closed decisions; the two colours are one decision). The

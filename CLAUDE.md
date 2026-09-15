@@ -42,15 +42,23 @@ one caller, inline it.
 This is the product. Four layers, applied in order:
 
 ```
-0  Character   one preset (Editorial / Minimal / Bold / Soft / Brutalist)
+0  Character   one preset (Editorial / Minimal / Bold / Soft / Brutalist):
+               layer-1 values AND the composition it gives a page
 1  Tokens      eight decisions: seed colours, type pairing, scale ratio,
                spacing unit, radius character, shadow character, container width
 2  Section     per block instance: surface, rhythm, width, align, divider
 3  Layout      per block type, from its block.php 'layouts'
 ```
 
-Layers 0 and 1 compile to `public/cache/tokens.css`. Layers 2 and 3 render as class
-names on the section wrapper.
+Layers 0 and 1 compile to `public/cache/tokens.{hash}.css` on save. Layers 2 and 3
+render as class names on the section wrapper. A character also sets the layer-2 and
+layer-3 defaults new blocks start from; applying one to a site that already has pages
+always asks whether to reset existing section styles.
+
+**The admin has its own fixed design system** and never links the site's tokens.css.
+Its tokens are `--ui-*`, defined as literal values in `public/assets/admin*.css`. The
+rule runs both ways: a front-end stylesheet or block template containing a literal
+colour or size is a bug, and an admin stylesheet reading a site token is a bug.
 
 **A block template containing a hard-coded colour, pixel value, font or shadow is a
 bug.** Everything goes through CSS custom properties.

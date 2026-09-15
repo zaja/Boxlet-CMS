@@ -50,8 +50,8 @@ two minutes.
 
 ## 3. Closed dependency list
 
-Adding anything to this list requires explicit approval. Do not introduce a library
-because it is convenient.
+This list governs **runtime** dependencies (`composer require`). Adding anything to it
+requires explicit approval. Do not introduce a library because it is convenient.
 
 ```
 nikic/fast-route          routing
@@ -70,6 +70,16 @@ whole imaging library).
 Admin front-end: vanilla JS plus one small drag-and-drop helper, hand-written CSS using
 the same token variables as the front-end. No Tailwind CDN in production, no Alpine, no
 HTMX. The admin is small enough that a framework is a liability.
+
+### require-dev
+
+Development tools are not covered by the closed list. They live in `require-dev`,
+never ship in the release ZIP (built with `--no-dev`) and never exist on a user's
+server. They are allowed when they earn their place, but ask first.
+
+```
+phpstan/phpstan           static analysis, level 6, phpVersion 8.1, no baseline
+```
 
 ---
 
@@ -433,6 +443,13 @@ Rules:
 ## Changelog
 
 ```
+2026-09-15  §3 The closed dependency list governs runtime dependencies only.
+            Dev tools go in require-dev, never ship in the release ZIP and
+            never reach a user's server; allowed when they earn their place,
+            with approval. phpstan/phpstan added at level 6 with phpVersion
+            8.1 and no baseline: findings are fixed, or ignored inline with a
+            reason. CI runs it once, on PHP 8.4.
+
 2026-09-15  §10 Minimal test runner added (tests/run.php, no dependencies).
             Every slice adds tests for what it builds, starting from its §8
             acceptance criteria. Rationale: from the installer onwards the

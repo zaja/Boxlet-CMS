@@ -15,10 +15,15 @@ memory.
 
 ## Non-negotiable
 
-**Dependencies are a closed list.** nikic/fast-route, vlucas/phpdotenv,
-symfony/mailer, monolog/monolog, spomky-labs/otphp, bacon/bacon-qr-code. Nothing else.
-No framework, no ORM, no Twig, no imaging library, no Tailwind, no Alpine, no HTMX.
-If you think something needs a new dependency, stop and ask.
+**Runtime dependencies are a closed list.** `composer require` holds only
+nikic/fast-route, vlucas/phpdotenv, symfony/mailer, monolog/monolog,
+spomky-labs/otphp, bacon/bacon-qr-code. Nothing else. No framework, no ORM, no Twig,
+no imaging library, no Tailwind, no Alpine, no HTMX. If you think something needs a
+new runtime dependency, stop and ask.
+
+**Dev tools live in `require-dev`.** They never ship in the release ZIP (built with
+`--no-dev`) and never exist on a user's server. They are allowed when they earn their
+place, but ask first. Currently in use: PHPStan (level 6, `vendor/bin/phpstan analyse`).
 
 **Frozen contracts.** The URL scheme, database schema, block definition format and
 design token schema are in `docs/SPEC.md` §5. Changing any of them after v0.1 breaks

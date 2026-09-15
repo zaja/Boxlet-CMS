@@ -226,6 +226,8 @@ page_blocks (
   id, page_id, block_group_id, block_type, sort,
   content_json,              -- the editable content
   style_json,                -- layer-2 section style, see §5.4
+  layout,                    -- layer-3 layout: one of the block's declared layouts,
+                             -- validated on save; '' or a removed one renders the default
   translation_status, source_hash,
   created_at, updated_at
 )
@@ -250,8 +252,8 @@ locales (code, label, is_primary, fallback, sort, enabled)
 ui_translations (id, key, locale, value)   -- overrides for /lang files
 admin (id, email, password_hash, totp_secret, recovery_codes_json, created_at)
 login_attempts (ip_hash, email_hash, successful, attempted_at)
-  -- HMAC hashes keyed by APP_KEY, never raw IPs or emails; pruned on write to the
-  -- rate-limit window. The same data will feed the audit log.
+  -- Rate limiting only. HMAC hashes keyed by APP_KEY, never raw IPs or emails;
+  -- pruned on write to the rate-limit window. The audit log gets its own table (Slice 8).
 migrations (filename, applied_at)
 ```
 
@@ -271,7 +273,6 @@ Each block lives in `/app/Blocks/{type}/` with `block.php` and `template.php`.
 // /app/Blocks/hero/block.php
 return [
     'type'     => 'hero',
-    'label'    => 'Hero',
     'icon'     => 'hero',
     'version'  => 1,
     'fields'   => [
@@ -305,11 +306,13 @@ definition stops it with a message naming the block and key:
   a non-empty list of option values: `'options' => ['cover', 'contain']`.
 - Field types from the closed set that are not implemented yet are rejected. Implemented:
   `text`, `textarea`, `richtext`, `media`, `link`, `select`.
-- `defaults.layout` is one of `layouts`.
+- `defaults.layout` is one of `layouts`. The layout chosen for a block instance is stored
+  in `page_blocks.layout` and validated against `layouts` on save; a stored layout the
+  definition no longer declares renders as `defaults.layout` instead of failing.
 
-Admin labels come from `lang/en.php`: `block.{type}`, `block.{type}.{field}` and
-`block.{type}.{field}.{option}`. The `label` key remains required by the contract, but
-the admin shows the translated string instead.
+There is no `label` key: every admin label derives from the type through `lang/en.php`:
+`block.{type}`, `block.{type}.{field}`, `block.{type}.{field}.{option}` and
+`block.{type}.layout.{layout}`. A test fails when any of these is missing.
 
 Stored field values (`page_blocks.content_json`):
 
@@ -345,7 +348,8 @@ Layer 2  Section      per block instance, stored in page_blocks.style_json:
                         width:    narrow | normal | wide | full
                         align:    left | center
                         divider:  none | line | slant | curve
-Layer 3  Layout       per block type, from block.php 'layouts'
+Layer 3  Layout       per block instance, one of block.php 'layouts', stored in
+                      page_blocks.layout
 ```
 
 Layers 0 and 1 compile to `/public/cache/tokens.css` on save. Layers 2 and 3 render as
@@ -498,10 +502,6 @@ styled multilingual site in under fifteen minutes.
 - What happens to a page whose translation does not exist yet — 404, fallback render,
   or hide from navigation? Recommend: configurable per site, default to hiding from
   navigation and 404 on direct hit.
-- Where does a block instance's layer-3 layout live? `page_blocks` has `style_json`
-  (layer 2) but no column for the chosen layout. Until Slice 4 decides, every block
-  renders its `defaults.layout`. Options: a `layout` key inside `style_json`, or a
-  `layout` column (a schema change).
 - `Config::get()` and `Container::get()` return `mixed`, which is what keeps the
   project below PHPStan level 9 (~30 findings). Typed getters would fix it, but the
   right shape is unclear from ten call sites. Revisit after Slice 3, when the
@@ -543,6 +543,19 @@ Rules:
 ## Changelog
 
 ```
+2026-09-15  §5.2 page_blocks gains a layout column for the layer-3 value, not a
+            key inside style_json: layout is the only layer whose valid values
+            come from the block definition, so it is validated on save and can
+            be constrained and queried; style_json holds an open set. A stored
+            layout the definition no longer declares renders as the default.
+            §5.3 label removed from the block contract: a required but unused
+            key in a frozen public contract. Labels derive from the type.
+            §5.2 login_attempts is rate limiting only; the audit log gets its
+            own table in Slice 8.
+            Every front-end page emits a canonical link built through Url
+            (absolute, no query string, origin from SERVER_NAME). Error pages
+            emit none.
+
 2026-09-15  Slice 3: pages, blocks, front-end render. Migrations add templates
             (three built-ins seeded: landing, article, feature), pages and
             page_blocks, with foreign keys: blocks cascade with their page.

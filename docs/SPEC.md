@@ -36,11 +36,11 @@ looks acceptable. When in doubt, remove a knob.
 | Constraint | Value |
 |---|---|
 | PHP | 8.1 minimum. Do not use 8.2+ syntax. |
-| Database | SQLite by default, MySQL/MariaDB optional |
+| Database | MySQL/MariaDB (recommended; preselected by the installer) or SQLite (small single-site installs). All SQL runs on both (§5.0). MySQL databases must default to `utf8mb4`. |
 | Server | Shared Apache or Nginx, no shell, no Composer |
 | URL rewriting | **Required.** Apache `mod_rewrite` (rules ship in `public/.htaccess`) or nginx `try_files`. No fallback URL mode. |
-| Extensions required | pdo, pdo_sqlite, mbstring, fileinfo, json |
-| Extensions optional | pdo_mysql, gd or imagick, intl |
+| Extensions required | pdo, mbstring, fileinfo, json, session, and pdo_mysql or pdo_sqlite |
+| Extensions optional | gd or imagick, intl; AVIF output is best-effort |
 | Install method | Upload ZIP (vendor/ included), open `/install.php` |
 | Assets | Shipped pre-built. No npm in the release artifact. |
 
@@ -99,8 +99,8 @@ phpstan/phpstan           static analysis, level 8, phpVersion 8.1, no baseline
                               View, Cache, Hooks, Migrator
   /Modules/
     /Pages/  /Media/  /Design/  /Forms/  /I18n/  /Settings/  /Mailer/  /Ai/
-    /{Module}/views/          front-end templates owned by that module
-  /Admin/                     controllers, views, middleware
+    /Install/  /Auth/  /Admin/
+    /{Module}/views/          templates owned by that module (front-end or admin)
   /Blocks/                    one directory per block: block.php + template.php
   /Support/
 /config/
@@ -129,6 +129,40 @@ Apache ignoring `.htaccess`) show the server's own 404; the installer catches th
 ## 5. Frozen contracts
 
 Changing any of these after v0.1 ships is a breaking change. Get them right now.
+
+### 5.0 Database portability
+
+Both MySQL/MariaDB and SQLite are supported, and every migration and query must run
+unchanged on both. There is no schema-definition layer and no query builder.
+
+Migrations are `migrations/NNNN_name.sql`, applied in filename order by
+`app/Core/Migrator.php` and recorded in `migrations`. They are plain SQL both engines
+accept, with **exactly one substitution token, `{{pk}}`**, for auto-increment primary
+keys:
+
+```
+id {{pk}}      MySQL:  INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY
+               SQLite: INTEGER PRIMARY KEY AUTOINCREMENT
+```
+
+No single plain-SQL form works on both, and `INTEGER AUTO_INCREMENT PRIMARY KEY` is
+actively dangerous: SQLite accepts it and silently stores NULL ids. The Migrator
+rejects any direct AUTO_INCREMENT/AUTOINCREMENT, and **any other `{{...}}` is a fatal
+error that aborts the run before any file is applied**. `{{pk}}` is the only token that
+will ever exist; if a second one seems necessary, that is a design conversation.
+
+Rules that keep SQL portable:
+
+- `VARCHAR(n)` always has a length (MySQL requires it); `TEXT` for long values.
+- Timestamps are UTC `VARCHAR(19)` strings, `Y-m-d H:i:s`, which sort and compare the
+  same on both engines.
+- Booleans are `SMALLINT` 0/1.
+- Identifiers that are reserved in MySQL (such as `key`) are quoted with backticks,
+  which SQLite also accepts.
+- Constraints are named: `CONSTRAINT admin_email_unique UNIQUE (email)`.
+- Statements end with `;` at the end of a line; whole-line `--` comments only.
+- MySQL commits DDL immediately, so only SQLite wraps each file in a transaction. Keep
+  one table per migration file so a failure on MySQL leaves at most one table behind.
 
 ### 5.1 URL scheme
 
@@ -214,6 +248,9 @@ settings (key, value_json)
 locales (code, label, is_primary, fallback, sort, enabled)
 ui_translations (id, key, locale, value)   -- overrides for /lang files
 admin (id, email, password_hash, totp_secret, recovery_codes_json, created_at)
+login_attempts (ip_hash, email_hash, successful, attempted_at)
+  -- HMAC hashes keyed by APP_KEY, never raw IPs or emails; pruned on write to the
+  -- rate-limit window. The same data will feed the audit log.
 migrations (filename, applied_at)
 ```
 
@@ -323,7 +360,8 @@ Strict regex whitelist. Never `eval`. Never interpolate user content into a call
 ## 6. Security rules
 
 - CSRF token on every state-changing request.
-- Sessions: `httponly`, `secure`, `samesite=strict`, regenerate on login.
+- Sessions: `httponly`, `secure` whenever the request is HTTPS, `samesite=strict`,
+  regenerate on login.
 - Login rate limit: 5 attempts per 15 minutes, per IP and per account.
 - 2FA (TOTP) is strongly encouraged but **not forced**, because a single-admin system
   with forced 2FA and no recovery path means a lost phone is a lost site. Provide ten
@@ -346,8 +384,9 @@ Strict regex whitelist. Never `eval`. Never interpolate user content into a call
    build all of Core before anything renders.
 2. **Never add a dependency** that is not in §3.
 3. **Never change a frozen contract** in §5 without asking first.
-4. **Run the seed** (`/migrations/seed.php`) after schema changes and confirm the demo
-   site still renders. This is the primary regression check.
+4. **After schema changes, run `php tests/run.php`** with a MySQL test database
+   configured, so migrations run on both drivers. `migrations/seed.php` arrives with the
+   demo site; from then on, also run it and confirm the demo site still renders.
 5. **No abstraction without a second caller.** No interface with one implementation, no
    hooks system before a second module needs it, no repository layer over PDO.
 6. **Keep code files under 300 lines** (PHP, templates, CSS, JS; documentation is
@@ -369,7 +408,7 @@ Container, Router (locale-aware), Request/Response, Config, Db (SQLite), View wi
 **Accept:** `/en/hello` renders a hard-coded page. `/hr/hello` renders the same page
 in a different locale context. A 404 renders a 404.
 
-### Slice 2 — Install and log in
+### Slice 2 — Install and log in ✅ done
 Migration runner, installer (requirements check → admin account → site info → migrate
 → seed → lock), login, session hardening, rate limit, admin shell layout.
 **Accept:** delete the database, run the installer on a clean copy, log in.
@@ -441,21 +480,58 @@ exits non-zero on any failure. Any PHP notice, warning or deprecation fails the 
 that raised it. CI runs it on every supported PHP version.
 
 `tests/support.php` provides `assertEquals`, `assertTrue`, `assertContains`,
-and `dispatch()` (a request through `app/bootstrap.php` and the Router, no web
-server).
+`assertThrows`, `dispatch()` (a request through `app/bootstrap.php` and the Router,
+no web server) and `testBothDrivers()` (the same test on SQLite and MySQL).
+`tests/fixtures.php` builds state: `freshDatabase()`, `migratedDatabase()`,
+`installedSite()` and `createAdmin()`.
+
+Databases: SQLite tests use a file in `tests/tmp/`. MySQL tests use a database that
+exists **only** for tests, never a site's database, configured in `.env.test` (see
+`.env.test.example`) or environment variables. Every table in it is dropped before
+each test and after the run. Without configuration, MySQL tests are skipped with a
+message; CI sets `TEST_REQUIRE_MYSQL=1`, which turns a skip into a failure.
 
 Rules:
 
 - **Every slice adds tests for what it builds.** The slice's acceptance criteria in
   §8 are the starting point for what to assert.
-- Tests need no web server. Tests must not write outside `tests/` and
-  `public/cache/`, and must restore anything they delete.
+- Every test builds its own state. A test that depends on enabled locales, an admin
+  account or an install lock creates them itself, never relying on config or
+  installer defaults.
+- Tests need no web server. Tests must not write outside `tests/`, `public/cache/` and
+  the MySQL test database, and must restore anything they delete.
 
 ---
 
 ## Changelog
 
 ```
+2026-09-15  §5.0 Plain portable SQL proved insufficient for auto-increment
+            primary keys: no single form works on both SQLite and MySQL, and
+            one form (INTEGER AUTO_INCREMENT PRIMARY KEY) silently stores
+            NULL ids on SQLite. Migrations therefore use exactly one
+            substitution token, {{pk}}. Any other {{...}} is a fatal error.
+            Engine-specific migration files were rejected (duplicated
+            definitions drift); app-generated ids were rejected (index
+            locality, collisions, unreadable admin URLs).
+            §5.2 adds login_attempts (ip_hash, email_hash, successful,
+            attempted_at), pruned on write.
+
+2026-09-15  Slice 2. §2 MySQL is the recommended database and preselected by
+            the installer; SQLite is for small single-site installs. MySQL
+            databases must default to utf8mb4; the installer blocks anything
+            else. pdo_mysql or pdo_sqlite is required, whichever is used.
+            §4 Install, Auth and Admin are modules under app/Modules; the
+            separate app/Admin directory is gone. §5.0 added: database
+            portability rules. The settings and locales tables are migrated
+            now: site name, timezone and the primary locale live in the
+            database, never in .env. The installer offers every ISO 639-1
+            language and enables only the primary one; config/locales.php is
+            removed. §6 the session cookie is secure whenever the request is
+            HTTPS. §7 migrations/seed.php does not exist until the demo site;
+            the test suite on both drivers is the regression check until then.
+            §10 tests run against SQLite and a dedicated MySQL test database.
+
 2026-09-15  Rewrite detection lives in the installer, not the front
             controller. A self-probe during page render was considered and
             rejected: it is a network call in the render path that some hosts

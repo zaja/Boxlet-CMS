@@ -409,9 +409,36 @@ styled multilingual site in under fifteen minutes.
 
 ---
 
+## 10. Testing
+
+`php tests/run.php` is the whole test runner: plain PHP, no dependencies, no
+PHPUnit. It loads every `tests/*_test.php`, prints one PASS/FAIL line per test and
+exits non-zero on any failure. Any PHP notice, warning or deprecation fails the test
+that raised it. CI runs it on every supported PHP version.
+
+`tests/support.php` provides `assertEquals`, `assertTrue`, `assertContains`,
+`dispatch()` (a request through `app/bootstrap.php` and the Router, no web server)
+and `testBothModes()` (the same test with pretty URLs and the `index.php?route=`
+fallback).
+
+Rules:
+
+- **Every slice adds tests for what it builds.** The slice's acceptance criteria in
+  §8 are the starting point for what to assert.
+- Tests need no web server. Tests must not write outside `tests/` and
+  `public/cache/`, and must restore anything they delete.
+
+---
+
 ## Changelog
 
 ```
+2026-09-15  §10 Minimal test runner added (tests/run.php, no dependencies).
+            Every slice adds tests for what it builds, starting from its §8
+            acceptance criteria. Rationale: from the installer onwards the
+            surface grows faster than manual checking scales, and routing
+            breaks silently.
+
 2026-09-15  §5.1 A first path segment is treated as a locale only if it
             is an enabled locale, not by matching a two-letter shape.
             /{primary}/slug 301-redirects to /slug. Rationale: shape

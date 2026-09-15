@@ -78,7 +78,9 @@ page without knowing its locale.
 4. **Code files under 300 lines.** Applies to PHP, templates, CSS and JS, not to
    documentation such as `docs/SPEC.md`. A controller past that means the feature is
    too big.
-5. Commit at the end of each slice, message naming the slice.
+5. **Every slice adds tests for what it builds.** The acceptance criteria in SPEC §8
+   are the starting point for what to assert. Run `php tests/run.php`; see SPEC §10.
+6. Commit at the end of each slice, message naming the slice.
 
 ---
 

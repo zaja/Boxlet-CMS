@@ -39,7 +39,8 @@ looks acceptable. When in doubt, remove a knob.
 | Database | MySQL/MariaDB (recommended; preselected by the installer) or SQLite (small single-site installs). All SQL runs on both (§5.0). MySQL databases must default to `utf8mb4`. |
 | Server | Shared Apache or Nginx, no shell, no Composer |
 | URL rewriting | **Required.** Apache `mod_rewrite` (rules ship in `public/.htaccess`) or nginx `try_files`. No fallback URL mode. |
-| Extensions required | pdo, mbstring, fileinfo, json, session, and pdo_mysql or pdo_sqlite |
+| Extensions required | pdo, mbstring, fileinfo, json, session, dom, and pdo_mysql or pdo_sqlite |
+| PHP settings | `max_input_vars` of 1000 or more; 3000 for pages with many blocks. The installer reports it; the page editor refuses saves that hit it. |
 | Extensions optional | gd or imagick, intl; AVIF output is best-effort |
 | Install method | Upload ZIP (vendor/ included), open `/install.php` |
 | Assets | Shipped pre-built. No npm in the release artifact. |
@@ -294,6 +295,38 @@ copied verbatim across locales.
 **only** CSS custom properties for colour, spacing, radius, shadow and typography. A
 block template containing a hard-coded colour or pixel value is a bug.
 
+`app/Core/Blocks.php` enforces the contract when the application boots; a malformed
+definition stops it with a message naming the block and key:
+
+- Exactly the keys above; a missing or unknown key is an error. `type` equals the
+  directory name. Field names match `[a-z][a-z0-9_]*`; `id` and `type` are reserved
+  for the page editor.
+- A field has `type`, optional boolean `required` and `translatable`, and for `select`
+  a non-empty list of option values: `'options' => ['cover', 'contain']`.
+- Field types from the closed set that are not implemented yet are rejected. Implemented:
+  `text`, `textarea`, `richtext`, `media`, `link`, `select`.
+- `defaults.layout` is one of `layouts`.
+
+Admin labels come from `lang/en.php`: `block.{type}`, `block.{type}.{field}` and
+`block.{type}.{field}.{option}`. The `label` key remains required by the contract, but
+the admin shows the translated string instead.
+
+Stored field values (`page_blocks.content_json`):
+
+```
+text, textarea   string, trimmed, no control characters
+richtext         HTML reduced on save to: p, br, strong, b, em, i, h2, h3, ul, ol, li,
+                 blockquote, and a with href only. Other elements are unwrapped, keeping
+                 their text; script, style, iframe, svg and similar are removed with
+                 their content. Output unescaped by templates.
+media            media id (integer) or null; a placeholder renders until Slice 5
+link             {"label": string, "url": string}; url must start with /, #, ? or
+                 http:, https:, mailto:, tel:, with no whitespace or backslash
+select           one of the option values; the first is the default
+```
+
+Link URLs in richtext follow the same rule; an `href` that fails it is dropped.
+
 ### 5.4 Design layers
 
 ```
@@ -413,7 +446,7 @@ Migration runner, installer (requirements check → admin account → site info 
 → seed → lock), login, session hardening, rate limit, admin shell layout.
 **Accept:** delete the database, run the installer on a clean copy, log in.
 
-### Slice 3 — Pages and blocks
+### Slice 3 — Pages and blocks ✅ done
 Pages CRUD, block registry, block editor with drag-and-drop ordering, three blocks
 (hero, text, image+text), front-end render.
 **Accept:** create a page in the admin with three blocks, view it on the front end.
@@ -465,6 +498,10 @@ styled multilingual site in under fifteen minutes.
 - What happens to a page whose translation does not exist yet — 404, fallback render,
   or hide from navigation? Recommend: configurable per site, default to hiding from
   navigation and 404 on direct hit.
+- Where does a block instance's layer-3 layout live? `page_blocks` has `style_json`
+  (layer 2) but no column for the chosen layout. Until Slice 4 decides, every block
+  renders its `defaults.layout`. Options: a `layout` key inside `style_json`, or a
+  `layout` column (a schema change).
 - `Config::get()` and `Container::get()` return `mixed`, which is what keeps the
   project below PHPStan level 9 (~30 findings). Typed getters would fix it, but the
   right shape is unclear from ten call sites. Revisit after Slice 3, when the
@@ -506,6 +543,26 @@ Rules:
 ## Changelog
 
 ```
+2026-09-15  Slice 3: pages, blocks, front-end render. Migrations add templates
+            (three built-ins seeded: landing, article, feature), pages and
+            page_blocks, with foreign keys: blocks cascade with their page.
+            A new page or block starts its own content_group_id /
+            block_group_id, set to its own id.
+            §5.3 The block registry enforces the contract at boot; select
+            options are a list of values; admin labels come from lang/en.php;
+            stored value shapes and the richtext whitelist are documented.
+            Slugs are one path segment. Reserved as slugs: every ISO 639-1
+            code, plus the system paths admin, assets, cache, uploads, m,
+            install and _boxlet.
+            Editor: one form, one POST, explicit Save, beforeunload warning.
+            Without JavaScript, Add and Move re-render the form without
+            saving and removal is a "remove when saving" checkbox. A save
+            whose final _end field is missing, or whose field count reached
+            max_input_vars, is refused. §2 dom is a required extension
+            (DOMDocument sanitises richtext); max_input_vars is reported by
+            the installer.
+            §9 Open question added: where a block's layer-3 layout is stored.
+
 2026-09-15  §5.0 Plain portable SQL proved insufficient for auto-increment
             primary keys: no single form works on both SQLite and MySQL, and
             one form (INTEGER AUTO_INCREMENT PRIMARY KEY) silently stores

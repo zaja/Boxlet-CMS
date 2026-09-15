@@ -38,6 +38,7 @@ looks acceptable. When in doubt, remove a knob.
 | PHP | 8.1 minimum. Do not use 8.2+ syntax. |
 | Database | SQLite by default, MySQL/MariaDB optional |
 | Server | Shared Apache or Nginx, no shell, no Composer |
+| URL rewriting | **Required.** Apache `mod_rewrite` (rules ship in `public/.htaccess`) or nginx `try_files`. No fallback URL mode. |
 | Extensions required | pdo, pdo_sqlite, mbstring, fileinfo, json |
 | Extensions optional | pdo_mysql, gd or imagick, intl |
 | Install method | Upload ZIP (vendor/ included), open `/install.php` |
@@ -113,6 +114,15 @@ phpstan/phpstan           static analysis, level 8, phpVersion 8.1, no baseline
 `/app`, `/storage`, `/config` must sit outside the document root when the host allows
 it. When it does not, the installer writes a `Require all denied` .htaccess into each
 and warns the user.
+
+URL rewriting is required on every host; there is no query-string fallback. The
+installer checks it with `app/Core/RewriteCheck.php` (one HTTP request to a probe
+route, with the user waiting) and refuses to proceed without it, showing the Apache
+and nginx configuration to add. The front controller never probes itself. At runtime
+only one case is caught: on Apache without `mod_rewrite`, `public/.htaccess` routes
+404s to `index.php`, which sees `REDIRECT_STATUS=404` and renders a plain instruction
+page before anything else boots. Other misconfigurations (nginx without `try_files`,
+Apache ignoring `.htaccess`) show the server's own 404; the installer catches those.
 
 ---
 
@@ -431,9 +441,8 @@ exits non-zero on any failure. Any PHP notice, warning or deprecation fails the 
 that raised it. CI runs it on every supported PHP version.
 
 `tests/support.php` provides `assertEquals`, `assertTrue`, `assertContains`,
-`dispatch()` (a request through `app/bootstrap.php` and the Router, no web server)
-and `testBothModes()` (the same test with pretty URLs and the `index.php?route=`
-fallback).
+and `dispatch()` (a request through `app/bootstrap.php` and the Router, no web
+server).
 
 Rules:
 
@@ -447,6 +456,20 @@ Rules:
 ## Changelog
 
 ```
+2026-09-15  Rewrite detection lives in the installer, not the front
+            controller. A self-probe during page render was considered and
+            rejected: it is a network call in the render path that some hosts
+            block, and it assumes success when blocked. Apache without
+            mod_rewrite is caught by an .htaccess marker; other
+            misconfigurations are caught at install time.
+
+2026-09-15  ?route= fallback removed as a supported mode. Rewriting is now
+            a hard requirement checked by the installer. Rationale: two URL
+            modes taxed every slice and produced the project's only bug so
+            far, in the path nobody would use. Users without vhost access
+            get an explicit error with the exact configuration to add,
+            rather than a half-working site.
+
 2026-09-15  §3 PHPStan raised from level 6 to level 8. The two level 7
             findings were fixed: Db::all() is annotated with int keys because
             PDO's fetchAll() is typed as plain array and cannot prove a list;

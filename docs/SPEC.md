@@ -360,6 +360,13 @@ arrives.
 - `div → p` is conditional: a div containing a block element is unwrapped instead, since
   a paragraph may not contain a list and renaming regardless would generate invalid
   markup of our own making.
+- **A paragraph that is the only block in an `li` is unwrapped.** An editor whose schema
+  puts a paragraph inside every list item would otherwise change how existing lists look:
+  measured on the front end, `<li><p>one</p></li>` renders 16px taller per item than
+  `<li>one</li>`, because the paragraph takes the normal paragraph margin. Storage keeps
+  one shape whichever editor produced it. Two paragraphs in one item are the author's
+  structure and both stay, and a paragraph beside a nested list is not the only block, so
+  it stays too. The rule removes a wrapper and allows nothing new.
 - **A `br` at the start or end of a block is dropped on save** — in `p`, `h2`, `h3`, `li`
   and `blockquote`. Handed `<p>alpha</p>`, Trix returns `<div><br>alpha<br><br></div>`, so
   without this every open-and-save added a break at each end of every richtext field on the

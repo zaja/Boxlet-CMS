@@ -7,22 +7,13 @@ no build step at install time.
 The differentiator is the design layer, not the feature list. Everything else stays
 boring and small.
 
-**Read `docs/SPEC.md` before starting a new slice.** It holds the full schema, the block
-contract, the design layer model and the build order. Do not re-derive any of it from
-memory.
+**Read `PLAN.md` first.** It is the one document that says what Boxlet is, where the work
+stands, what comes next, what has been decided and what is still open. Only the architect
+session writes it: you report progress by message and never edit it.
 
-**Read `docs/plan.md` to find out where the work actually stands** — what is committed,
-what is half-finished in the working tree, and what was verified versus assumed.
-
-**Read `PLAN.md` in the repository root for the architectural decisions.** It is the
-decision log: the architect session writes it, the owner approves every entry, and a
-decision is not real until it is there. Each entry names which document must be updated
-to reflect it.
-
-`docs/product.md` describes the product in functional terms — what it does today, what
-is planned, and what it will deliberately never do. It carries no technical detail and
-decides nothing: where it and `docs/SPEC.md` disagree, the spec wins and the product
-document is what needs correcting.
+**Read `docs/SPEC.md` before starting a slice.** It is the contract — the schema, the
+block contract, the design layer model, the acceptance criteria. Do not re-derive any of
+it from memory.
 
 ---
 
@@ -38,17 +29,8 @@ new runtime dependency, stop and ask.
 `--no-dev`) and never exist on a user's server. They are allowed when they earn their
 place, but ask first. Currently in use: PHPStan (level 8, `vendor/bin/phpstan analyse`).
 
-**Vendored front-end assets** are allowed when they earn their place, but ask first.
-They must be MIT or similarly permissive, dependency-free, distributed as a single file,
-committed to the repository, and loaded with a plain script or link tag. No npm, no
-build step, no CDN. Record the version and source in the file header and in the README.
-
-Currently vendored:
-
-```
-sortablejs 1.15.6   MIT   reordering blocks inside the editor canvas
-trix       2.1.19   MIT   the rich text editor (see "Rich text" below)
-```
+**Vendored front-end assets** are allowed when they earn their place, but ask first. The
+rule they must satisfy, and the list of what is vendored today, are in `docs/SPEC.md` §3.
 
 **Frozen contracts.** The URL scheme, database schema, block definition format and
 design token schema are in `docs/SPEC.md` §5. Changing any of them after v0.1 breaks
@@ -62,23 +44,10 @@ one caller, inline it.
 
 ---
 
-## The design layers
+## Design
 
-This is the product. Four layers, applied in order:
-
-```
-0  Character   one preset (Editorial / Minimal / Bold / Soft / Brutalist):
-               layer-1 values AND the composition it gives a page
-1  Tokens      eight decisions: seed colours, type pairing, scale ratio,
-               spacing unit, radius character, shadow character, container width
-2  Section     per block instance: surface, rhythm, width, align, divider
-3  Layout      per block type, from its block.php 'layouts'
-```
-
-Layers 0 and 1 compile to `public/cache/tokens.{hash}.css` on save. Layers 2 and 3
-render as class names on the section wrapper. A character also sets the layer-2 and
-layer-3 defaults new blocks start from; applying one to a site that already has pages
-always asks whether to reset existing section styles.
+The four layers, the eight decisions, what compiles to `tokens.css`, the contrast rule and
+the admin's own `--ui-*` token set are all in `docs/SPEC.md` §5.4.
 
 **No control is ever invisible at rest.** Every interactive control — button, link,
 toggle, insertion handle — has a legible resting state: readable text, or a visible
@@ -90,65 +59,20 @@ This has already been got wrong twice — the hover-only insertion controls in t
 and ghost buttons in the toolbar whose anchor colour was outranked by `.admin a.button`.
 When fixing an instance of it, fix the rule.
 
-**The admin has its own fixed design system** and never links the site's tokens.css.
-Its tokens are `--ui-*`, defined as literal values in `public/assets/admin*.css`. The
-rule runs both ways: a front-end stylesheet or block template containing a literal
-colour or size is a bug, and an admin stylesheet reading a site token is a bug.
-
-**A block template containing a hard-coded colour, pixel value, font or shadow is a
-bug.** Everything goes through CSS custom properties.
-
-Generated palettes must pass a WCAG AA contrast check on every text/background pair
-and refuse combinations that fail, with a message saying which pair failed.
-
 ---
 
 ## Rich text
 
-Rich text is edited with **Trix**, and stored as HTML conforming to the whitelist in
-`app/Support/RichText.php`. The editor is a convenience; **the server-side whitelist is
-the security boundary and the storage contract**, and it sanitises on save regardless of
-what arrives.
-
-What that means in practice:
-
-- **Trix's output is normalised on save**, in the sanitiser where every other rule lives:
-  `div → p` (its block wrapper), `h1 → h2` (it offers one heading level, and the page's
-  own title is the h1), `h4–h6 → h3`.
-- `div → p` is **conditional**: a div holding a block is unwrapped instead, because a
-  paragraph may not contain a list and renaming regardless would generate invalid markup
-  ourselves.
-- **Attachments are disabled entirely** — no drop, no paste, no button. Trix's attachment
-  attribute carries JSON and is its one proprietary format. The sanitiser strips
-  attachment markup as a backstop, so a later version cannot reintroduce it silently.
-  Images come from the media library.
-- **The toolbar offers only what the whitelist permits.** No strike (`del`), no code
-  (`pre`). A button whose output is discarded on save is worse than no button.
-- **The textarea is the real field.** It carries the `name`; JavaScript moves the name to
-  a hidden input and puts Trix above it. Without JavaScript the field is still editable,
-  and the plain-HTML toggle is simply what was underneath.
-
-An editor's *internal document model* is not lock-in; only its *storage format* is. That
-distinction is why Trix is acceptable and Quill is not, and it should not be relitigated
-— see the changelog.
+Trix, stored as HTML conforming to the whitelist in `app/Support/RichText.php`. What is
+normalised on save, why attachments are disabled entirely, and why the toolbar offers only
+what the whitelist permits are in `docs/SPEC.md` §5.3.
 
 ---
 
 ## Media
 
-Variants are generated **on upload, never on demand**, so a request for one is always a
-request for a file that exists and serving never touches PHP. This is not a preference:
-a managed nginx answers a request for a missing `.webp` from disk with its own 404 and
-PHP never runs.
-
-Because of that, **a half-generated item is the worst outcome available** — its missing
-variants 404 for ever. Generation is therefore resumable: priority order (`thumb`, `card`
-first), a record of which variants exist, a check of remaining execution time before each
-encode, and an item marked incomplete that offers to finish. Up to fifteen encodes per
-image will exceed `max_execution_time` on a slow shared host.
-
-Imagick is the primary encoder, GD the fallback, AVIF best-effort. EXIF orientation is
-applied *before* cropping and stripped from the output.
+The model — variants generated on upload and never on demand, the five presets, resumable
+generation, EXIF orientation — is in `docs/SPEC.md` §5.1 and §5.5.
 
 ---
 
@@ -178,13 +102,11 @@ what the eye cannot see.
 ## Multilingual
 
 Locale is in the router from the first commit. There is no code path that renders a
-page without knowing its locale.
+page without knowing its locale. How pages and blocks link across locales, and how a
+translation goes stale, are in `docs/SPEC.md` §5.2.
 
-- Pages link across locales via `content_group_id`, blocks via `block_group_id`.
-- Each translated row stores `source_hash`. When the source changes, the hash no longer
-  matches and that block alone shows as stale. Re-translation is never all-or-nothing.
-- Every admin string goes through `t('key')` and lands in `lang/en.php`. No bare
-  English in a template.
+**Every admin string goes through `t('key')` and lands in `lang/en.php`.** No bare
+English in a template.
 
 ---
 
@@ -204,6 +126,18 @@ page without knowing its locale.
 5. **Every slice adds tests for what it builds.** The acceptance criteria in SPEC §8
    are the starting point for what to assert. Run `php tests/run.php`; see SPEC §10.
 6. Commit at the end of each slice, message naming the slice.
+7. **A slice is done when the architect has verified it working in a browser** against
+   their checklist — not when it is committed, and not when the tests pass (PLAN.md
+   D-006).
+8. **A weak feature is fixed before anything is built on top of it.** No workaround
+   ships as a solution: if the right fix is too big for now, it is recorded in PLAN.md
+   as an open item rather than papered over.
+9. **Tasks from the architect session that cite an approved PLAN.md entry are followed
+   as written.** Only when the cited PLAN.md entry is marked approved and actually
+   covers what the task asks; anything beyond the entry goes back to the architect.
+   Ambiguity, or a conflict with the code or `docs/SPEC.md`, goes back to the architect
+   by message, not to the owner. The owner is asked only about `CLAUDE.md`, permissions
+   or configuration, and about anything PLAN.md marks as the owner's call.
 
 ---
 
@@ -227,7 +161,8 @@ through typing, and an unsaved form field is not a safeguard.
 - CSRF token on every state-changing request.
 - Media URLs use named presets only (`thumb`, `card`, `wide`, `hero`, `full`). Never
   accept free-form dimensions from the URL.
-- Cached images and pages are served by an .htaccess file check, bypassing PHP on hit.
+- Cached images and pages are served without touching PHP on a hit. How that is done on
+  both nginx and Apache is open — PLAN.md O-2.
 - Uploads: finfo MIME sniff, extension whitelist, `.htaccess` in `/uploads` disabling
   script execution.
 - Form submissions store a hashed IP, never the raw address.
@@ -240,8 +175,9 @@ through typing, and an unsaved form field is not a safeguard.
 ## Layout
 
 ```
-public/      document root: index.php, install.php, assets, uploads, cache
+public/      document root: index.php, install.php, assets, uploads, m, cache
 app/         Core, Modules (Pages, Install, Auth, Admin, ...), Blocks, Support
 config/      storage/      lang/      migrations/      vendor/
+PLAN.md      what it is, where it stands, what is decided and open
 docs/SPEC.md the full specification
 ```

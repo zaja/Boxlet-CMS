@@ -29,9 +29,9 @@ looks acceptable. When in doubt, remove a knob.
 - Anything requiring shell access, cron, or Composer on the target server.
 - A REST/GraphQL API in v1.
 
-`docs/product.md` states the same thesis and the same non-goals without technical
-detail, and enumerates the planned functionality slice by slice. It is derived from this
-file: when the two disagree, this file is right.
+`PLAN.md` §1 states the same thesis and the same non-goals without technical detail, for
+whoever is not reading code. It is derived from this file: when the two disagree, this
+file is right.
 
 ---
 
@@ -90,7 +90,8 @@ A vendored asset is allowed when it earns its place, and asking comes first. It 
 - loaded with a plain `<script>` or `<link>` tag.
 
 No npm, no build step, no CDN. The version and source URL are recorded in the file's own
-header and in the README, so updating it later is not archaeology.
+header and in the table below, so updating it later is not archaeology. `README.md` points
+here rather than keeping a second copy of the list.
 
 ```
 sortablejs 1.15.6    MIT    reordering blocks inside the editor canvas
@@ -580,27 +581,25 @@ Strict regex whitelist. Never `eval`. Never interpolate user content into a call
 
 ## 7. Working rules for the agent
 
-1. **Vertical slices.** Every slice ends with something visible in a browser. Do not
-   build all of Core before anything renders.
-2. **Never add a dependency** that is not in §3.
-3. **Never change a frozen contract** in §5 without asking first.
-4. **After schema changes, run `php tests/run.php`** with a MySQL test database
-   configured, so migrations run on both drivers. `migrations/seed.php` arrives with the
-   demo site; from then on, also run it and confirm the demo site still renders.
-5. **No abstraction without a second caller.** No interface with one implementation, no
-   hooks system before a second module needs it, no repository layer over PDO.
-6. **Keep code files under 300 lines** (PHP, templates, CSS, JS; documentation is
-   exempt). If a controller grows past that, the feature is probably too big.
-7. **Write the migration first**, then the model, then the controller, then the view.
-8. Every user-facing string in the admin goes through `t('key')` and lands in
-   `/lang/en.php`. No bare English in a template.
-9. Commit at the end of each slice with a message naming the slice.
+They are in `CLAUDE.md`, which Claude Code loads into every session automatically:
+vertical slices, the closed dependency list, the frozen contracts, `php tests/run.php`
+after a schema change, no abstraction without a second caller, files under 300 lines,
+migration before model before controller before view, `t('key')` for every admin string,
+a commit at the end of each slice, and the rule that a slice is done only once the
+architect has verified it in a browser.
+
+One copy, and it is that one. A rule added here instead would be a rule an agent never
+loads.
 
 ---
 
-## 8. Build order
+## 8. Slices and acceptance criteria
 
 Each slice has an acceptance test you can perform by hand in a browser.
+
+The order the slices are worked in, and how far each has actually got, are in `PLAN.md`
+§2 and §3. Nothing here counts as done until the architect has verified it in a browser
+(PLAN.md D-006), so this section claims neither.
 
 ### Slice 1 — Skeleton renders
 Container, Router (locale-aware), Request/Response, Config, Db (SQLite), View with
@@ -608,24 +607,24 @@ Container, Router (locale-aware), Request/Response, Config, Db (SQLite), View wi
 **Accept:** `/en/hello` renders a hard-coded page. `/hr/hello` renders the same page
 in a different locale context. A 404 renders a 404.
 
-### Slice 2 — Install and log in ✅ done
+### Slice 2 — Install and log in
 Migration runner, installer (requirements check → admin account → site info → migrate
 → seed → lock), login, session hardening, rate limit, admin shell layout.
 **Accept:** delete the database, run the installer on a clean copy, log in.
 
-### Slice 3 — Pages and blocks ✅ done
+### Slice 3 — Pages and blocks
 Pages CRUD, block registry, block editor with drag-and-drop ordering, three blocks
 (hero, text, image+text), front-end render.
 **Accept:** create a page in the admin with three blocks, view it on the front end.
 
-### Slice 4 — The design layer ← this is the demo moment ✅ done
+### Slice 4 — The design layer
 Token schema, palette generation with contrast checks, five character presets,
 `tokens.css` compilation, layer-2 section styles in the block editor, layer-3 layout
 picker.
 **Accept:** switch the character preset and the same page looks like a different site.
 Change one section's surface and rhythm and only that section changes.
 
-### Slice 4.5 — The admin's own design system, and composition ✅ done
+### Slice 4.5 — The admin's own design system, and composition
 A fixed admin design system (`--ui-*` tokens defined in `public/assets/admin*.css`,
 never derived from `design_tokens`), the Design screen rebuilt as controls beside a wide
 sticky preview, and characters extended to carry layer-2 and layer-3 composition with an
@@ -633,7 +632,7 @@ explicit choice when applying them to a site that has pages.
 **Accept:** switching character changes how the page is composed — measure, rhythm, hero
 arrangement, section edges — and the admin looks identical whatever the site is set to.
 
-### Slice 4.6 — The visual page editor ✅ done
+### Slice 4.6 — The visual page editor
 A canvas showing the real page in an iframe, a library of blocks each rendered as a
 picture of itself, insertion by aiming at a position and choosing a block, reordering by
 dragging inside the canvas (SortableJS), and an inspector holding the selected block's
@@ -679,161 +678,11 @@ styled multilingual site in under fifteen minutes.
 
 ---
 
-## 9. Open questions to resolve before Slice 6
+## 9. Open questions
 
-- Which AI provider ships as the default, and does Boxlet ship without an API key
-  (translation disabled until the user adds one)? Almost certainly yes.
-- What happens to a page whose translation does not exist yet — 404, fallback render,
-  or hide from navigation? Recommend: configurable per site, default to hiding from
-  navigation and 404 on direct hit.
-- **Blog / news content**
-
-  Revisit: after Slice 4.
-
-  Small sites often need a "News" section. A separate "post" content type
-  was considered and rejected: it is not a page with a different layout, it
-  implies a chronological index, pagination, archives, RSS and prev/next
-  navigation, each multiplied by locale. Tags are a taxonomy, which §1
-  non-goals exclude.
-
-  Answer instead: a page_list block listing child pages ordered by
-  published_at, with layouts ['list', 'grid'] so one block covers a news
-  index and a card grid. parent_id and published_at already exist. No new
-  table, no second editor, no second path through translation.
-
-  Scope when built: automatic by parent only. Manually selecting which pages
-  appear is a different need (a "Featured work" grid) and would give the
-  block a mode, doubling everything inside it. Defer until someone asks.
-
-  Open within this: what a listed page contributes to its card. Title and
-  date are obvious; an excerpt and a thumbnail are not currently fields on
-  a page.
-
-  A page-level "blog container" flag was also considered and rejected. It
-  moves the behaviour out of the block and into the render path, which then
-  has to answer questions the block answers for free: does the page render
-  its own blocks as well as the list, in what order, and where do the list's
-  style layers live? It also creates invisible state — a page whose front
-  end shows twenty entries that appear nowhere in its editor.
-
-  The convenience it was reaching for is covered by a seeded "News index"
-  template containing a preconfigured page_list block.
-
-- **Nested page addresses**
-
-  Revisit: immediately after Slice 4, as its own slice.
-
-  Addresses are currently flat: one path segment, unique per locale.
-  parent_id expresses hierarchy for the admin tree and future page_list
-  blocks but never appears in the URL, so the data model says one thing and
-  the address says another.
-
-  Planned: nested paths (/about/team) together with a redirects table.
-  The two are inseparable — nested paths without redirects regenerate every
-  descendant's address when a parent is renamed, producing a site full of
-  404s. The redirects table is needed regardless, since renaming any slug
-  breaks existing addresses today.
-
-  Deliberately scheduled after Slice 4: nested paths are a known quantity
-  with a known outcome, while the design layer is the one part of the
-  project whose success is uncertain. The uncertain thing gets verified
-  before more infrastructure is built around it. Nothing in Slice 4 depends
-  on address shape.
-
-- `Config::get()` and `Container::get()` return `mixed`, which is what keeps the
-  project below PHPStan level 9 (~30 findings). Typed getters would fix it, but the
-  right shape is unclear from ten call sites. Revisit after Slice 5 — it was to be
-  revisited after Slice 3, when the installer and the pages module would show how
-  these are actually used, and was not.
-
----
-
-- **Header, logo, navigation and footer**
-
-  Revisit: immediately after Slice 4.5, likely as its own slice.
-
-  Nothing in the spec defines site chrome. Pages currently render as a bare
-  sequence of blocks with no header and no footer, which is visible in every
-  Slice 4 screenshot. No menu exists: no table, no admin, no definition.
-  Whether a menu gets a replacement tag at all is undecided and belongs to
-  this question; §5.6 lists none today.
-
-  Open questions when it is built:
-  - Is a menu a first-class entity with its own table and ordering, or is it
-    derived from the page tree via parent_id and sort?
-  - Are header and footer blocks, rendered by the same registry and carrying
-    the same style layers, or separate chrome outside the block system?
-    A block inherits every style layer for free but must appear on every page
-    without the user adding it each time; chrome outside the block system
-    needs its own styling mechanism, which duplicates what already exists.
-  - Header variants (centred, left-aligned, transparent over a hero, sticky)
-    are a design decision, so presets should carry them like any other
-    composition default.
-  - Logo upload depends on the Media module, which arrives in Slice 5.
-  - Language switcher placement, once Slice 6 enables more than one locale.
-
-  Deferred past 4.5 deliberately: chrome is itself a design element, and it
-  should be designed once we know whether presets can carry composition.
-
-- **Site settings and SEO**
-
-  Revisit: as its own slice, after site chrome.
-
-  The settings table has existed since Slice 2 and is written only by the
-  installer. There is no screen for site name, favicon, timezone, default
-  social image, analytics, robots.txt or sitemap.xml. Per-page meta title and
-  description are covered separately; everything else here is unbuilt.
-
-  Open questions when it is built:
-  - Does a favicon go through the media library, and which sizes are
-    generated? It is an image, so it probably belongs to Slice 5's pipeline
-    rather than a special case.
-  - Does the default social image belong to the site or to the character?
-  - Is sitemap.xml generated on demand or written on publish? It has to carry
-    hreflang once Slice 6 lands, so it depends on that.
-  - Analytics means embedding third-party script, which collides with the
-    admin CSP and with the GDPR posture behind self-hosted fonts. Decide
-    deliberately rather than adding a field for a snippet.
-
-- **Regenerating media variants**
-
-  Revisit: Slice 8.
-
-  Variants are generated on upload, so adding, removing or resizing a preset
-  leaves existing media with the wrong set. A regeneration pass is needed,
-  runnable from the admin, resumable, and safe to run on a live site.
-
-  The resumable machinery built for upload in Slice 5 — priority order, a
-  record of which variants exist, a check of remaining execution time — is the
-  same machinery this needs, so this should be a thin wrapper rather than a new
-  subsystem.
-
-- **Repeater fields and the block library**
-
-  Revisit: immediately after Slice 5, as its own slice.
-
-  Three block types is too few to build a real site, and the missing shape is
-  repeating content: a team grid of photo, name and role; a features row; a
-  logo strip. `repeater` is already in the closed field-type list in §5.3 and
-  has never been built.
-
-  This is the answer to "we need multi-column blocks", and it confirms the
-  §5.3 decision rather than reversing it: a team grid is ONE block holding a
-  repeating item, with layout variants for two, three and four across. It is
-  not a generic column container that arbitrary blocks are dropped into.
-
-  Scheduled after media because a team grid without photographs cannot be
-  judged.
-
-- **Block library categories**
-
-  Revisit: when the block count passes roughly fifteen.
-
-  The editor's library lists every block as a picture of itself, with no
-  category filter. Three blocks exist and eleven more are planned; a category
-  dropdown over eleven items is furniture, and a filter that is faster to
-  ignore than to use is worse than none. Revisit when the list stops being
-  scannable at a glance, not before.
+They are in `PLAN.md` §5, each carrying the step of the order of work it belongs to.
+This section is a pointer and not a list, so that an open question cannot be answered in
+one document while staying open in another.
 
 ---
 
@@ -868,7 +717,14 @@ Rules:
 
 ---
 
-## Changelog
+## History (before PLAN.md, frozen)
+
+No entry is added here again. From `1782cc4` onwards the history of the project is the
+decisions in `PLAN.md` §4.
+
+The entries below are left exactly as they were written, including their cross-references.
+Where one says an open question was added to §9, that is what §9 held at the time; those
+questions are now `PLAN.md` §5.
 
 ```
 2026-09-16  Documentation aligned with the code (PLAN.md O-5).

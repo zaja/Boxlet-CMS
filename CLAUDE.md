@@ -14,6 +14,11 @@ memory.
 **Read `docs/plan.md` to find out where the work actually stands** — what is committed,
 what is half-finished in the working tree, and what was verified versus assumed.
 
+`docs/product.md` describes the product in functional terms — what it does today, what
+is planned, and what it will deliberately never do. It carries no technical detail and
+decides nothing: where it and `docs/SPEC.md` disagree, the spec wins and the product
+document is what needs correcting.
+
 ---
 
 ## Non-negotiable

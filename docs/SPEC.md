@@ -29,6 +29,10 @@ looks acceptable. When in doubt, remove a knob.
 - Anything requiring shell access, cron, or Composer on the target server.
 - A REST/GraphQL API in v1.
 
+`docs/product.md` states the same thesis and the same non-goals without technical
+detail, and enumerates the planned functionality slice by slice. It is derived from this
+file: when the two disagree, this file is right.
+
 ---
 
 ## 2. Target environment

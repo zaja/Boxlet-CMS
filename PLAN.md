@@ -85,11 +85,11 @@ still recognise it.
 
 | | |
 | --- | --- |
-| Last commit | `1782cc4`: documentation aligned with the code |
-| Tests | 259 passing on both drivers, 23 test files, as reported by the executor; not re-run by the architect |
-| PHPStan | clean at level 8, as reported |
-| CI | green on PHP 8.1–8.4 as of `eae20c6` |
+| Last commit | `f2a3520`: documentation consolidated (D-010) |
+| Tests | 259 passing on both drivers, PHPStan clean at level 8, as reported by the executor; not re-run by the architect |
+| CI | green on PHP 8.1–8.4 as of `b74a405` (checked on GitHub); `1782cc4` and `f2a3520` not pushed yet |
 | Live site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site, Brutalist character (D-002) |
+| Demo admin | `acceptance@example.com`; the password is never in the repository |
 
 Slices 1–4.6 are committed. **Under D-006 none of them counts as done** until it has been
 verified in a browser against an architect's checklist. That checklist is written in
@@ -172,6 +172,7 @@ field, and the plain toggle works both ways.
 5. *Ctrl+Shift+V paste as plain text*: implemented, never verified.
 
 **The admin**
+- One persistent navigation, a consistent layout, a comfortable reading width.
 - A fixed design of its own that never takes on the site's design, so an unreadable site
   colour scheme cannot lock the owner out of the screen that fixes it.
 - Validation errors next to the field; saving confirms visibly.
@@ -220,10 +221,11 @@ Not built:
 
 Approved as D-009. Each step gets its own architect's checklist before it starts.
 
-1. **Documentation consolidation** (D-010). ← *current*
-2. **Quality pass on what exists:** the rich text editor in blocks; the rich text
+1. **Documentation consolidation** (D-010). Done, verified in `f2a3520`.
+2. **Quality pass on what exists:** ← *next* the rich text editor in blocks; the rich text
    verification listed in section 2; an automated contrast check over every admin
-   control; reordering the page list; the browser checklist for slices 1–4.6.
+   control; reordering the page list; the browser checklist for slices 1–4.6; README
+   states the maximum upload size (the installer already reports it).
 3. **Foundations:** O-1 (upgrading an existing install) and O-2 (serving that works on
    nginx and Apache).
 4. **Slice 5, media**, and per-page SEO (D-004).
@@ -342,6 +344,9 @@ SPEC §9's open questions moved to section 5. SPEC §8 keeps only acceptance cri
 the order lives in section 3. SPEC's changelog stays frozen as history; from now on
 history is the decisions in this file. A fact is written once, and every other mention is
 a pointer.
+
+Verified by the architect 2026-09-16 in `f2a3520`. The owner chose plain pointers in
+`CLAUDE.md`, without restating the rules they point to.
 
 **Trade-offs.** This file is long. In return the owner follows the whole project from one
 place, and each file has a single author, so documents cannot silently contradict each

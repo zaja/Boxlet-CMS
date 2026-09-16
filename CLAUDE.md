@@ -138,6 +138,10 @@ English in a template.
    Ambiguity, or a conflict with the code or `docs/SPEC.md`, goes back to the architect
    by message, not to the owner. The owner is asked only about `CLAUDE.md`, permissions
    or configuration, and about anything PLAN.md marks as the owner's call.
+10. **Push `main` to origin after a commit whose tests pass on both drivers and whose
+    PHPStan run is clean**, without asking. Standing permission from the owner, given
+    2026-09-16. If either check did not run, or did not pass, the commit stays local and
+    the owner is told why — the permission is for verified work, not for every commit.
 
 ---
 

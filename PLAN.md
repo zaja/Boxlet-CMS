@@ -352,7 +352,7 @@ other.
 Pages are ordered by `sort` within the same parent and locale. The page list shows the
 tree, with children indented under their parent. Reordering is by dragging among siblings,
 with Up/Down buttons that work without JavaScript, the same fallback principle as the page
-editor. A page's parent is changed in page settings, never by dragging.
+editor. A page's parent is changed in page settings, never by dragging. Dragging uses SortableJS, which is already vendored for the canvas (SPEC §3), so no new asset is added.
 
 **Trade-offs.** A page cannot be dragged to another level. In return nothing gets
 re-parented by accident, which matters more once addresses follow the hierarchy (O-10).

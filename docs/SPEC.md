@@ -552,6 +552,16 @@ red text on orange, and the entire contrast-checked palette becomes decoration r
 than a guarantee. If five surfaces prove too few, a sixth is added *drawn from the
 palette*, not an open colour input.
 
+**The admin's own chrome is not this system.** Its `--ui-*` tokens are a fixed set
+declared in `public/assets/admin*.css`, never derived from `design_tokens`, so the tool
+stays readable whatever the site is set to. It has its own contrast rule, measured by
+`tests/contrast_test.php` rather than at save time: **4.5:1 for text**, and **3:1 for a
+control's boundary**, including a disabled one. Opacity is not allowed to take a control
+at rest below either figure. `canvas.css` is the one exception and cannot be checked this
+way, because it loads into a document full of the site's tokens and what sits behind its
+controls is the user's design; its insertion control carries two tones so that one edge
+contrasts whatever is behind it (PLAN.md D-012).
+
 **Layer 2.** `page_blocks.style_json` holds all five keys. Values outside the closed sets
 fall back to the defaults (plain, normal, normal, left, none) on save and on render. The
 only CSS for these classes is `public/assets/sections.css`: each surface sets

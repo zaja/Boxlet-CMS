@@ -146,6 +146,10 @@ English in a template.
     PHPStan run is clean**, without asking. Standing permission from the owner, given
     2026-09-16. If either check did not run, or did not pass, the commit stays local and
     the owner is told why — the permission is for verified work, not for every commit.
+11. **Never end a turn with a list of next steps. Run them.** A turn ends only when the
+    task is done, when you are blocked on the owner or the architect, or when you are
+    reporting to the architect by message. A background process such as a dev server is
+    not work in progress: stop it when the check that needed it is done.
 
 ---
 

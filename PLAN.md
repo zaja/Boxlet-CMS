@@ -140,7 +140,8 @@ step 2 of the order of work.
   a plain editable element keeps MsoNormal classes, inline styles, font tags and a whole
   table, while Trix reduces it to strong, em, a, real lists and div blocks.
 - Every rich text field can be switched to plain HTML and back.
-- **Content corruption bug (found 2026-09-16, mechanism confirmed by the executor):** after
+- **Content corruption bug** (found 2026-09-16; fix committed in `a6487e8`, CI green,
+  **browser check pending**): after
   Move or drag-reorder, in both the visual editor and the plain editor, a rich text editor
   can write into another block's field, and a renumbered toolbar can drive another block's
   editor. Trix binds to its hidden input and toolbar by id, and renumbering rewrites those
@@ -389,25 +390,32 @@ control nobody can see is worse.
 
 ### D-013: A browser for checks, installed on the server
 
-**Status:** approved 2026-09-16
+**Status:** approved 2026-09-16, corrected the same day after installation
 
-Playwright and Chromium are installed on this server, so the work can be checked in a real
-browser (D-006). Conditions:
+A headless browser is installed on this server, so work can be checked in a real browser
+(D-006). It is **Puppeteer 25**, not Playwright: Playwright needs Node 20 and the host runs
+Node 18.19.1. Chrome lives in `~/.cache/puppeteer` (658 MB); the driver lives under the
+user's home. Chrome needs five system libraries (libasound2, libatk-1.0, libatspi,
+libXdamage, libxkbcommon). The owner installed them as root on 2026-09-16 (plus ten dependencies, about 5 MB);
+chrome-headless-shell (arm64, 153.0.8010.36) then starts. Only headless-shell is used; full
+Chrome would need three more libraries and is not installed for.
 
-- Installed outside the project and outside the web root (under the user's home). Never
-  in the repository, `composer.json`, `vendor`, or a `package.json`/`node_modules` in the
-  project, so nothing of it can reach the release ZIP.
+Conditions:
+
+- Installed outside the project and outside the web root. Never in the repository,
+  `composer.json`, `vendor`, or a `package.json`/`node_modules` in the project, so nothing
+  of it can reach the release ZIP.
 - Run only on demand for a check, against the site on this machine. No service, no open
   port, nothing started at boot.
-- Driver scripts stay outside the project. Keeping them is decided when there is a second
-  use.
+- Driver scripts stay outside the project. Whether to keep them in the repository is
+  decided when there is a second use.
 - The rule "fix the instrument before judging the subject" (CLAUDE.md) still applies:
   slowed driver, real input, a control.
 
-**Trade-offs.** Several hundred MB of developer tooling on a live web server, and a
-browser binary that has to be kept updated. Accepted over driving the owner's own Chrome,
-because checks can run whenever work finishes, without the owner present. The owner's
-hands-on pass stays for anything visual.
+**Trade-offs.** About 700 MB of developer tooling, five system libraries on a live web
+server, and a browser that has to be kept updated. Accepted over driving the owner's own
+Chrome, because checks can run whenever work finishes, without the owner present. The
+owner's hands-on pass stays for anything visual.
 
 ---
 

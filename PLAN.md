@@ -490,7 +490,7 @@ further away. In return the toolbar is smaller, and authors get the depth they a
 
 ### D-017: Try TipTap as the rich text editor (spike first)
 
-**Status:** approved 2026-09-16 (the spike; adoption needs the owner's yes after trying it)
+**Status:** approved 2026-09-16, and adopted the same day: the owner tried the spike on the live demo and said yes
 
 Trix fights what we need from it. It has one heading level, and it manages focus and the
 selection itself, so every addition around it (a second level, a heading menu) produced a

@@ -133,66 +133,30 @@ step 2 of the order of work.
 - Missing: page SEO fields (D-004), reordering the page list (step 2), more blocks and
   columns (step 6).
 
-**Writing (rich text with Trix)**
-- Bold, italic, links, headings, quotations, nested lists. Stored as plain HTML, cleaned
-  on the server. The toolbar offers only what can be stored.
-- Pasting from Word is cleaned. Measured against a control: the same Word HTML pasted into
-  a plain editable element keeps MsoNormal classes, inline styles, font tags and a whole
-  table, while Trix reduces it to strong, em, a, real lists and div blocks.
+**Writing (rich text with TipTap, D-017)**
+- Bold, italic, links, headings H2/H3/H4, quotations, bullet and numbered lists with
+  nesting. The toolbar offers exactly what can be stored, and the editor's schema cannot
+  produce anything else.
+- Changing a heading's level replaces it; pressing the active level returns to a
+  paragraph. The owner tried this on the live demo on 2026-09-16 and approved it.
+- The link panel stays hidden until the link button (or Ctrl+K) is pressed. It opens
+  prefilled on an existing link, and closes on Link, Unlink, Escape or a click back into
+  the text.
+- Stored as HTML and cleaned on the server, which keeps one stored shape whatever the
+  editor sends (D-014, D-016, SPEC §5.3). Opening and saving without edits leaves content
+  byte-identical.
+- Pasting from Word is cleaned. Measured against a plain editable element, which kept
+  MsoNormal classes, inline styles, font tags and a whole table; TipTap keeps none of them.
 - Every rich text field can be switched to plain HTML and back.
-- **Round-trip data rot (found 2026-09-16 in the browser check, not yet fixed):** Trix
-  loads `<p>alpha</p>` and posts `<div><br>alpha<br><br></div>`. Every open and save in the
-  visual editor adds a `<br>` at each end of every rich text field on the page, including
-  fields nobody touched, without limit. Cause, measured: Trix's own block is `div` and
-  its one heading is `h1`; given `p` or `h2` it marks the edges with `<br>`. Fix: D-014,
-  step 2c, first.
-- **Headings lost on save (found 2026-09-16 alongside the round-trip bug, not yet fixed):**
-  Trix loads an `h2` in rich text as bold text, so the first save stores it as a bold
-  paragraph and the heading is gone. An `h3` does the same. Fix: D-014 (load mapping) and
-  D-015.
-- **Editor appearance (2b):** fixed in `7ce3b2c`, `181efbd`, `7f91a95`; browser check
-  passed; owner's hands-on pass pending (after D-014). The link dialog had been permanently
-  visible, because Trix hides it with a stylesheet injected at runtime that the admin's
-  Content Security Policy refuses. Only that one rule has been ported so far; the rest of
-  Trix's injected rules are audited in 2c.
-- **Content corruption bug** (found 2026-09-16; fixed in `a6487e8`, CI green, browser
-  check passed; owner's hands-on pass pending): after
-  Move or drag-reorder, in both the visual editor and the plain editor, a rich text editor
-  can write into another block's field, and a renumbered toolbar can drive another block's
-  editor. Trix binds to its hidden input and toolbar by id, and renumbering rewrites those
-  ids by block position. Duplicate in the visual editor also clones an editor that is never
-  set up again. Fix (2a): the ids Trix binds to are stable per editor and never renumbered;
-  a duplicate copies the text currently on screen and gets a freshly set-up editor.
-- **Quality defect reported by the owner:** in the block inspector the link dialog covers
-  the text, the toolbar wraps onto two rows, the disabled undo and indent buttons are barely
-  visible, and field labels are cramped. Step 2.
+- Moving, dragging and duplicating blocks keeps every editor bound to its own field.
+  Found as a content corruption bug and fixed in `a6487e8`.
+- The editor makes zero Content Security Policy violations.
 
-| Trix construct | Trix emits | Stored as |
-| --- | --- | --- |
-| paragraph | `<div>` | `<p>` |
-| bold / italic | `<strong>` / `<em>` | unchanged |
-| link | `<a href>` | unchanged |
-| heading | `<h1>` | `<h2>` |
-| quote | `<blockquote>` | unchanged |
-| lists, nested 3 deep | real nested `<ul><li><ul>` | unchanged |
-| strike, code | `<del>`, `<pre>` | buttons removed |
-| attachments | `<figure data-trix-attachment>` | disabled and stripped |
-
-Verified in the running admin (plain editor only): Trix loads, the toolbar has exactly
-the eleven permitted controls, the field name moves to a hidden input, typing reaches the
-field, and the plain toggle works both ways.
-
-**Not yet verified:**
-1. *Round trip, the priority.* Load existing demo content into Trix, save without editing,
-   and confirm the stored HTML is byte-identical. The server-side cleaner is proven
-   idempotent, but that says nothing about whether Trix hands back what it was given. If
-   they differ, report what changed; do not adjust the test.
-2. *Visual editor interaction.* The earlier probe selected a rich text field in a hidden
-   block group. Scope it to the visible group.
-3. *Editors built inside hidden block groups*, a known cause of broken sizing and dead
-   selection.
-4. *Rescan of newly inserted blocks* (`boxletRichText.scan`): written, never exercised.
-5. *Ctrl+Shift+V paste as plain text*: implemented, never verified.
+**Checked by the architect:** the code in `e770358` (CI green on GitHub), and the
+executor's browser checks. **Confirmed by the owner** on the live demo, 2026-09-16: heading
+levels, formatting, lists, saving, and the link panel hidden until clicked.
+**Not yet verified:** the editor inside blocks newly inserted from the library, and paste
+as plain text (2c-3).
 
 **The admin**
 - One persistent navigation, a consistent layout, a comfortable reading width.
@@ -245,12 +209,16 @@ Not built:
 Approved as D-009. Each step gets its own architect's checklist before it starts.
 
 1. **Documentation consolidation** (D-010). Done, verified in `f2a3520`.
-2. **Quality pass on what exists:** ← *current*, in parts: 2a content corruption bug,
-   2b editor appearance, 2c rich text verification, 2d contrast test (D-012), 2e page
-   order (D-011), 2f README upload size, 2g browser checklist for slices 1–4.6. Covers: the rich text editor in blocks; the rich text
-   verification listed in section 2; an automated contrast check over every admin
-   control; reordering the page list; the browser checklist for slices 1–4.6; README
-   states the maximum upload size (the installer already reports it).
+2. **Quality pass on what exists:** ← *current*
+   - Done: 2a content corruption bug (`a6487e8`); 2b editor appearance, confirmed by the
+     owner; 2c-1 rich text survives open and save (`0029c27`); the editor replaced by TipTap
+     (D-017, `e770358`, CI green).
+   - Next: split `app/Support/RichText.php` and its tests, which are over the 300-line
+     rule; 2c-3 the editor in newly inserted blocks, and paste as plain text; 2d contrast
+     test (D-012); 2e page order (D-011); 2f README upload size; 2g browser checklist for
+     slices 1–4.6.
+   - Open question: `h4` is set at body size in every character, because the type scale
+     has no step between body and the next size up.
 3. **Foundations:** O-1 (upgrading an existing install) and O-2 (serving that works on
    nginx and Apache).
 4. **Slice 5, media**, and per-page SEO (D-004).
@@ -434,7 +402,7 @@ owner's hands-on pass stays for anything visual.
 
 ### D-014: Rich text survives being opened and saved
 
-**Status:** approved 2026-09-16
+**Status:** approved 2026-09-16; the load mapping below was superseded by D-017 (TipTap needs none), the save rules stand
 
 Fixed at the source and guarded on the server:
 
@@ -466,7 +434,7 @@ subheading silently turning into bold body text on its first save.
 
 ### D-016: One heading button with levels H2, H3 and H4
 
-**Status:** approved 2026-09-16
+**Status:** approved 2026-09-16; the menu was superseded by D-017 (TipTap has H2, H3 and H4 as buttons), the stored `h4` level and the smaller toolbar stand
 
 The rich text toolbar has a single "Heading" button that opens a small menu: H2, H3, H4.
 It replaces the separate heading and subheading buttons.

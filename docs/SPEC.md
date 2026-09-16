@@ -591,6 +591,17 @@ explicit choice when applying them to a site that has pages.
 **Accept:** switching character changes how the page is composed — measure, rhythm, hero
 arrangement, section edges — and the admin looks identical whatever the site is set to.
 
+### Slice 4.6 — The visual page editor ✅ done
+A canvas showing the real page in an iframe, a library of blocks each rendered as a
+picture of itself, insertion by aiming at a position and choosing a block, reordering by
+dragging inside the canvas (SortableJS), and an inspector holding the selected block's
+fields, section style, layout and controls. The plain form editor stays at
+`/admin/pages/{id}/form` as the fallback. Characters also stopped over-using their
+section edges, and the admin gained its own picture of what a block is.
+**Accept:** add a block to a page by picking it out of the library, drag it into place,
+edit its text and watch the page change, and save — with the plain editor still able to
+fix the same page without JavaScript.
+
 ### Slice 5 — Media
 Upload, presets, lazy variant generation, `<picture>` output, focal point picker,
 per-locale alt text, .htaccess direct serving.
@@ -764,6 +775,53 @@ Rules:
 ## Changelog
 
 ```
+2026-09-16  Slice 4.6: the visual page editor.
+
+            TRANSPORT REVERSAL. Slice 3 chose a plain form so that editing
+            content needed no JavaScript. A visual editor cannot meet that bar,
+            and the reversal is deliberate. What that decision was really
+            protecting is kept intact: block definitions live in PHP only, and
+            no copy of one exists in JavaScript. Adding or re-drawing a block
+            POSTs to the server, which answers with HTML — the section for the
+            canvas and the field group for the form, as two inert templates.
+            No JSON API, no client-side schema, no client-side validation. The
+            page is still one form, submitted by an explicit Save, validated by
+            the same server-side code, with the same _end sentinel and
+            max_input_vars guard. The form editor stays at
+            /admin/pages/{id}/form as a fallback, linked both ways, so a broken
+            canvas or a browser without JavaScript can still fix a site's text.
+
+            The canvas is an iframe rendering exactly what a visitor gets, so
+            site CSS and admin CSS cannot collide. Blocks are not wrapped in
+            editor markup: sections.css styles a section by its position among
+            its siblings, so anything inserted between them would change the
+            page being judged. Selection is a class; the insertion controls are
+            an overlay.
+
+            Dragging from the library into the canvas is NOT built. Drag events
+            do not cross a document boundary, and tracking pointer coordinates
+            across one is a lot of fragile code for an interaction that is
+            better served by aiming at a position and then choosing a block —
+            which is also reachable from a keyboard. Reordering drags entirely
+            inside the canvas, where there is no boundary, using SortableJS for
+            touch support.
+
+            §3 gains a rule for vendored front-end assets, closing the same gap
+            require-dev exposed earlier: permissive licence, dependency-free,
+            single file, committed, plain script tag, no npm or build step or
+            CDN, version and source recorded. Currently: SortableJS 1.15.6.
+            §5.3 records that multi-column arrangements are layout variants of
+            one block and that a generic column grid is out of scope.
+            §9 defers block library categories past roughly fifteen blocks.
+
+            Characters: a divider is an accent on chosen transitions, never a
+            default for every boundary, and the first section on a page never
+            draws one. Minimal is quiet on purpose rather than unstyled.
+            Editorial sits on one spine — a left-ranged hero fills its column
+            instead of taking a second, narrower measure. §5.4 records that
+            alignment is not placement. The media placeholder derives its tint
+            from --section-text, so it cannot vanish on an untested surface.
+
 2026-09-15  Slice 4.5: the admin's own design system, and characters that carry
             composition.
             The admin no longer links the site's tokens.css. It has a fixed

@@ -488,6 +488,57 @@ It replaces the separate heading and subheading buttons.
 technical contract that changes before v0.1 (SPEC §5.3). A heading level is one click
 further away. In return the toolbar is smaller, and authors get the depth they asked for.
 
+### D-017: Try TipTap as the rich text editor (spike first)
+
+**Status:** approved 2026-09-16, and adopted the same day: the owner tried the spike on the live demo and said yes
+
+Trix fights what we need from it. It has one heading level, and it manages focus and the
+selection itself, so every addition around it (a second level, a heading menu) produced a
+new bug. The owner tried the heading menu and found a stray highlight, no direct H2→H3
+switch, and a heading applied to the wrong paragraph. The owner also tried TipTap's demo,
+which worked cleanly. TipTap is built on ProseMirror (MIT, very widely used).
+
+It was ruled out before because it is not distributed as one file. The exception approved
+here:
+
+- **One maintainer-built bundle.** Pinned TipTap/ProseMirror packages (MIT core only, no
+  paid extensions) are bundled once into `public/assets/vendor/tiptap.bundle.min.js`,
+  committed with a header naming every version. The recipe (package.json, lockfile, one
+  entry file) lives in `tools/tiptap/`, is excluded from the release ZIP, and is built
+  outside the project so no `node_modules` ever sits in it. Users never build anything,
+  so the product promise "no build step" holds. A second exception would need its own
+  decision.
+- **Why it should fit.** ProseMirror's schema allows only the nodes we define, which is
+  exactly our whitelist. A heading is one node with a level, so changing H2 to H3 replaces
+  it. HTML goes in and out, so the storage contract and the server sanitiser are unchanged.
+  TipTap's CSS injection can be turned off, so the admin's security policy stays as it is.
+- **Spike, on a branch.** The same textarea contract, including the no-JavaScript
+  fallback, and a toolbar of bold, italic, link, H2/H3/H4, quote, lists, undo/redo.
+  Acceptance:
+  - the owner's own scenarios: select text and change its level, change an existing
+    heading's level, remove a heading, no stray highlight, nothing applied to the wrong
+    paragraph;
+  - three open-and-save cycles byte-identical on every field;
+  - Word paste against a control;
+  - moving and duplicating blocks still bind each editor to its own field.
+  The owner tries it on the live demo with the branch checked out. It merges only on their
+  yes; otherwise main stays on Trix.
+
+**Spike result (2026-09-16, `spike/tiptap`).** TipTap 3.31.3 bundles on Node 18. The
+bundle is 372 KB minified, 120 KB compressed (Trix: 208 KB and 52 KB), almost all of it
+ProseMirror itself, and it loads only in the admin. All 33 bundled packages are MIT,
+checked in each package's own metadata. It causes zero CSP violations (Trix: four per page
+load). The owner's scenarios, moves and duplicates, round trips and Word paste all pass.
+The server now also unwraps the paragraph TipTap puts inside list items, quotes, and list
+items holding a nested list, so stored content keeps one shape whichever editor wrote it.
+
+**Trade-offs.** Updating the editor needs Node and npm on a maintainer's machine, and the
+bundle is about 1.8 times Trix's size (2.3 times compressed). Part of the editor work already done for Trix is redone. In
+return we get an editor we build on rather than around.
+
+**If adopted:** Trix and its CSS are removed; the Trix-specific parts of D-014, D-015 and
+D-016 are superseded (their requirements stand); SPEC §3 and §5.3 are updated.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -495,6 +546,9 @@ further away. In return the toolbar is smaller, and authors get the depth they a
   `admin-richtext.css`. The policy is never loosened for it.
 - **A commit message is a claim.** One commit described a change its code did not contain.
   Before committing, the executor checks each claim in the message against the staged diff.
+- **Check what the owner will do, not only what is stored.** The heading menu passed
+  every storage check and failed the owner's first try: select text, change the level.
+  Browser acceptance for anything interactive includes the owner's real actions.
 - **Checks run on a copy.** `env()` reads `$_ENV` and `$_SERVER`, and this PHP's
   `variables_order` leaves `$_ENV` empty. Browser checks therefore use a copied site tree
   with its own `.env` (`~/boxlet-browser/site`), never environment overrides, so nothing can

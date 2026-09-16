@@ -31,6 +31,9 @@ place, but ask first. Currently in use: PHPStan (level 8, `vendor/bin/phpstan an
 
 **Vendored front-end assets** are allowed when they earn their place, but ask first. The
 rule they must satisfy, and the list of what is vendored today, are in `docs/SPEC.md` §3.
+One exception to "no npm, no build step" exists, for maintainers only: the TipTap bundle,
+rebuilt from `tools/tiptap/` outside the project (PLAN.md D-017). A second one needs its
+own decision.
 
 **Frozen contracts.** The URL scheme, database schema, block definition format and
 design token schema are in `docs/SPEC.md` §5. Changing any of them after v0.1 breaks
@@ -63,9 +66,10 @@ When fixing an instance of it, fix the rule.
 
 ## Rich text
 
-Trix, stored as HTML conforming to the whitelist in `app/Support/RichText.php`. What is
-normalised on save, why attachments are disabled entirely, and why the toolbar offers only
-what the whitelist permits are in `docs/SPEC.md` §5.3.
+TipTap, stored as HTML conforming to the whitelist in `app/Support/RichText.php`. The
+server sanitiser is the security boundary and keeps one stored shape whatever the editor
+sends. What is normalised on save, and why the toolbar offers only what the whitelist
+permits, are in `docs/SPEC.md` §5.3.
 
 ---
 

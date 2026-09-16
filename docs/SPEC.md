@@ -94,19 +94,28 @@ header and in the table below, so updating it later is not archaeology. `README.
 here rather than keeping a second copy of the list.
 
 ```
-sortablejs 1.15.6    MIT    reordering blocks inside the editor canvas
-trix       2.1.19    MIT    the rich text editor (§5.3)
+sortablejs      1.15.6    MIT    reordering blocks inside the editor canvas
+tiptap.bundle   3.31.3    MIT    the rich text editor (§5.3)
 ```
 
 SortableJS earns its place because reordering happens inside an iframe, where native
 HTML5 drag and drop does not handle touch usably, and a tablet is a real case for the
 page editor.
 
-Trix earns its place because a rich text editor lives on edge cases — pasting from a word
-processor, nested lists, undo across compound operations, mobile keyboards, IME input —
-and those are surfaced only by a large user base, not by good intentions. It is the
-editor in Basecamp and in Rails ActionText. It stores HTML, which is what we already
-store, so removing it later costs nothing in content.
+TipTap earns its place because a rich text editor lives on edge cases — pasting from a
+word processor, nested lists, undo across compound operations, mobile keyboards, IME
+input — and those are surfaced only by a large user base, not by good intentions. It is
+built on ProseMirror, whose schema allows only the nodes we declare, so the editor cannot
+offer markup the server would throw away. It stores HTML, which is what we already store,
+so replacing it later costs nothing in content.
+
+**The one exception to "no npm, no build step"** (PLAN.md D-017). TipTap is not published
+as a single file, so `public/assets/vendor/tiptap.bundle.min.js` is built from the recipe
+in `tools/tiptap/` — pinned versions, a lockfile and one entry file — and committed. The
+build runs outside the project, so no `node_modules` ever sits in it, and nobody
+installing Boxlet builds anything: the file ships as it is, like every other vendored
+asset. Its header names every bundled package, version and licence. A second exception
+needs its own decision.
 
 ### require-dev
 
@@ -349,49 +358,57 @@ the user enough freedom to build something ugly, which is the opposite of what t
 project is for — blocks that already know how to look good is the premise. It would also
 multiply every later feature (translation, revisions, caching) by the nesting depth.
 
-**Editing a richtext field.** The field is edited with Trix (§3), and stored as HTML
+**Editing a richtext field.** The field is edited with TipTap (§3), and stored as HTML
 conforming to the whitelist above. The editor is a convenience; the server-side whitelist
-is the security boundary and the storage contract, and it sanitises on save whatever
-arrives.
+is the security boundary and the storage contract, it sanitises on save whatever arrives,
+and it keeps one stored shape however the markup was produced.
 
-- Trix's output is normalised on save, in the sanitiser where every other rule lives:
-  `div → p` (its block wrapper), `h1 → h2` (it offers a single heading level, and the
-  page's own title is the h1), and `h4`–`h6` → `h3`.
+**The editor's schema is the whitelist.** TipTap is configured with exactly these nodes
+and marks — paragraph, `h2`–`h4`, bold, italic, link, bullet and ordered lists,
+blockquote, hard break, and undo/redo — so it cannot produce anything the sanitiser would
+discard. The toolbar therefore offers only what can be stored: no strike, no code. A
+button whose output is discarded on save is worse than no button.
+
+- Editor output is normalised on save, in the sanitiser where every other rule lives:
+  `div → p` (the block wrapper some editors use), `h1 → h2` (the page's own title is the
+  h1, so a heading in body copy sits below it), and `h5`–`h6` → `h4`.
 - `div → p` is conditional: a div containing a block element is unwrapped instead, since
   a paragraph may not contain a list and renaming regardless would generate invalid
   markup of our own making.
-- **A `br` at the start or end of a block is dropped on save** — in `p`, `h2`, `h3`, `li`
-  and `blockquote`. Handed `<p>alpha</p>`, Trix returns `<div><br>alpha<br><br></div>`, so
-  without this every open-and-save added a break at each end of every richtext field on the
-  page, including fields nobody edited, and it compounded with each cycle (PLAN.md D-014).
-  A break between two lines is the author's and stays.
-- **The editor is handed the shapes it owns.** `richtext.js` converts `p → div` and
-  `h2 → h1` on the way in — the exact inverse of the two rules above — because Trix's block
-  element is `div` and it has a single heading level. Given a `p` or an `h2` it does not
-  recognise the block: it keeps the words, marks the boundaries with `br`, and renders a
-  heading as `strong`, losing the heading outright. Nothing about what is stored changes.
-  An editor replacing Trix needs whatever equivalent its own parser requires, or none.
-- **The editor carries three heading levels, behind one button.** Trix ships one, `h1`.
-  `richtext.js` registers `heading2` and `heading3`, emitting `h3` and `h4`, and the
-  toolbar has a single Heading button opening a menu of H2, H3 and H4 (PLAN.md D-016). It
-  is built as a Trix dialog, like the link dialog: a `data-trix-action` button opens it
-  because Trix's toolbar looks for a matching dialog before invoking anything, and the
-  levels inside are ordinary `data-trix-attribute` buttons, so Trix marks the active level
-  itself. Closing on a choice or on Escape is ours, since Trix closes a dialog only for its
-  own dialog methods. Without a registered attribute a level has no way through the editor
-  at all: Trix does not recognise the element, loads it as bold text, and the first save
-  stores it as bold text, so a heading is destroyed by being looked at.
-- **Attachments are disabled entirely** — no drop, no paste, no button. Trix's attachment
-  markup is a `figure` carrying JSON in a data attribute, which is its one proprietary
-  format and the only part of it that would create lock-in. The sanitiser strips that
-  markup as a backstop, so a later version cannot reintroduce it silently. Images come
-  from the media library (§5.5).
-- The toolbar offers only what the whitelist permits: no strike (`del`), no code (`pre`).
-  A button whose output is discarded on save is worse than no button.
+- **A paragraph wrapping the text of an `li` or a `blockquote` is unwrapped.** An editor
+  whose schema puts a paragraph inside every list item and quote would otherwise change how
+  existing content looks: measured on the front end, `<li><p>one</p></li>` renders 16px
+  taller per item than `<li>one</li>`, because the paragraph takes the normal paragraph
+  margin. Storage keeps one shape whichever editor produced it.
+
+  What the author made survives. Two paragraphs in one item or quote are kept, both of
+  them. A list item may hold a sublist after its text, so a paragraph followed only by
+  `ul` or `ol` is still a wrapper and goes, giving `<li>text<ul>…</ul></li>`; a paragraph
+  *after* a sublist is not a wrapper and stays. A quote may hold nothing beside its
+  paragraph, so anything else there leaves the paragraph in place. The rule removes a
+  wrapper and allows nothing new.
+- **A `br` at the start or end of a block is dropped on save** — in `p`, `h2`, `h3`, `h4`,
+  `li` and `blockquote` (PLAN.md D-014). An editor that marks block boundaries with breaks
+  would otherwise add one at each end of every richtext field on a page that was merely
+  opened and saved, including fields nobody edited, compounding with every cycle. A break
+  between two lines is the author's and stays.
+- **The three heading levels are in the toolbar as H2, H3 and H4** (PLAN.md D-016). Each
+  button applies its level, replaces another, and returns the block to a paragraph when
+  pressed again; the button for the level the cursor is in shows as active.
+- **Attachments are not offered, and attachment markup is stripped on save.** No editor in
+  this project may store its own container format: a `figure` carrying JSON in a data
+  attribute is the one thing that would put content beyond the reach of the whitelist. The
+  sanitiser removes it with its content as a backstop, so no later version can reintroduce
+  it silently. Images come from the media library (§5.5).
 - The textarea is the real field and carries the input name; JavaScript moves the name to
-  a hidden input and places Trix above it. Without JavaScript the field is still
+  a hidden input and places the editor above it. Without JavaScript the field is still
   editable, and the plain-HTML toggle on every richtext field is simply what was
   underneath all along.
+- **The link panel is in the flow, never over the text**, and is hidden at rest. It opens
+  from the toolbar or Ctrl+K carrying the address of the link the cursor is in, and closes
+  on Link, Unlink, Escape or a click back into the text, returning the caret to the
+  editor. Hiding is by the `hidden` attribute, which `admin.css` enforces against any rule
+  that would otherwise lay the element out.
 
 `template.php` receives `$content`, `$style`, `$layout` and outputs HTML that uses
 **only** CSS custom properties for colour, spacing, radius, shadow and typography. A

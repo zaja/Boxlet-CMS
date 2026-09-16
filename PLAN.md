@@ -453,7 +453,7 @@ a blank line is a new paragraph, so nothing a user can type is lost.
 
 ### D-015: A subheading button in the rich text editor
 
-**Status:** approved 2026-09-16
+**Status:** superseded by D-016 (the separate button); its round-trip requirement stands
 
 Trix gets a second heading level that emits `h3`, with a "Subheading" button in the
 toolbar, so a subheading survives being opened and saved. `h3` is already on the
@@ -463,6 +463,30 @@ stored as `h2`.
 
 **Trade-offs.** One more toolbar button in a narrow inspector. The alternative was a
 subheading silently turning into bold body text on its first save.
+
+### D-016: One heading button with levels H2, H3 and H4
+
+**Status:** approved 2026-09-16
+
+The rich text toolbar has a single "Heading" button that opens a small menu: H2, H3, H4.
+It replaces the separate heading and subheading buttons.
+
+- The stored set gains `h4`: rich text may hold `h2`, `h3` and `h4`. `h1` still becomes
+  `h2`, and `h5`–`h6` now become `h4` (previously `h4`–`h6` became `h3`).
+- Every level must survive being opened and saved (D-014), and choosing a level from the
+  menu must store exactly that tag.
+- The menu works from the keyboard, shows the active level, and closes on a choice or on
+  Escape. Its styles live in `admin-richtext.css`, because the admin's security policy
+  refuses anything Trix injects.
+- `h4` gets a front-end style in `site.css`, through design tokens only, checked under all
+  five characters.
+- The toolbar also gets smaller at the owner's request. Buttons are about 1.75rem and never
+  under a 24px target, icons are about the size of field text, and the icon weight is
+  close to Trix's own. It stays on one row.
+
+**Trade-offs.** A third heading level to design in every character, and a rule in the
+technical contract that changes before v0.1 (SPEC §5.3). A heading level is one click
+further away. In return the toolbar is smaller, and authors get the depth they asked for.
 
 ### Lessons from the browser checks (2026-09-16)
 

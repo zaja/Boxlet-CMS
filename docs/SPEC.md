@@ -371,14 +371,16 @@ arrives.
   recognise the block: it keeps the words, marks the boundaries with `br`, and renders a
   heading as `strong`, losing the heading outright. Nothing about what is stored changes.
   An editor replacing Trix needs whatever equivalent its own parser requires, or none.
-- **The editor carries two heading levels.** Trix ships one, `h1`. `richtext.js` registers
-  a second block attribute, `heading2`, emitting the `h3` the whitelist already allows, and
-  the toolbar carries a Subheading button for it (PLAN.md D-015). Without it `h3` had no
-  way through the editor at all: Trix did not recognise the element, loaded it as bold
-  text, and the first save stored it as bold text, so a subheading was destroyed by being
-  looked at. Trix ships no icon for a second heading level, and `.trix-button--icon` hides
-  a button's own text, so the button draws Trix's heading glyph smaller rather than being
-  blank — a control nobody can see is a control nobody uses.
+- **The editor carries three heading levels, behind one button.** Trix ships one, `h1`.
+  `richtext.js` registers `heading2` and `heading3`, emitting `h3` and `h4`, and the
+  toolbar has a single Heading button opening a menu of H2, H3 and H4 (PLAN.md D-016). It
+  is built as a Trix dialog, like the link dialog: a `data-trix-action` button opens it
+  because Trix's toolbar looks for a matching dialog before invoking anything, and the
+  levels inside are ordinary `data-trix-attribute` buttons, so Trix marks the active level
+  itself. Closing on a choice or on Escape is ours, since Trix closes a dialog only for its
+  own dialog methods. Without a registered attribute a level has no way through the editor
+  at all: Trix does not recognise the element, loads it as bold text, and the first save
+  stores it as bold text, so a heading is destroyed by being looked at.
 - **Attachments are disabled entirely** — no drop, no paste, no button. Trix's attachment
   markup is a `figure` carrying JSON in a data attribute, which is its one proprietary
   format and the only part of it that would create lock-in. The sanitiser strips that

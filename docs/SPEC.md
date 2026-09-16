@@ -360,6 +360,25 @@ arrives.
 - `div → p` is conditional: a div containing a block element is unwrapped instead, since
   a paragraph may not contain a list and renaming regardless would generate invalid
   markup of our own making.
+- **A `br` at the start or end of a block is dropped on save** — in `p`, `h2`, `h3`, `li`
+  and `blockquote`. Handed `<p>alpha</p>`, Trix returns `<div><br>alpha<br><br></div>`, so
+  without this every open-and-save added a break at each end of every richtext field on the
+  page, including fields nobody edited, and it compounded with each cycle (PLAN.md D-014).
+  A break between two lines is the author's and stays.
+- **The editor is handed the shapes it owns.** `richtext.js` converts `p → div` and
+  `h2 → h1` on the way in — the exact inverse of the two rules above — because Trix's block
+  element is `div` and it has a single heading level. Given a `p` or an `h2` it does not
+  recognise the block: it keeps the words, marks the boundaries with `br`, and renders a
+  heading as `strong`, losing the heading outright. Nothing about what is stored changes.
+  An editor replacing Trix needs whatever equivalent its own parser requires, or none.
+- **The editor carries two heading levels.** Trix ships one, `h1`. `richtext.js` registers
+  a second block attribute, `heading2`, emitting the `h3` the whitelist already allows, and
+  the toolbar carries a Subheading button for it (PLAN.md D-015). Without it `h3` had no
+  way through the editor at all: Trix did not recognise the element, loaded it as bold
+  text, and the first save stored it as bold text, so a subheading was destroyed by being
+  looked at. Trix ships no icon for a second heading level, and `.trix-button--icon` hides
+  a button's own text, so the button draws Trix's heading glyph smaller rather than being
+  blank — a control nobody can see is a control nobody uses.
 - **Attachments are disabled entirely** — no drop, no paste, no button. Trix's attachment
   markup is a `figure` carrying JSON in a data attribute, which is its one proprietary
   format and the only part of it that would create lock-in. The sanitiser strips that

@@ -140,8 +140,23 @@ step 2 of the order of work.
   a plain editable element keeps MsoNormal classes, inline styles, font tags and a whole
   table, while Trix reduces it to strong, em, a, real lists and div blocks.
 - Every rich text field can be switched to plain HTML and back.
-- **Content corruption bug** (found 2026-09-16; fix committed in `a6487e8`, CI green,
-  **browser check pending**): after
+- **Round-trip data rot (found 2026-09-16 in the browser check, not yet fixed):** Trix
+  loads `<p>alpha</p>` and posts `<div><br>alpha<br><br></div>`. Every open and save in the
+  visual editor adds a `<br>` at each end of every rich text field on the page, including
+  fields nobody touched, without limit. Cause, measured: Trix's own block is `div` and
+  its one heading is `h1`; given `p` or `h2` it marks the edges with `<br>`. Fix: D-014,
+  step 2c, first.
+- **Headings lost on save (found 2026-09-16 alongside the round-trip bug, not yet fixed):**
+  Trix loads an `h2` in rich text as bold text, so the first save stores it as a bold
+  paragraph and the heading is gone. An `h3` does the same. Fix: D-014 (load mapping) and
+  D-015.
+- **Editor appearance (2b):** fixed in `7ce3b2c`, `181efbd`, `7f91a95`; browser check
+  passed; owner's hands-on pass pending (after D-014). The link dialog had been permanently
+  visible, because Trix hides it with a stylesheet injected at runtime that the admin's
+  Content Security Policy refuses. Only that one rule has been ported so far; the rest of
+  Trix's injected rules are audited in 2c.
+- **Content corruption bug** (found 2026-09-16; fixed in `a6487e8`, CI green, browser
+  check passed; owner's hands-on pass pending): after
   Move or drag-reorder, in both the visual editor and the plain editor, a rich text editor
   can write into another block's field, and a renumbered toolbar can drive another block's
   editor. Trix binds to its hidden input and toolbar by id, and renumbering rewrites those
@@ -416,6 +431,50 @@ Conditions:
 server, and a browser that has to be kept updated. Accepted over driving the owner's own
 Chrome, because checks can run whenever work finishes, without the owner present. The
 owner's hands-on pass stays for anything visual.
+
+### D-014: Rich text survives being opened and saved
+
+**Status:** approved 2026-09-16
+
+Fixed at the source and guarded on the server:
+
+- **On load**, the editor hands Trix the shapes it owns: `p` becomes `div` and `h2` becomes
+  `h1`. This is the exact inverse of the sanitiser's `div → p` and `h1 → h2` on save, so
+  what is stored does not change. Measured on the load path alone: without it, a break
+  trapped inside `strong`, `em` or `a` keeps growing, beyond the reach of any server rule.
+- **On save**, the server strips `<br>` at the start and end of every block element (`p`,
+  `h2`, `h3`, `li`, `blockquote`). It repairs content that has already grown, and it holds
+  whatever an editor sends.
+Acceptance: sanitising is idempotent, and in the browser three open-and-save cycles leave
+every rich text field byte-identical.
+
+**Trade-offs.** A deliberate line break at the very edge of a paragraph is lost. In Trix
+a blank line is a new paragraph, so nothing a user can type is lost.
+
+### D-015: A subheading button in the rich text editor
+
+**Status:** approved 2026-09-16
+
+Trix gets a second heading level that emits `h3`, with a "Subheading" button in the
+toolbar, so a subheading survives being opened and saved. `h3` is already on the
+whitelist, so the toolbar still offers only what can be stored. If Trix cannot round-trip
+it cleanly in the browser, the fallback is to load `h3` as the single heading level,
+stored as `h2`.
+
+**Trade-offs.** One more toolbar button in a narrow inspector. The alternative was a
+subheading silently turning into bold body text on its first save.
+
+### Lessons from the browser checks (2026-09-16)
+
+- **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
+  Content Security Policy refuses it. Every rule it injects has to live in
+  `admin-richtext.css`. The policy is never loosened for it.
+- **A commit message is a claim.** One commit described a change its code did not contain.
+  Before committing, the executor checks each claim in the message against the staged diff.
+- **Checks run on a copy.** `env()` reads `$_ENV` and `$_SERVER`, and this PHP's
+  `variables_order` leaves `$_ENV` empty. Browser checks therefore use a copied site tree
+  with its own `.env` (`~/boxlet-browser/site`), never environment overrides, so nothing can
+  reach `boxletcms`. The driver lives in `~/boxlet-browser`.
 
 ---
 

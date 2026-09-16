@@ -524,8 +524,16 @@ here:
   The owner tries it on the live demo with the branch checked out. It merges only on their
   yes; otherwise main stays on Trix.
 
+**Spike result (2026-09-16, `spike/tiptap`).** TipTap 3.31.3 bundles on Node 18. The
+bundle is 372 KB minified, 120 KB compressed (Trix: 208 KB and 52 KB), almost all of it
+ProseMirror itself, and it loads only in the admin. All 33 bundled packages are MIT,
+checked in each package's own metadata. It causes zero CSP violations (Trix: four per page
+load). The owner's scenarios, moves and duplicates, round trips and Word paste all pass.
+The server now also unwraps the paragraph TipTap puts inside list items, quotes, and list
+items holding a nested list, so stored content keeps one shape whichever editor wrote it.
+
 **Trade-offs.** Updating the editor needs Node and npm on a maintainer's machine, and the
-bundle is roughly 200 KB. Part of the editor work already done for Trix is redone. In
+bundle is about 1.8 times Trix's size (2.3 times compressed). Part of the editor work already done for Trix is redone. In
 return we get an editor we build on rather than around.
 
 **If adopted:** Trix and its CSS are removed; the Trix-specific parts of D-014, D-015 and

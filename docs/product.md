@@ -112,8 +112,8 @@ What makes this more than a theme picker:
   bulleted and numbered lists with nesting — and stored as plain HTML.
 - **The toolbar offers only what the site can store.** There is no button whose result
   would be discarded when you save.
-- **Pasting from Word or Google Docs is cleaned**, and there is an explicit
-  paste-without-formatting for when it still comes out wrong.
+- **Pasting from Word or Google Docs is cleaned.** An explicit paste-without-formatting,
+  for when it still comes out wrong, is built and currently being verified in a browser.
 - **Every rich text field can be switched to plain HTML** and back.
 
 ### 3.5 The administrator's experience

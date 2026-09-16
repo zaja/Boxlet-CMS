@@ -179,8 +179,10 @@ Migrations for `media` and `media_meta`, upload `.htaccess`, installer limit rep
    regeneration becomes a thin wrapper around:
    - generate in priority order: `thumb`, `card` first (the library needs them), then
      `wide`, `hero`, `full`;
-   - **record which variants exist** per item — needs a column on `media`
-     (the migration is uncommitted, so amend it rather than adding another);
+   - **record which variants exist** per item — needs a column on `media`. The media
+     migrations are committed (`517cfbe`); they are simply not applied on the live
+     install, which is a demo that may be reinstalled. Do not amend them and do not add
+     another until PLAN.md O-1 (the upgrade path for existing installs) is decided;
    - check remaining execution time before each encode and stop cleanly;
    - an incomplete item is marked as such, shown that way in the library, and offers to
      finish.

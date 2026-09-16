@@ -14,6 +14,11 @@ memory.
 **Read `docs/plan.md` to find out where the work actually stands** — what is committed,
 what is half-finished in the working tree, and what was verified versus assumed.
 
+**Read `PLAN.md` in the repository root for the architectural decisions.** It is the
+decision log: the architect session writes it, the owner approves every entry, and a
+decision is not real until it is there. Each entry names which document must be updated
+to reflect it.
+
 `docs/product.md` describes the product in functional terms — what it does today, what
 is planned, and what it will deliberately never do. It carries no technical detail and
 decides nothing: where it and `docs/SPEC.md` disagree, the spec wins and the product
@@ -208,7 +213,7 @@ page without knowing its locale.
 after a browser check, not to fix a row by hand, not "just this once".
 
 Cleanup happens one of three ways: through the application, through the test suite
-against `boxletcms_test`, or by reinstalling.
+against `boxletcms-test`, or by reinstalling.
 
 Throwaway data on the live site is created with a marker chosen in that same command —
 a fixed prefix, an id captured on creation — and deleted **by exact id**. Never by a

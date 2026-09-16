@@ -128,10 +128,11 @@ phpstan/phpstan           static analysis, level 8, phpVersion 8.1, no baseline
   .htaccess
   /assets/                    admin + front-end CSS/JS, shipped built
   /uploads/                   original media, never modified
-  /cache/                     generated images, tokens.css, page cache
+  /m/                         generated image variants (§5.5)
+  /cache/                     tokens.css, page cache
 /app/
   /Core/                      Container, Router, Request, Response, Db, Config,
-                              View, Cache, Hooks, Migrator
+                              View, Migrator        (Cache arrives with Slice 8)
   /Modules/
     /Pages/  /Media/  /Design/  /Forms/  /I18n/  /Settings/  /Mailer/  /Ai/
     /Install/  /Auth/  /Admin/
@@ -533,7 +534,8 @@ full    max 2400 wide, no crop
 
 Pipeline: upload original untouched → validate with finfo against a MIME whitelist →
 sha1 for dedup → generate every variant during the upload request → write to
-`/public/cache/media/` → serve via `<picture>` with AVIF → WebP → original.
+`public/m/`, the same path as the `/m/` URL scheme → serve via `<picture>` with
+AVIF → WebP → original.
 
 Variants are generated on upload, never on demand (§5.1). Every media URL therefore
 points at a file that already exists, so the web server serves it without PHP and
@@ -643,8 +645,10 @@ edit its text and watch the page change, and save — with the plain editor stil
 fix the same page without JavaScript.
 
 ### Slice 5 — Media
-Upload, presets, lazy variant generation, `<picture>` output, focal point picker,
-per-locale alt text, .htaccess direct serving.
+Upload, presets, variants generated on upload (§5.1), `<picture>` output, focal point
+picker, per-locale alt text, variants served from disk without PHP. Also per-page meta
+title and description: two fields defaulting to the page title, emitted in `<head>`,
+nothing more.
 **Accept:** upload a 4 MB photo, place it in a hero, confirm the served file is WebP
 and under 200 KB, confirm a second request does not hit PHP.
 
@@ -738,8 +742,9 @@ styled multilingual site in under fifteen minutes.
 
 - `Config::get()` and `Container::get()` return `mixed`, which is what keeps the
   project below PHPStan level 9 (~30 findings). Typed getters would fix it, but the
-  right shape is unclear from ten call sites. Revisit after Slice 3, when the
-  installer and the pages module show how these are actually used.
+  right shape is unclear from ten call sites. Revisit after Slice 5 — it was to be
+  revisited after Slice 3, when the installer and the pages module would show how
+  these are actually used, and was not.
 
 ---
 
@@ -749,8 +754,9 @@ styled multilingual site in under fifteen minutes.
 
   Nothing in the spec defines site chrome. Pages currently render as a bare
   sequence of blocks with no header and no footer, which is visible in every
-  Slice 4 screenshot. {{menu:main}} appears in the §5.6 replacement tags but
-  no menu exists: no table, no admin, no definition.
+  Slice 4 screenshot. No menu exists: no table, no admin, no definition.
+  Whether a menu gets a replacement tag at all is undecided and belongs to
+  this question; §5.6 lists none today.
 
   Open questions when it is built:
   - Is a menu a first-class entity with its own table and ordering, or is it
@@ -865,6 +871,22 @@ Rules:
 ## Changelog
 
 ```
+2026-09-16  Documentation aligned with the code (PLAN.md O-5).
+
+            PLAN.md, in the repository root, is now the architectural decision
+            log. §4 stops naming Core parts that have no caller: Hooks is gone,
+            since building it would break "no abstraction without a second
+            caller", and Cache is marked as arriving with Slice 8 (D-005).
+            §5.5 writes variants to public/m/, matching the /m/ URL scheme,
+            rather than the /public/cache/media/ left over from the abandoned
+            on-demand model (D-003). Slice 5 drops "lazy variant generation"
+            and ".htaccess direct serving" for what §5.1 actually says, and
+            gains per-page meta title and description — two fields defaulting
+            to the page title, emitted in <head>, nothing more (D-004). How a
+            variant is served without PHP is deliberately not named: nginx is
+            the primary target and Apache must stay fully compatible, which is
+            open as PLAN.md O-2.
+
 2026-09-16  Rich text is edited with Trix (MIT, vendored).
 
             Selection turned on a correction: an editor's internal document

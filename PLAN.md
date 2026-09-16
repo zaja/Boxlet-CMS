@@ -85,9 +85,9 @@ still recognise it.
 
 | | |
 | --- | --- |
-| Last commit | `f2a3520`: documentation consolidated (D-010) |
+| Last commit | `2054ec9`: push permission and PLAN.md additions; CI green on GitHub |
 | Tests | 259 passing on both drivers, PHPStan clean at level 8, as reported by the executor; not re-run by the architect |
-| CI | green on PHP 8.1–8.4 as of `b74a405` (checked on GitHub); `1782cc4` and `f2a3520` not pushed yet |
+| CI | checked by the architect on GitHub after every push; see the latest run for the current tip |
 | Live site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site, Brutalist character (D-002) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
 
@@ -140,6 +140,13 @@ step 2 of the order of work.
   a plain editable element keeps MsoNormal classes, inline styles, font tags and a whole
   table, while Trix reduces it to strong, em, a, real lists and div blocks.
 - Every rich text field can be switched to plain HTML and back.
+- **Content corruption bug (found 2026-09-16, mechanism confirmed by the executor):** after
+  Move or drag-reorder, in both the visual editor and the plain editor, a rich text editor
+  can write into another block's field, and a renumbered toolbar can drive another block's
+  editor. Trix binds to its hidden input and toolbar by id, and renumbering rewrites those
+  ids by block position. Duplicate in the visual editor also clones an editor that is never
+  set up again. Fix (2a): the ids Trix binds to are stable per editor and never renumbered;
+  a duplicate copies the text currently on screen and gets a freshly set-up editor.
 - **Quality defect reported by the owner:** in the block inspector the link dialog covers
   the text, the toolbar wraps onto two rows, the disabled undo and indent buttons are barely
   visible, and field labels are cramped. Step 2.
@@ -222,7 +229,9 @@ Not built:
 Approved as D-009. Each step gets its own architect's checklist before it starts.
 
 1. **Documentation consolidation** (D-010). Done, verified in `f2a3520`.
-2. **Quality pass on what exists:** ← *next* the rich text editor in blocks; the rich text
+2. **Quality pass on what exists:** ← *current*, in parts: 2a content corruption bug,
+   2b editor appearance, 2c rich text verification, 2d contrast test (D-012), 2e page
+   order (D-011), 2f README upload size, 2g browser checklist for slices 1–4.6. Covers: the rich text editor in blocks; the rich text
    verification listed in section 2; an automated contrast check over every admin
    control; reordering the page list; the browser checklist for slices 1–4.6; README
    states the maximum upload size (the installer already reports it).
@@ -351,6 +360,54 @@ Verified by the architect 2026-09-16 in `f2a3520`. The owner chose plain pointer
 **Trade-offs.** This file is long. In return the owner follows the whole project from one
 place, and each file has a single author, so documents cannot silently contradict each
 other.
+
+### D-011: Page order
+
+**Status:** approved 2026-09-16
+
+Pages are ordered by `sort` within the same parent and locale. The page list shows the
+tree, with children indented under their parent. Reordering is by dragging among siblings,
+with Up/Down buttons that work without JavaScript, the same fallback principle as the page
+editor. A page's parent is changed in page settings, never by dragging.
+
+**Trade-offs.** A page cannot be dragged to another level. In return nothing gets
+re-parented by accident, which matters more once addresses follow the hierarchy (O-10).
+
+### D-012: "Visible at rest" is measurable
+
+**Status:** approved 2026-09-16
+
+Every admin control, including disabled ones, has at least 3:1 contrast against its
+surface, and enabled text controls 4.5:1. Disabled looks different but is never
+invisible. A test enforces it over every admin stylesheet by computing the colour pairs
+controls use and rejecting opacity that breaks them. A browser check stays as the second
+line, because a stylesheet test cannot see one rule overriding another, which is exactly
+how the rich text toolbar got to 5% opacity.
+
+**Trade-offs.** Some disabled states look more present than a designer might choose. A
+control nobody can see is worse.
+
+### D-013: A browser for checks, installed on the server
+
+**Status:** approved 2026-09-16
+
+Playwright and Chromium are installed on this server, so the work can be checked in a real
+browser (D-006). Conditions:
+
+- Installed outside the project and outside the web root (under the user's home). Never
+  in the repository, `composer.json`, `vendor`, or a `package.json`/`node_modules` in the
+  project, so nothing of it can reach the release ZIP.
+- Run only on demand for a check, against the site on this machine. No service, no open
+  port, nothing started at boot.
+- Driver scripts stay outside the project. Keeping them is decided when there is a second
+  use.
+- The rule "fix the instrument before judging the subject" (CLAUDE.md) still applies:
+  slowed driver, real input, a control.
+
+**Trade-offs.** Several hundred MB of developer tooling on a live web server, and a
+browser binary that has to be kept updated. Accepted over driving the owner's own Chrome,
+because checks can run whenever work finishes, without the owner present. The owner's
+hands-on pass stays for anything visual.
 
 ---
 

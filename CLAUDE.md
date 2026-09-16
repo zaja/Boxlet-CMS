@@ -11,6 +11,9 @@ boring and small.
 contract, the design layer model and the build order. Do not re-derive any of it from
 memory.
 
+**Read `docs/plan.md` to find out where the work actually stands** — what is committed,
+what is half-finished in the working tree, and what was verified versus assumed.
+
 ---
 
 ## Non-negotiable
@@ -29,7 +32,13 @@ place, but ask first. Currently in use: PHPStan (level 8, `vendor/bin/phpstan an
 They must be MIT or similarly permissive, dependency-free, distributed as a single file,
 committed to the repository, and loaded with a plain script or link tag. No npm, no
 build step, no CDN. Record the version and source in the file header and in the README.
-Currently vendored: SortableJS.
+
+Currently vendored:
+
+```
+sortablejs 1.15.6   MIT   reordering blocks inside the editor canvas
+trix       2.1.19   MIT   the rich text editor (see "Rich text" below)
+```
 
 **Frozen contracts.** The URL scheme, database schema, block definition format and
 design token schema are in `docs/SPEC.md` §5. Changing any of them after v0.1 breaks
@@ -61,6 +70,16 @@ render as class names on the section wrapper. A character also sets the layer-2 
 layer-3 defaults new blocks start from; applying one to a site that already has pages
 always asks whether to reset existing section styles.
 
+**No control is ever invisible at rest.** Every interactive control — button, link,
+toggle, insertion handle — has a legible resting state: readable text, or a visible
+shape, against the surface it sits on. Hover and focus *raise* a control; they never
+*reveal* it. A control nobody can see is a control nobody uses, and it hides bugs: a
+white-on-white button looks like a missing feature, not like a styling mistake.
+
+This has already been got wrong twice — the hover-only insertion controls in the canvas,
+and ghost buttons in the toolbar whose anchor colour was outranked by `.admin a.button`.
+When fixing an instance of it, fix the rule.
+
 **The admin has its own fixed design system** and never links the site's tokens.css.
 Its tokens are `--ui-*`, defined as literal values in `public/assets/admin*.css`. The
 rule runs both ways: a front-end stylesheet or block template containing a literal
@@ -71,6 +90,78 @@ bug.** Everything goes through CSS custom properties.
 
 Generated palettes must pass a WCAG AA contrast check on every text/background pair
 and refuse combinations that fail, with a message saying which pair failed.
+
+---
+
+## Rich text
+
+Rich text is edited with **Trix**, and stored as HTML conforming to the whitelist in
+`app/Support/RichText.php`. The editor is a convenience; **the server-side whitelist is
+the security boundary and the storage contract**, and it sanitises on save regardless of
+what arrives.
+
+What that means in practice:
+
+- **Trix's output is normalised on save**, in the sanitiser where every other rule lives:
+  `div → p` (its block wrapper), `h1 → h2` (it offers one heading level, and the page's
+  own title is the h1), `h4–h6 → h3`.
+- `div → p` is **conditional**: a div holding a block is unwrapped instead, because a
+  paragraph may not contain a list and renaming regardless would generate invalid markup
+  ourselves.
+- **Attachments are disabled entirely** — no drop, no paste, no button. Trix's attachment
+  attribute carries JSON and is its one proprietary format. The sanitiser strips
+  attachment markup as a backstop, so a later version cannot reintroduce it silently.
+  Images come from the media library.
+- **The toolbar offers only what the whitelist permits.** No strike (`del`), no code
+  (`pre`). A button whose output is discarded on save is worse than no button.
+- **The textarea is the real field.** It carries the `name`; JavaScript moves the name to
+  a hidden input and puts Trix above it. Without JavaScript the field is still editable,
+  and the plain-HTML toggle is simply what was underneath.
+
+An editor's *internal document model* is not lock-in; only its *storage format* is. That
+distinction is why Trix is acceptable and Quill is not, and it should not be relitigated
+— see the changelog.
+
+---
+
+## Media
+
+Variants are generated **on upload, never on demand**, so a request for one is always a
+request for a file that exists and serving never touches PHP. This is not a preference:
+a managed nginx answers a request for a missing `.webp` from disk with its own 404 and
+PHP never runs.
+
+Because of that, **a half-generated item is the worst outcome available** — its missing
+variants 404 for ever. Generation is therefore resumable: priority order (`thumb`, `card`
+first), a record of which variants exist, a check of remaining execution time before each
+encode, and an item marked incomplete that offers to finish. Up to fifteen encodes per
+image will exceed `max_execution_time` on a slow shared host.
+
+Imagick is the primary encoder, GD the fallback, AVIF best-effort. EXIF orientation is
+applied *before* cropping and stripped from the output.
+
+---
+
+## Working practice that has already cost time twice
+
+**Fix the instrument before judging the subject.** The headless browser misreports both
+what it captures and what it types. Screenshot artifacts have twice looked like product
+defects, and in evaluating Trix, three of four "findings" — lost characters, shredded
+text, broken redo — were the harness driving the editor faster than it re-renders. Code
+written to work around a phantom survives for ever carrying a comment that explains the
+wrong reason, which is worse than the bug because it looks deliberate.
+
+So: slow the driver, drive through real input rather than an API, and **use a control** —
+the same input through a plain element with no library involved. That is what turned
+"Trix mangles Word paste" into "Trix is far better than the browser's own behaviour".
+
+**State when you exceed an instruction.** Extending a rule (demoting `h4–h6` as well as
+`h1`) is initiative and is welcome; doing it silently is drift. Say which it is.
+
+**Do not adjust a test to match new output.** If a test now contradicts intended
+behaviour, change the rule deliberately and say so — splitting the case if it covered two
+things. Especially for round-trip and idempotence tests, whose whole value is catching
+what the eye cannot see.
 
 ---
 
@@ -103,6 +194,21 @@ page without knowing its locale.
 5. **Every slice adds tests for what it builds.** The acceptance criteria in SPEC §8
    are the starting point for what to assert. Run `php tests/run.php`; see SPEC §10.
 6. Commit at the end of each slice, message naming the slice.
+
+---
+
+## The live site's database is not a scratchpad
+
+**Never run an ad-hoc INSERT, UPDATE or DELETE against `boxletcms`.** Not to clean up
+after a browser check, not to fix a row by hand, not "just this once".
+
+Cleanup happens one of three ways: through the application, through the test suite
+against `boxletcms_test`, or by reinstalling.
+
+Throwaway data on the live site is created with a marker chosen in that same command —
+a fixed prefix, an id captured on creation — and deleted **by exact id**. Never by a
+`LIKE` pattern over user-facing text: a title is something a person can be halfway
+through typing, and an unsaved form field is not a safeguard.
 
 ---
 

@@ -90,11 +90,18 @@ header and in the README, so updating it later is not archaeology.
 
 ```
 sortablejs 1.15.6    MIT    reordering blocks inside the editor canvas
+trix       2.1.19    MIT    the rich text editor (§5.3)
 ```
 
 SortableJS earns its place because reordering happens inside an iframe, where native
 HTML5 drag and drop does not handle touch usably, and a tablet is a real case for the
 page editor.
+
+Trix earns its place because a rich text editor lives on edge cases — pasting from a word
+processor, nested lists, undo across compound operations, mobile keyboards, IME input —
+and those are surfaced only by a large user base, not by good intentions. It is the
+editor in Basecamp and in Rails ActionText. It stores HTML, which is what we already
+store, so removing it later costs nothing in content.
 
 ### require-dev
 
@@ -336,6 +343,29 @@ the user enough freedom to build something ugly, which is the opposite of what t
 project is for — blocks that already know how to look good is the premise. It would also
 multiply every later feature (translation, revisions, caching) by the nesting depth.
 
+**Editing a richtext field.** The field is edited with Trix (§3), and stored as HTML
+conforming to the whitelist above. The editor is a convenience; the server-side whitelist
+is the security boundary and the storage contract, and it sanitises on save whatever
+arrives.
+
+- Trix's output is normalised on save, in the sanitiser where every other rule lives:
+  `div → p` (its block wrapper), `h1 → h2` (it offers a single heading level, and the
+  page's own title is the h1), and `h4`–`h6` → `h3`.
+- `div → p` is conditional: a div containing a block element is unwrapped instead, since
+  a paragraph may not contain a list and renaming regardless would generate invalid
+  markup of our own making.
+- **Attachments are disabled entirely** — no drop, no paste, no button. Trix's attachment
+  markup is a `figure` carrying JSON in a data attribute, which is its one proprietary
+  format and the only part of it that would create lock-in. The sanitiser strips that
+  markup as a backstop, so a later version cannot reintroduce it silently. Images come
+  from the media library (§5.5).
+- The toolbar offers only what the whitelist permits: no strike (`del`), no code (`pre`).
+  A button whose output is discarded on save is worse than no button.
+- The textarea is the real field and carries the input name; JavaScript moves the name to
+  a hidden input and places Trix above it. Without JavaScript the field is still
+  editable, and the plain-HTML toggle on every richtext field is simply what was
+  underneath all along.
+
 `template.php` receives `$content`, `$style`, `$layout` and outputs HTML that uses
 **only** CSS custom properties for colour, spacing, radius, shadow and typography. A
 block template containing a hard-coded colour or pixel value is a bug.
@@ -471,6 +501,12 @@ one control, and there is no stored key for placement.
 all, so a character names the block types whose sections carry one rather than setting a
 default for all of them. The first section on a page never draws one: it has nothing to
 transition from, and a shaped edge there is clipped by the top of the viewport.
+
+**No free colour per section.** Surface is a closed set — plain, tinted, contrast, image,
+gradient — and it stays closed. A per-block background colour field would let anyone set
+red text on orange, and the entire contrast-checked palette becomes decoration rather
+than a guarantee. If five surfaces prove too few, a sixth is added *drawn from the
+palette*, not an open colour input.
 
 **Layer 2.** `page_blocks.style_json` holds all five keys. Values outside the closed sets
 fall back to the defaults (plain, normal, normal, left, none) on save and on render. The
@@ -729,6 +765,56 @@ styled multilingual site in under fifteen minutes.
   Deferred past 4.5 deliberately: chrome is itself a design element, and it
   should be designed once we know whether presets can carry composition.
 
+- **Site settings and SEO**
+
+  Revisit: as its own slice, after site chrome.
+
+  The settings table has existed since Slice 2 and is written only by the
+  installer. There is no screen for site name, favicon, timezone, default
+  social image, analytics, robots.txt or sitemap.xml. Per-page meta title and
+  description are covered separately; everything else here is unbuilt.
+
+  Open questions when it is built:
+  - Does a favicon go through the media library, and which sizes are
+    generated? It is an image, so it probably belongs to Slice 5's pipeline
+    rather than a special case.
+  - Does the default social image belong to the site or to the character?
+  - Is sitemap.xml generated on demand or written on publish? It has to carry
+    hreflang once Slice 6 lands, so it depends on that.
+  - Analytics means embedding third-party script, which collides with the
+    admin CSP and with the GDPR posture behind self-hosted fonts. Decide
+    deliberately rather than adding a field for a snippet.
+
+- **Regenerating media variants**
+
+  Revisit: Slice 8.
+
+  Variants are generated on upload, so adding, removing or resizing a preset
+  leaves existing media with the wrong set. A regeneration pass is needed,
+  runnable from the admin, resumable, and safe to run on a live site.
+
+  The resumable machinery built for upload in Slice 5 — priority order, a
+  record of which variants exist, a check of remaining execution time — is the
+  same machinery this needs, so this should be a thin wrapper rather than a new
+  subsystem.
+
+- **Repeater fields and the block library**
+
+  Revisit: immediately after Slice 5, as its own slice.
+
+  Three block types is too few to build a real site, and the missing shape is
+  repeating content: a team grid of photo, name and role; a features row; a
+  logo strip. `repeater` is already in the closed field-type list in §5.3 and
+  has never been built.
+
+  This is the answer to "we need multi-column blocks", and it confirms the
+  §5.3 decision rather than reversing it: a team grid is ONE block holding a
+  repeating item, with layout variants for two, three and four across. It is
+  not a generic column container that arbitrary blocks are dropped into.
+
+  Scheduled after media because a team grid without photographs cannot be
+  judged.
+
 - **Block library categories**
 
   Revisit: when the block count passes roughly fifteen.
@@ -775,6 +861,39 @@ Rules:
 ## Changelog
 
 ```
+2026-09-16  Rich text is edited with Trix (MIT, vendored).
+
+            Selection turned on a correction: an editor's internal document
+            model is not lock-in, only its storage format is. Quill was
+            rejected because its ecosystem stores Delta, putting content in a
+            Quill-only format beyond the reach of our server-side whitelist.
+            Trix stores HTML and was rejected earlier on the wrong ground.
+            Wysi (MIT, 12 KB, plain HTML) satisfied replaceability but has a
+            very small user base, and a rich-text editor lives on edge cases —
+            paste from Word, nested lists, undo, IME, mobile — that only a
+            large user base surfaces. Replaceability protects content, not
+            experience.
+
+            Accepted costs: div-to-p normalisation on save, and attachments
+            disabled entirely because Trix's attachment attribute is its one
+            proprietary format. Images come from the media picker.
+
+            Wysi remains the fallback if Trix proves unworkable in this admin.
+
+            Ruled out and not to be revisited: Quill and Editor.js
+            (proprietary storage format), TinyMCE and CKEditor (licence model
+            and weight), TipTap (requires a build step), Summernote (requires
+            jQuery).
+
+            What Trix emits was established by driving it in a browser through
+            keyboard and toolbar, not by reading its documentation, and
+            measured against a control — the same word-processor HTML pasted
+            into a plain contenteditable. The control keeps MsoNormal classes,
+            inline styles, font tags and a whole table; Trix reduces it to
+            strong, em, a, real nested lists and div blocks. §5.3 records the
+            normalisation; §5.4 records that section surface stays a closed set
+            and gains no free colour field.
+
 2026-09-16  Slice 4.6: the visual page editor.
 
             TRANSPORT REVERSAL. Slice 3 chose a plain form so that editing

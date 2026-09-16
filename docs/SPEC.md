@@ -428,6 +428,17 @@ section as its author left it, or **save the design and reset section styles**, 
 also rewrites layers 2 and 3 of every block on the site. The second is destructive and
 is only ever reached by choosing it.
 
+**Alignment is not placement.** `align` sets how text sits inside its column, never
+where the column sits on the page. A section's column is always centred, whatever its
+width; `width: narrow` therefore gives a narrow column centred on the page with its text
+ranged left, which is how a reading column is set. The two ideas are deliberately not
+one control, and there is no stored key for placement.
+
+**A divider is an accent.** Drawn on every boundary it stops reading as a boundary at
+all, so a character names the block types whose sections carry one rather than setting a
+default for all of them. The first section on a page never draws one: it has nothing to
+transition from, and a shaped edge there is clipped by the top of the viewport.
+
 **Layer 2.** `page_blocks.style_json` holds all five keys. Values outside the closed sets
 fall back to the defaults (plain, normal, normal, left, none) on save and on render. The
 only CSS for these classes is `public/assets/sections.css`: each surface sets

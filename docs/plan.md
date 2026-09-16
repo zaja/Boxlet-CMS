@@ -13,7 +13,7 @@ first part, with a substantial amount of work uncommitted.
 
 | | |
 | --- | --- |
-| Last commit | `eae20c6` — Slice 5 (1/n): editor fixes |
+| Last commit | `517cfbe` — Slice 5 (2/n): rich text with Trix, media foundations |
 | Tests | 259 passing, both drivers (SQLite + MySQL), 23 test files |
 | PHPStan | clean at level 8 |
 | CI | green on 8.1, 8.2, 8.3, 8.4 as of `eae20c6` |
@@ -24,9 +24,11 @@ Slices 1 through 4.6 are committed and done. Slice 5 is in progress.
 
 ---
 
-## 2. Uncommitted work
+## 2. What landed in `517cfbe`
 
-This is the part most easily lost. Two independent threads are in the working tree.
+Two independent threads, committed together: one nearly finished, one barely started.
+The lists matter because **committed is not the same as verified** — §3 says exactly
+which parts of the rich text thread have been watched working and which have not.
 
 ### Thread A — rich text (Trix)
 
@@ -52,7 +54,7 @@ This is the part most easily lost. Two independent threads are in the working tr
 | `public/uploads/.htaccess`, `public/m/.gitkeep`, `.gitignore` | upload guard, variant directory, ignores |
 | `app/Modules/Install/Requirements.php`, `lang/en.php` | upload limit reporting |
 
-### Also uncommitted
+### Also in that commit
 
 - `public/assets/admin-ui.css` — the invisible-control fix (`.admin a.button` outranked
   `.button-ghost`, so ghost buttons were white on white).

@@ -69,9 +69,32 @@ an `e()` helper are sufficient because all block templates are first-party), and
 intervention/image (wrap GD/Imagick directly — we need perhaps six operations, not a
 whole imaging library).
 
-Admin front-end: vanilla JS plus one small drag-and-drop helper, hand-written CSS using
-the same token variables as the front-end. No Tailwind CDN in production, no Alpine, no
-HTMX. The admin is small enough that a framework is a liability.
+Admin front-end: vanilla JS, and hand-written CSS using the admin's own fixed token set
+(§5.4), never the site's. No Tailwind CDN in production, no Alpine, no HTMX. The admin
+is small enough that a framework is a liability.
+
+### Vendored front-end assets
+
+The closed list above governs Composer packages. Front-end code has its own rule, so
+that "it is not a Composer dependency" never becomes a way around it.
+
+A vendored asset is allowed when it earns its place, and asking comes first. It must be:
+
+- MIT or similarly permissive,
+- dependency-free and distributed as a single file,
+- committed to the repository under `public/assets/vendor/`,
+- loaded with a plain `<script>` or `<link>` tag.
+
+No npm, no build step, no CDN. The version and source URL are recorded in the file's own
+header and in the README, so updating it later is not archaeology.
+
+```
+sortablejs 1.15.6    MIT    reordering blocks inside the editor canvas
+```
+
+SortableJS earns its place because reordering happens inside an iframe, where native
+HTML5 drag and drop does not handle touch usably, and a tablet is a real case for the
+page editor.
 
 ### require-dev
 
@@ -302,6 +325,16 @@ Field types (closed set for v1): `text`, `textarea`, `richtext`, `media`,
 
 `translatable: true` marks a field the AI translator touches. Everything else is
 copied verbatim across locales.
+
+**Multi-column arrangements are layout variants of one block, never containers.** A
+"two columns of text" block is a single block with two text fields and a `two-column`
+layout; it is not a shell holding two other blocks. A page stays a flat, ordered list of
+blocks: no zones, no columns, no nesting, and `page_blocks` gains nothing to support one.
+
+A generic column grid is out of scope deliberately, not for want of time. It would hand
+the user enough freedom to build something ugly, which is the opposite of what this
+project is for — blocks that already know how to look good is the premise. It would also
+multiply every later feature (translation, revisions, caching) by the nesting depth.
 
 `template.php` receives `$content`, `$style`, `$layout` and outputs HTML that uses
 **only** CSS custom properties for colour, spacing, radius, shadow and typography. A
@@ -684,6 +717,16 @@ styled multilingual site in under fifteen minutes.
 
   Deferred past 4.5 deliberately: chrome is itself a design element, and it
   should be designed once we know whether presets can carry composition.
+
+- **Block library categories**
+
+  Revisit: when the block count passes roughly fifteen.
+
+  The editor's library lists every block as a picture of itself, with no
+  category filter. Three blocks exist and eleven more are planned; a category
+  dropdown over eleven items is furniture, and a filter that is faster to
+  ignore than to use is worse than none. Revisit when the list stops being
+  scannable at a glance, not before.
 
 ---
 

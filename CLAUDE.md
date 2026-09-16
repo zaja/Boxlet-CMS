@@ -25,6 +25,12 @@ new runtime dependency, stop and ask.
 `--no-dev`) and never exist on a user's server. They are allowed when they earn their
 place, but ask first. Currently in use: PHPStan (level 8, `vendor/bin/phpstan analyse`).
 
+**Vendored front-end assets** are allowed when they earn their place, but ask first.
+They must be MIT or similarly permissive, dependency-free, distributed as a single file,
+committed to the repository, and loaded with a plain script or link tag. No npm, no
+build step, no CDN. Record the version and source in the file header and in the README.
+Currently vendored: SortableJS.
+
 **Frozen contracts.** The URL scheme, database schema, block definition format and
 design token schema are in `docs/SPEC.md` §5. Changing any of them after v0.1 breaks
 every install in the wild. Stop and ask before touching them.

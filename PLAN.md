@@ -130,8 +130,9 @@ step 2 of the order of work.
 - A plain editor at `/admin/pages/{id}/form` that works without JavaScript.
 - Nothing is saved until Save, and leaving with unsaved changes warns.
 - Three block types: hero, text, image and text.
-- Missing: page SEO fields (D-004), reordering the page list (step 2), more blocks and
-  columns (step 6).
+- Pages are listed as a tree and reordered among siblings, by dragging or with Up/Down
+  buttons that work without JavaScript (D-011).
+- Missing: page SEO fields (D-004), more blocks and columns (step 6).
 
 **Writing (rich text with TipTap, D-017)**
 - Bold, italic, links, headings H2/H3/H4, quotations, bullet and numbered lists with
@@ -211,14 +212,20 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 1. **Documentation consolidation** (D-010). Done, verified in `f2a3520`.
 2. **Quality pass on what exists:** ← *current*
    - Done: 2a content corruption bug (`a6487e8`); 2b editor appearance, confirmed by the
-     owner; 2c-1 rich text survives open and save (`0029c27`); the editor replaced by TipTap
-     (D-017, `e770358`, CI green).
-   - Next: split `app/Support/RichText.php` and its tests, which are over the 300-line
-     rule; 2c-3 the editor in newly inserted blocks, and paste as plain text; 2d contrast
-     test (D-012); 2e page order (D-011); 2f README upload size; 2g browser checklist for
-     slices 1–4.6.
+     owner; 2c-1 rich text survives open and save (`0029c27`); the editor replaced by
+     TipTap (D-017, `e770358`); files split under the 300-line rule (`6f967e1`); 2c-3
+     editor edge cases (`7629925`); 2d contrast test, D-012 (`1235ace`); 2e page order,
+     D-011 (`11f045d`), which also fixed the plain editor dropping a page's parent on save;
+     2f README upload size (`26c842c`).
+   - Owner's hands-on pass, 2026-09-16: writing, blocks, dragging, page ordering,
+     selection outlines and the insertion control all confirmed.
+   - Remaining: the Title and Address inputs differ in height in the plain editor; 2g, the
+     executor's browser checklist for slices 1–4.6.
    - Open question: `h4` is set at body size in every character, because the type scale
      has no step between body and the next size up.
+   - Noted for Slice 5: nothing handles uploads yet, and nginx refuses request bodies over
+     1 MB by default (`client_max_body_size`) before PHP runs, so the uploader and O-2
+     must account for it.
 3. **Foundations:** O-1 (upgrading an existing install) and O-2 (serving that works on
    nginx and Apache).
 4. **Slice 5, media**, and per-page SEO (D-004).

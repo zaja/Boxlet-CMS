@@ -151,9 +151,10 @@ phpstan/phpstan           static analysis, level 8, phpVersion 8.1, no baseline
 /config/
 /storage/                     never web-accessible: logs, cache, sessions, backups
   /uploads/                   original media, never modified, never served (§5.5)
-/lang/                        admin UI strings: several files per locale, split by
-                              concern (pages, install, media, update, design). t()
-                              merges every file in the directory.
+/lang/{locale}/               admin UI strings, one directory per locale, split by
+                              concern (shell, pages, install, media, update, design).
+                              t() merges every file in the admin locale's directory.
+                              Nothing sits directly under /lang/.
 /migrations/                  NNNN_name.sql, applied in filename order
 /vendor/
 .env.example

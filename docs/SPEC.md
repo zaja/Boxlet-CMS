@@ -635,6 +635,42 @@ without a rewrite rule. The page cache still uses the file-exists rewrite.
 AVIF is best-effort. If the server cannot produce it, ship WebP and move on. Never
 block on it.
 
+**Which presets a block asks for.** A caller names the presets that can sensibly fill
+its area, largest last. Every one that exists becomes a `srcset` candidate; the largest
+available is what `<img>` points at. More than one is named wherever the area's width
+depends on the viewport, so the browser can choose.
+
+```
+hero block picture          hero, full        (max-width: 40rem) 100vw, 50vw
+image_text picture          card, wide        (max-width: 40rem) 100vw, 50vw
+section background (D-024)  wide, hero, full  100vw
+```
+
+`thumb` is the admin's own size — the library grid and the picker — and is never
+offered to the front end: it is smaller than any area a page gives a picture.
+
+The rules that hold for all of them:
+
+- **`<source>` order is not decided at the call site.** `MediaEncoder::FORMATS` is
+  best-first and the original format is always last, and that stored order is already
+  what `<picture>` needs: every format but the last becomes a `<source>`, and the last
+  is the `<img>` every browser understands.
+- **`width` and `height` are always set**, from the variant's true recorded output
+  size, so the page does not reflow as pictures load.
+- **The focal point travels as a class**, never a style attribute (§5.4), rounded to
+  10% per axis — 22 class names rather than the 121 a grid of pairs would need.
+- **Alt text is the page's own locale, or empty.** Empty is itself a statement: pass
+  over this picture. There is no fallback chain between locales yet (O-12).
+- **Everything is `loading="lazy"` except the first section** of the page.
+- **An incomplete picture renders whichever presets exist**, and one with none renders
+  the block's placeholder. **Never a broken URL** — that is what makes it safe to
+  generate variants resumably (§5.1) and to delete a picture a page still names.
+
+A section background is decoration: its alt is emptied and the layer hidden from
+assistive technology even when the owner wrote alt text for that picture, because the
+words laid over it carry the meaning. The same picture used as a block's own content
+keeps its alt, because there it *is* the content.
+
 ### 5.6 Replacement tags
 
 Inline only, for use inside rich text. Anything structural is a block.

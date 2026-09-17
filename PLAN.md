@@ -673,6 +673,54 @@ the media library, or null. It is used only when `surface` is `image`.
 The constrained-freedom rule still holds, because the value is a reference to a picture
 already in the library, not an open input.
 
+### D-025: Suggested alt text on upload
+
+**Status:** approved 2026-09-17
+
+When a picture is uploaded, its alt text in the primary language is filled in
+automatically, unless it already has one:
+
+1. From the picture's own metadata, if it carries a title or description (IPTC headline or
+   object name, EXIF image description or title). Generic camera strings such as
+   "OLYMPUS DIGITAL CAMERA" are ignored.
+2. Otherwise from the file name, tidied: extension removed; underscores, hyphens and dots
+   become spaces; first letter capitalised. `tim-u-uredu_2024.jpg` becomes
+   "Tim u uredu 2024".
+3. Names a device generated (`IMG_1234`, `DSC_0012`, `PXL_…`, `Screenshot…`, bare
+   numbers, hash-like strings) are skipped, and the alt stays empty.
+
+A filled-in alt is marked **suggested** in the library until the owner confirms or edits
+it, so a guessed description is never mistaken for a written one. Replacing a picture
+never overwrites alt text that was confirmed.
+
+**Trade-offs.** A migration (the "suggested" mark) and a small amount of guessing. This
+refines the earlier rule "no alt rather than a file name": a meaningful file name is used,
+a device-generated one still is not, because a screen reader reading "IMG 4032" aloud is
+worse than silence.
+
+### D-026: Cropping a picture in the library
+
+**Status:** approved 2026-09-17
+
+The library gets a crop tool built on Cropper.js 1.6 (MIT, one JS and one CSS file,
+vendored under the SPEC §3 rule, requested by the owner).
+
+- Aspect ratios tied to the presets: 16:9 (hero), 3:2 (card), 1.91:1 (wide, also the
+  social sharing ratio), 1:1 (thumb), and Free.
+- **Save as new picture** creates a new library item from the crop. The original stays as it
+  was; alt text and caption are copied.
+- **Replace this picture** keeps the same item, so every page using it shows the crop, and
+  regenerates all variants. It cannot be undone, and the dialog says so and points to
+  "Save as new" for keeping the original.
+- The browser only sends the crop rectangle. The server cuts the full-quality original,
+  with EXIF orientation applied first, and validates the rectangle.
+- The focal point carries over when it lies inside the crop; otherwise it returns to the
+  centre.
+
+**Trade-offs.** SPEC §5.5's "original stored untouched" gains one exception: an explicit
+Replace. A replaced original is gone; keeping it was offered and not chosen, to avoid a
+second copy of every cropped picture and an extra "restore" control.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -693,6 +741,16 @@ already in the library, not an open input.
 ## 5. Open items
 
 *O-1 and O-2 resolved by D-019 and D-020.*
+
+**O-17. Downloads: documents and archives in Media.** The owner wants to offer visitors
+files to download (PDF, ZIP, TAR and similar) from the same library, which is why it is
+called "Media" rather than "Pictures". Not built now. To decide when it is scheduled:
+which types are allowed (a whitelist such as pdf, zip, tar, gz, docx, xlsx, pptx, odt, ods,
+csv, txt; never html, svg, or anything executable); where the files live and how they are
+served (public under a safe generated name with `nosniff` and a download disposition, or
+kept outside the web root and served through PHP, which also allows counting downloads
+later); size limits; and how a download is placed on a page (a link from rich text, a
+link field, or a small "file" block). *After Slice 5, before release.*
 
 **O-4. 2FA.** SPEC §6 describes it: optional, ten single-use recovery codes, and a reset by
 placing `storage/disable-2fa` on the server over FTP. To confirm: it stays optional rather
@@ -741,7 +799,11 @@ the closed field-type list and has never been built. It is the basis of the Colu
 and does Boxlet ship with translation switched off until the owner adds their own key
 (almost certainly yes, since the alternative is shipping someone else's bill)? What does a
 visitor get for a page with no translation yet? Recommended: configurable per site,
-defaulting to hidden from navigation and a 404 on a direct hit. *Step 7.*
+defaulting to hidden from navigation and a 404 on a direct hit. Also for Slice 6: the
+fallback chain between locales, including what populates `locales.fallback` (nothing does
+today) and how it applies to alt text. Until then a picture with no alt text in the page's
+language renders with an empty alt, which for a picture that carries meaning is worse than
+the source language's alt. *Step 7.*
 
 **O-13. Regenerating media variants.** Adding, removing or resizing a preset leaves
 existing media with the wrong set. A regeneration pass must be runnable from the admin,

@@ -731,6 +731,11 @@ second copy of every cropped picture and an extra "restore" control.
 - **Check what the owner will do, not only what is stored.** The heading menu passed
   every storage check and failed the owner's first try: select text, change the level.
   Browser acceptance for anything interactive includes the owner's real actions.
+- **Green means CI, not the local suite.** From 4a (`da428df`) to `b4818c2`, twelve commits
+  were deployed to the demo while GitHub CI failed on every one, because this server has
+  image extensions CI lacked. Nobody was reading CI in that stretch, the architect
+  included. A deploy now requires that commit's CI conclusion to be "success", checked
+  and reported by the executor and checked again by the architect.
 - **Checks run on a copy.** `env()` reads `$_ENV` and `$_SERVER`, and this PHP's
   `variables_order` leaves `$_ENV` empty. Browser checks therefore use a copied site tree
   with its own `.env` (`~/boxlet-browser/site`), never environment overrides, so nothing can

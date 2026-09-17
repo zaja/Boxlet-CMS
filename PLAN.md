@@ -229,9 +229,10 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    - Noted for Slice 5: nothing handles uploads yet, and nginx refuses request bodies over
      1 MB by default (`client_max_body_size`) before PHP runs, so the uploader and O-2
      must account for it.
-3. **Foundations:** D-019 (updating an existing install), D-021 (maintenance mode) and D-020
-   (serving without PHP on nginx and Apache). ← *current*
-4. **Slice 5, media**, and per-page SEO (D-004).
+3. **Foundations:** done 2026-09-17. D-019 updating an existing install and D-021
+   maintenance mode (`edcb6cb`); D-020 serving without PHP on nginx and Apache (`3a65aef`).
+   The owner ran the first real update on the live site (media tables applied).
+4. **Slice 5, media**, and per-page SEO (D-004). ← *next*
 5. **Site settings, header, footer and a menu builder.** The Design screen gains boxed
    layout, page background and header width. See O-7, O-8 and O-9.
 6. **Repeater field, the Columns block (D-008), more blocks.** See O-11.
@@ -240,7 +241,7 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    Resend, admin notification, autoreply, honeypot, test-mail button. See O-6.
 9. **Slice 8, operations:** page cache, backup, update by ZIP upload, revisions,
    sitemap, regenerating media variants (O-13), and 2FA (O-4).
-10. **Slice 9, release:** six more blocks (gallery, features, CTA, accordion,
+10. **Slice 9, release:** replace the development photographs (D-022); six more blocks (gallery, features, CTA, accordion,
     testimonials, logo strip), three templates, demo site, release ZIP, and the original
     admin look (D-007).
 
@@ -598,6 +599,50 @@ mode the owner switches on and off in the admin.
 
 **Trade-offs.** A small addition to step 3. It reuses the page and gate being built, so
 nothing is duplicated.
+
+### D-022: Development photographs from Unsplash
+
+**Status:** approved 2026-09-17
+
+Real photographs are needed to judge the design, and for development they come from
+Unsplash.
+
+- They are fetched by a script outside the repository and uploaded into the demo through
+  the media library, as a user would. That exercises the uploader too.
+- They are never committed and never reach the release ZIP. Unsplash's licence allows free
+  use, but not redistributing its photographs as a collection inside a product.
+- The source and author of each one are recorded next to the script.
+- The demo site installs and renders without them, with placeholders.
+- **Before release (Slice 9)** they are replaced by public-domain (CC0) photographs or the
+  owner's own.
+
+**Trade-offs.** A fresh clone shows no photographs until the script is run. In return
+there is no licensing question in the repository.
+
+### D-023: Develop in a separate checkout, deploy to the demo on purpose
+
+**Status:** decided by the architect on the owner's delegation, 2026-09-17
+
+Until now the executor worked directly in the live checkout, so half-written code was live
+the moment it was saved, and every new migration took the demo offline unannounced.
+
+- The executor works in its own clone, `~/boxlet-dev`, with its own `vendor/` and no
+  connection to `boxletcms`. Commits and pushes happen there. Browser checks keep using
+  the copies in `~/boxlet-browser` (D-013).
+- The live checkout (`htdocs/boxlet.svejedobro.hr`) is never edited. It changes only by
+  `git pull --ff-only` from `origin/main`, after a part is committed, pushed and green.
+- A deploy without migrations happens as soon as a part is done. A deploy that carries a
+  migration is announced first through the architect, so the owner is ready to press the
+  update button (D-019) and the demo is dark for seconds rather than for however long it
+  takes someone to notice.
+- The architect edits `PLAN.md` in `~/boxlet-dev`; it reaches the live checkout with the
+  next deploy.
+- The switch happens at a clean boundary: after 4a is committed. The executor keeps its
+  session; the owner runs `/add-dir ~/boxlet-dev` in it so file edits apply there.
+
+**Trade-offs.** One more step between finished work and the demo, and a second copy of the
+project on the server (a few MB plus `vendor/`). In return the demo only ever runs code
+that was finished, tested and pushed, which is how a client site will have to be treated.
 
 ### Lessons from the browser checks (2026-09-16)
 

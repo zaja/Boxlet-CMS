@@ -240,7 +240,10 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
      (`34b01d8`, `30214ff`).
    - Since `30214ff` the executor works in `~/boxlet-dev` and deploys to the demo by pull
      (D-023). Live is at `30214ff`.
-   - Next: 4b library, 4c picker, 4d front end, 4e page SEO, 4f development photos.
+   - Also done: 4b library (`c6195e1`), 4c picker (`9695e1d` and follow-ups), 4d pictures on
+     the front end (`79113c5`), library renamed Media, CI repaired after twelve red runs
+     (`14253eb`), D-025 suggested alt text (`d2bd06e`, migration 0014 applied by the owner).
+   - Next: D-026 crop, 4e page SEO, 4f development photos.
 5. **Site settings, header, footer and a menu builder.** The Design screen gains boxed
    layout, page background and header width. See O-7, O-8 and O-9.
 6. **Repeater field, the Columns block (D-008), more blocks.** See O-11.

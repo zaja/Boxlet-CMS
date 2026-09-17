@@ -96,6 +96,7 @@ here rather than keeping a second copy of the list.
 ```
 sortablejs      1.15.6    MIT    reordering blocks inside the editor canvas
 tiptap.bundle   3.31.3    MIT    the rich text editor (§5.3)
+cropper         1.6.2     MIT    cropping a picture in the library (D-026), js and css
 ```
 
 SortableJS earns its place because reordering happens inside an iframe, where native

@@ -616,24 +616,25 @@ mode the owner switches on and off in the admin.
 **Trade-offs.** A small addition to step 3. It reuses the page and gate being built, so
 nothing is duplicated.
 
-### D-022: Development photographs from Unsplash
+### D-022: Photographs for the demo
 
-**Status:** approved 2026-09-17
+**Status:** approved 2026-09-17, revised the same day
 
-Real photographs are needed to judge the design, and for development they come from
-Unsplash.
+Real photographs are needed to judge the design. They are **public domain (CC0)**, from
+sources such as Wikimedia Commons, and they may ship with the release.
 
+- Unsplash was chosen first, for development only. It turned out to refuse downloads from
+  this server (401, an anti-bot filter), and its licence would have required replacing the
+  pictures before release anyway. Going straight to CC0 skips a step rather than adding one.
 - They are fetched by a script outside the repository and uploaded into the demo through
-  the media library, as a user would. That exercises the uploader too.
-- They are never committed and never reach the release ZIP. Unsplash's licence allows free
-  use, but not redistributing its photographs as a collection inside a product.
-- The source and author of each one are recorded next to the script.
+  the media library, as a person would, which exercises the uploader too.
+- The source URL, author and licence of each one are recorded next to the script.
 - The demo site installs and renders without them, with placeholders.
-- **Before release (Slice 9)** they are replaced by public-domain (CC0) photographs or the
-  owner's own.
+- The owner judges the selection from screenshots of the demo.
 
-**Trade-offs.** A fresh clone shows no photographs until the script is run. In return
-there is no licensing question in the repository.
+**Trade-offs.** The choice on CC0 sources is narrower than on Unsplash, so picking good
+photographs takes more care. In return there is no licence question anywhere, no API key,
+and nothing to swap out before release.
 
 ### D-023: Develop in a separate checkout, deploy to the demo on purpose
 

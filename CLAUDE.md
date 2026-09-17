@@ -150,6 +150,13 @@ English in a template.
     task is done, when you are blocked on the owner or the architect, or when you are
     reporting to the architect by message. A background process such as a dev server is
     not work in progress: stop it when the check that needed it is done.
+12. **Browser checks are a reusable suite** in `~/boxlet-browser`, run with one command,
+    one scenario file per area; a new feature adds its scenario instead of writing a
+    one-off probe.
+13. **Verify in proportion to the change:** the browser for what a person clicks and
+    sees; tests for logic, storage and documentation.
+14. **Work through a whole task without pausing between its parts**; the architect
+    reviews each commit as it lands.
 
 ---
 

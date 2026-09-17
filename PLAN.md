@@ -91,9 +91,8 @@ still recognise it.
 | Live site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site, Brutalist character (D-002) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
 
-Slices 1–4.6 are committed. **Under D-006 none of them counts as done** until it has been
-verified in a browser against an architect's checklist. That checklist is written in
-step 2 of the order of work.
+Slices 1–4.5 are verified in a browser against the architect's checklist (2g,
+2026-09-17). Slice 4.6 is verified except live text on the canvas while typing (step 2h).
 
 ### What exists today
 
@@ -210,17 +209,22 @@ Not built:
 Approved as D-009. Each step gets its own architect's checklist before it starts.
 
 1. **Documentation consolidation** (D-010). Done, verified in `f2a3520`.
-2. **Quality pass on what exists:** ← *current*
+2. **Quality pass on what exists:** ← *current*, nearly closed
    - Done: 2a content corruption bug (`a6487e8`); 2b editor appearance, confirmed by the
-     owner; 2c-1 rich text survives open and save (`0029c27`); the editor replaced by
-     TipTap (D-017, `e770358`); files split under the 300-line rule (`6f967e1`); 2c-3
-     editor edge cases (`7629925`); 2d contrast test, D-012 (`1235ace`); 2e page order,
-     D-011 (`11f045d`), which also fixed the plain editor dropping a page's parent on save;
-     2f README upload size (`26c842c`).
+     owner; 2c rich text survives open and save, and its edge cases (`0029c27`, `7629925`);
+     the editor replaced by TipTap (D-017, `e770358`); files split under the 300-line rule
+     (`6f967e1`); 2d contrast test, D-012 (`1235ace`); 2e page order, D-011 (`11f045d`),
+     which also fixed the plain editor dropping a page's parent on save; 2f README upload
+     size (`26c842c`); Title and Address inputs aligned (`2a1ca38`).
    - Owner's hands-on pass, 2026-09-16: writing, blocks, dragging, page ordering,
      selection outlines and the insertion control all confirmed.
-   - Remaining: the Title and Address inputs differ in height in the plain editor; 2g, the
-     executor's browser checklist for slices 1–4.6.
+   - 2g, browser checklist for slices 1–4.6, run 2026-09-17 with the reusable suite
+     (`~/boxlet-browser/suite`, D-018): 46 pass, 0 fail, 2 not checkable. Slices 2, 3, 4 and
+     4.5 are verified. Adding a second language from the admin does not exist yet (Slice 6);
+     its routing was checked with seeded data.
+   - Remaining, owner's decision 2026-09-17: **2h, text on the canvas updates while you
+     type**, which is Slice 4.6's own acceptance criterion and currently happens only after
+     saving. Slice 4.6 counts as done when it lands.
    - Open question: `h4` is set at body size in every character, because the type scale
      has no step between body and the next size up.
    - Noted for Slice 5: nothing handles uploads yet, and nginx refuses request bodies over
@@ -513,6 +517,32 @@ return we get an editor we build on rather than around.
 
 **If adopted:** Trix and its CSS are removed; the Trix-specific parts of D-014, D-015 and
 D-016 are superseded (their requirements stand); SPEC §3 and §5.3 are updated.
+
+### D-018: Working speed
+
+**Status:** approved 2026-09-17
+
+The work was stalling on process, not on the product: every command and every message
+waited for the owner, the executor ended turns without doing the steps it announced, and
+each browser check was written from scratch. Four changes:
+
+- **Standing permissions for the executor.** It may run the tests, PHPStan, git (including
+  commit and push to main), the browser scripts in `~/boxlet-browser`, and the local dev
+  server on the site copy, and it may edit files inside the project, without asking.
+  Changes to `CLAUDE.md`, permissions and configuration still go to the owner. The owner
+  grants this directly in the executor's window; a peer cannot.
+- **The architect restarts a stalled executor.** When the executor goes idle without a
+  report, the architect sends it a message to continue, so the owner does not have to.
+- **A reusable browser suite.** Browser checks live in `~/boxlet-browser` as one scenario
+  file per area, run with one command. A new feature adds its scenario instead of a one-off
+  probe (D-013 conditions stand).
+- **Verification in proportion to the change.** The browser is for what a person clicks
+  and sees. Tests cover logic, storage and documentation. A task is worked through without
+  pausing between its parts, and the architect reviews each commit as it lands.
+
+**Trade-offs.** Less of the work passes before the owner's eyes as it happens. D-006 still
+holds: nothing counts as done without the architect's review, and anything visual still
+goes to the owner.
 
 ### Lessons from the browser checks (2026-09-16)
 

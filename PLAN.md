@@ -91,8 +91,8 @@ still recognise it.
 | Live site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site, Brutalist character (D-002) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
 
-Slices 1–4.5 are verified in a browser against the architect's checklist (2g,
-2026-09-17). Slice 4.6 is verified except live text on the canvas while typing (step 2h).
+Slices 1–4.6 are verified in a browser against the architect's checklist (2g and 2h,
+2026-09-17), and the owner has tried the editor by hand.
 
 ### What exists today
 
@@ -209,7 +209,7 @@ Not built:
 Approved as D-009. Each step gets its own architect's checklist before it starts.
 
 1. **Documentation consolidation** (D-010). Done, verified in `f2a3520`.
-2. **Quality pass on what exists:** ← *current*, nearly closed
+2. **Quality pass on what exists:** done, closed 2026-09-17
    - Done: 2a content corruption bug (`a6487e8`); 2b editor appearance, confirmed by the
      owner; 2c rich text survives open and save, and its edge cases (`0029c27`, `7629925`);
      the editor replaced by TipTap (D-017, `e770358`); files split under the 300-line rule
@@ -222,16 +222,15 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
      (`~/boxlet-browser/suite`, D-018): 46 pass, 0 fail, 2 not checkable. Slices 2, 3, 4 and
      4.5 are verified. Adding a second language from the admin does not exist yet (Slice 6);
      its routing was checked with seeded data.
-   - Remaining, owner's decision 2026-09-17: **2h, text on the canvas updates while you
-     type**, which is Slice 4.6's own acceptance criterion and currently happens only after
-     saving. Slice 4.6 counts as done when it lands.
+   - 2h, text on the canvas updates while you type (`159bec8`), confirmed by the owner
+     2026-09-17. It also fixed rich text edits being missed by the unsaved-changes warning.
    - Open question: `h4` is set at body size in every character, because the type scale
      has no step between body and the next size up.
    - Noted for Slice 5: nothing handles uploads yet, and nginx refuses request bodies over
      1 MB by default (`client_max_body_size`) before PHP runs, so the uploader and O-2
      must account for it.
-3. **Foundations:** O-1 (upgrading an existing install) and O-2 (serving that works on
-   nginx and Apache).
+3. **Foundations:** D-019 (updating an existing install), D-021 (maintenance mode) and D-020
+   (serving without PHP on nginx and Apache). ← *current*
 4. **Slice 5, media**, and per-page SEO (D-004).
 5. **Site settings, header, footer and a menu builder.** The Design screen gains boxed
    layout, page background and header width. See O-7, O-8 and O-9.
@@ -544,6 +543,62 @@ each browser check was written from scratch. Four changes:
 holds: nothing counts as done without the architect's review, and anything visual still
 goes to the owner.
 
+### D-019: Updating an existing install from the admin
+
+**Status:** approved 2026-09-17 (resolves O-1)
+
+- When the code carries migrations the database has not applied, the admin shows a
+  "Database update needed" screen with one button. Migrations run only when the owner
+  presses it: never on their own, never on a visitor's request.
+- While an update is pending, the public site shows a short "being updated" page with
+  status 503 instead of failing on a table that does not exist yet.
+- Before running, a SQLite database is copied into `storage/backups/`. On MySQL, where a
+  real backup arrives with Slice 8, the screen tells the owner to take one through the
+  host first.
+- Only one run at a time (a lock file). A failure stops the run and names the file.
+- A migration that has been committed is never edited again; a change is a new migration.
+
+**Trade-offs.** Between uploading a new version and pressing the button, visitors see the
+"being updated" page. That beats a broken site, and the window is in the owner's hands.
+
+### D-020: Serving without PHP, identically on nginx and Apache
+
+**Status:** approved 2026-09-17 (resolves O-2)
+
+- Anything served without PHP is a real file at its own URL under `public/`: the compiled
+  design stylesheet and the media variants in `/m/`. Both servers already serve existing
+  files first, so no server-specific rule is needed.
+- The page cache (Slice 8) runs inside PHP, checked in the first lines of the front
+  controller before anything else boots, so it works on every host without
+  configuration. A server rule that skips PHP entirely is documented as an optional extra.
+- Original uploads are stored outside the web root, in `storage/`. Only the generated
+  variants are public. `.htaccess` cannot stop a script in a public upload folder from
+  running on nginx, and a file that is never public cannot run anywhere. The `full`
+  variant, up to 2400 px wide, is the largest public version.
+
+**Trade-offs.** SPEC §4 and §5.5 change where originals live (allowed before v0.1). An
+original can no longer be linked for download as the exact uploaded file.
+
+### D-021: Maintenance mode
+
+**Status:** approved 2026-09-17
+
+One mechanism with two triggers. The "being updated" page from D-019 is also a maintenance
+mode the owner switches on and off in the admin.
+
+- While it is on, visitors get the maintenance page with status 503 and `Retry-After`, so
+  search engines come back later instead of dropping pages. A logged-in admin still sees
+  the real site, with a visible bar saying maintenance is on.
+- It switches on automatically while a database update is pending (D-019), and later
+  during an update by ZIP upload (Slice 8), switching off when that finishes.
+- The state is a file in `storage/`, not a database row, so it works when the database is
+  unavailable or mid-update.
+- A custom message for visitors comes with site settings (step 5). Until then it is a
+  short standard text.
+
+**Trade-offs.** A small addition to step 3. It reuses the page and gate being built, so
+nothing is duplicated.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -563,14 +618,7 @@ goes to the owner.
 
 ## 5. Open items
 
-**O-1. Upgrading an existing install.** The Migrator runs only from the installer, so a
-new migration never reaches an existing install. The live install has not applied
-`0011_media.sql` or `0012_media_meta.sql`. Needed before any new table arrives, and
-required by the public release. *Step 3.*
-
-**O-2. Serving on nginx and Apache.** The page cache (Slice 8) and CLAUDE.md's security
-reminders assume `.htaccess` file checks, which nginx ignores. Needs a design that works on
-both. *Step 3.*
+*O-1 and O-2 resolved by D-019 and D-020.*
 
 **O-4. 2FA.** SPEC §6 describes it: optional, ten single-use recovery codes, and a reset by
 placing `storage/disable-2fa` on the server over FTP. To confirm: it stays optional rather

@@ -210,6 +210,24 @@ Rules that keep SQL portable:
 - MySQL commits DDL immediately, so only SQLite wraps each file in a transaction. Keep
   one table per migration file so a failure on MySQL leaves at most one table behind.
 
+**The site is closed by one gate, with two triggers** (PLAN.md D-019, D-021). Pending
+migrations close it automatically; the owner closes it deliberately from the dashboard.
+Both answer **503 with `Retry-After`**, so a crawler returns later instead of dropping the
+page. The difference is who still gets through: while a migration is pending nobody sees
+the site, admin included, because it may not render until the migration has run, and the
+admin is sent to the update screen instead. In maintenance mode a logged-in admin sees the
+real site with a bar saying it is hidden. The maintenance state is a file in `storage/`,
+never a settings row: it has to be readable when the database is unavailable, mid-update,
+or about to be replaced. The file records why it is on, so an automatic update can clear
+its own flag without clearing one the owner set.
+
+**A committed migration is never edited; a change is a new migration.** Once a file has
+been released, some installs have already applied it and recorded it by name, and those
+installs will never run it again — so an edit reaches only the databases that had not yet
+seen it, and the schema silently diverges between two sites running the same version.
+This is what makes updating an existing install safe (PLAN.md D-019): the record of
+applied filenames is trusted absolutely, and a filename means exactly one thing for ever.
+
 ### 5.1 URL scheme
 
 The **primary locale** is chosen at install time and is immutable. It renders with no

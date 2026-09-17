@@ -182,8 +182,9 @@ through typing, and an unsaved form field is not a safeguard.
   accept free-form dimensions from the URL.
 - Cached images and pages are served without touching PHP on a hit. How that is done on
   both nginx and Apache is open — PLAN.md O-2.
-- Uploads: finfo MIME sniff, extension whitelist, `.htaccess` in `/uploads` disabling
-  script execution.
+- Uploads: finfo MIME sniff and extension whitelist. Originals are stored outside the web
+  root in `storage/uploads/`; only generated variants are public. A file that is never
+  public cannot be executed on any server — an `.htaccess` cannot stop a script on nginx.
 - Form submissions store a hashed IP, never the raw address.
 - 2FA is optional, with ten recovery codes and a documented FTP reset. Never force it.
 - `install.php` writes `storage/install.lock`, refuses to re-run, tries to delete
@@ -194,7 +195,7 @@ through typing, and an unsaved form field is not a safeguard.
 ## Layout
 
 ```
-public/      document root: index.php, install.php, assets, uploads, m, cache
+public/      document root: index.php, install.php, assets, m, cache
 app/         Core, Modules (Pages, Install, Auth, Admin, ...), Blocks, Support
 config/      storage/      lang/      migrations/      vendor/
 PLAN.md      what it is, where it stands, what is decided and open

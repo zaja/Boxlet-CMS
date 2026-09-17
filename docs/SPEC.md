@@ -137,7 +137,6 @@ phpstan/phpstan           static analysis, level 8, phpVersion 8.1, no baseline
   install.php                 installer, self-disables
   .htaccess
   /assets/                    admin + front-end CSS/JS, shipped built
-  /uploads/                   original media, never modified
   /m/                         generated image variants (§5.5)
   /cache/                     tokens.css, page cache
 /app/
@@ -150,7 +149,8 @@ phpstan/phpstan           static analysis, level 8, phpVersion 8.1, no baseline
   /Blocks/                    one directory per block: block.php + template.php
   /Support/
 /config/
-/storage/                     logs, cache, sessions, backups (not web-accessible)
+/storage/                     never web-accessible: logs, cache, sessions, backups
+  /uploads/                   original media, never modified, never served (§5.5)
 /lang/                        admin UI strings, one PHP file per locale
 /migrations/                  NNNN_name.sql, applied in filename order
 /vendor/
@@ -600,9 +600,15 @@ full    max 2400 wide, no crop
 ```
 
 Pipeline: upload original untouched → validate with finfo against a MIME whitelist →
-sha1 for dedup → generate every variant during the upload request → write to
-`public/m/`, the same path as the `/m/` URL scheme → serve via `<picture>` with
-AVIF → WebP → original.
+sha1 for dedup → store the original in `storage/uploads/`, outside the web root →
+generate every variant during the upload request → write to `public/m/`, the same
+path as the `/m/` URL scheme → serve via `<picture>` with AVIF → WebP.
+
+**Originals are never public** (D-020). Only generated variants are, and `full` — up
+to 2400 px wide — is the largest public version. An `.htaccess` disabling script
+execution cannot protect a public upload directory on nginx, which ignores it
+entirely; a file that is never served cannot be executed on any server. The cost is
+that an original can no longer be linked as the exact uploaded file.
 
 Variants are generated on upload, never on demand (§5.1). Every media URL therefore
 points at a file that already exists, so the web server serves it without PHP and
@@ -731,8 +737,15 @@ honeypot, test-mail button.
 submission in the admin.
 
 ### Slice 8 — Operations
-Page cache with .htaccess bypass, backup to ZIP, in-admin update via ZIP upload with
+Page cache checked inside PHP, backup to ZIP, in-admin update via ZIP upload with
 automatic backup and migration, revisions with rollback, sitemap.xml with hreflang.
+
+The cache is read in the first lines of `public/index.php`, before the autoloader,
+the container or the database (D-020): a hit is answered there and nothing else
+boots. That works on every host with no configuration, which a server-level rewrite
+does not — the rules differ between Apache and nginx, and a managed host may allow
+neither. A server rule that skips PHP entirely is documented as an optional extra for
+those who can add one, never as what makes the cache work.
 **Accept:** upload a version bump ZIP through the admin, confirm migrations run and
 the site still works.
 

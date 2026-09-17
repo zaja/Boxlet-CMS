@@ -812,6 +812,25 @@ today. When the release build is written (Slice 9) it must leave out `tools/`, `
 keep excluding `tools/`. In return the checks have history, can be reviewed, and survive
 this machine.
 
+### D-030: Chrome definitions live apart from page blocks
+
+**Status:** decided by the architect on the owner's delegation, 2026-09-17
+
+The header and footer are drawn by the block machinery (D-028) but they are not blocks a
+person can put on a page.
+
+- Their definitions live in `app/Chrome/header/` and `app/Chrome/footer/`, discovered by a
+  second instance of the same registry. The block contract in SPEC §5.3 is untouched: no
+  new key, and nothing in `app/Blocks/` changes, so the page library cannot offer them.
+- The renderer takes an optional wrapper element, defaulting to `section`, so the header
+  renders inside `<header>` and the footer inside `<footer>` — one of each per page,
+  semantically right, with no nested section inside them.
+- The language switcher is one partial, included by the footer (never a second `<footer>`).
+
+**Trade-offs.** A second registry instance and one more argument on the renderer. The
+alternative — a `scope` key in the block definition — would have changed a frozen contract
+to express something the directory already says.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -871,6 +890,12 @@ GD does the encoding. Options when this is picked up: encode AVIF through GD whe
 available, look for a build or delegate that honours quality, or accept the default and set
 the size budget from measurement. Decide it with real hosts in view, not this one machine.
 *Before release.*
+
+**O-19. Front-end text has no translation mechanism.** `t()` is the admin's. Visitor-facing
+strings are written by the site owner, except for the few the product itself supplies — the
+404 page, the language switcher's label, and now chrome (small print, button labels). Today
+each is a small per-locale list in the code. Slice 6 should decide whether that becomes a
+mechanism, and where a site owner overrides it. *Slice 6.*
 
 **O-10. Nested page addresses.** Addresses are one path segment, unique per locale, while
 `parent_id` expresses hierarchy only in the admin, so the data model and the address

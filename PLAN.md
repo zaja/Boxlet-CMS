@@ -787,6 +787,31 @@ constrained-freedom choice and it keeps a site coherent. A hand-built menu is a 
 work than one derived from the page tree, in exchange for deciding what is in it and what it
 is called.
 
+### D-029: The browser suite lives in the repository
+
+**Status:** decided by the architect on the owner's delegation, 2026-09-17
+
+The suite (nineteen scenarios and its harness) existed only on one machine's disk, under no
+version control. It moves into the repository as `tools/browser-suite/`, beside the TipTap
+recipe.
+
+No release ZIP is built yet — there is no build script, so nothing is excluded from anything
+today. When the release build is written (Slice 9) it must leave out `tools/`, `tests/`,
+`.github/` and the development files, and that is where the mechanism is decided.
+
+- What stays outside: Chrome and Puppeteer, the site copies, screenshots, downloaded
+  photographs and anything with credentials in it (D-013).
+- Paths that point outside the repository become configuration with a default, so the suite
+  runs from a checkout on another machine.
+- A scenario reports NOT CHECKABLE only for a limit of the environment (no browser, a
+  server feature we cannot prove here). Missing test data is a failure: after the
+  photographs changed, six scenarios quietly reported NOT CHECKABLE for weeks' worth of
+  runs and read as passes in the totals.
+
+**Trade-offs.** The repository carries development-only code, and the release build must
+keep excluding `tools/`. In return the checks have history, can be reviewed, and survive
+this machine.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

@@ -390,6 +390,11 @@ controls use and rejecting opacity that breaks them. A browser check stays as th
 line, because a stylesheet test cannot see one rule overriding another, which is exactly
 how the rich text toolbar got to 5% opacity.
 
+Clarified 2026-09-17: the 3:1 boundary is for controls whose edge is the only thing that
+marks them (empty inputs, icon-only buttons, an empty picker). A button with a readable text
+label is visible through its text, and its text meets 4.5:1. Every button variant declares
+its own background, so its text is measured against the ground it actually sits on.
+
 **Trade-offs.** Some disabled states look more present than a designer might choose. A
 control nobody can see is worse.
 

@@ -126,9 +126,10 @@ than growing an existing one.
    to an empty install (`php migrations/seed.php`, or the installer's demo option) and
    look at it under each design character.
    All SQL must be portable between MySQL and SQLite; see SPEC §5.0.
-4. **Code files under 300 lines.** Applies to PHP, templates, CSS and JS, not to
-   documentation such as `docs/SPEC.md`. A controller past that means the feature is
-   too big.
+4. **Keep code files small.** Past 300 lines, split a file along a real seam of concern;
+   never shorten comments or code just to fit. The hard limit is 500 lines. Tests,
+   language files and browser-suite scripts are exempt. A controller growing past 300
+   usually means the feature is too big.
 5. **Every slice adds tests for what it builds.** The acceptance criteria in SPEC §8
    are the starting point for what to assert. Run `php tests/run.php`; see SPEC §10.
 6. Commit at the end of each slice, message naming the slice.
@@ -155,10 +156,14 @@ than growing an existing one.
 12. **Browser checks are a reusable suite** in `~/boxlet-browser`, run with one command,
     one scenario file per area; a new feature adds its scenario instead of writing a
     one-off probe.
-13. **Verify in proportion to the change:** the browser for what a person clicks and
-    sees; tests for logic, storage and documentation.
+13. **Verify in proportion to the change.** A small logic or wording change: the test
+    suite. A visual change: one screenshot of what changed. The whole browser suite:
+    larger parts, and before a deploy that carries a migration or a new screen.
 14. **Work through a whole task without pausing between its parts**; the architect
     reviews each commit as it lands.
+15. **Batch small changes and report briefly.** Several small changes share one round of
+    checks, one CI run and one deploy. A report is at most about 15 lines — commit, CI
+    conclusion, deviations, questions — with detail only when something went wrong.
 
 ---
 

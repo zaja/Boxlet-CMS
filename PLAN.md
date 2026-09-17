@@ -721,6 +721,29 @@ vendored under the SPEC §3 rule, requested by the owner).
 Replace. A replaced original is gone; keeping it was offered and not chosen, to avoid a
 second copy of every cropped picture and an extra "restore" control.
 
+### D-027: Faster small changes
+
+**Status:** approved 2026-09-17
+
+Small changes were taking as long as large ones, because every change went through the
+same full cycle of browser checks, long reports and questions. Four changes:
+
+- **300 lines is a guideline, not a wall.** Past 300, a file is split only along a real
+  seam. The hard limit is 500. Tests, language files and browser-suite scripts are exempt.
+- **Verification is proportional to the change.** A small logic or wording change needs
+  the test suite. A visual change needs one screenshot. The whole browser suite runs for
+  larger parts, and before a deploy that carries a migration or a new screen.
+- **Changes are batched.** Several small changes share one round of checks, one CI run and
+  one deploy.
+- **Short reports, fewer questions.** A report is at most about 15 lines: commit, CI
+  conclusion, deviations, questions. Detail only when something went wrong. The architect
+  makes small technical decisions and records them; the owner is asked about what they will
+  see and about the product.
+
+**Trade-offs.** Less evidence per small change, and a larger batch is harder to pin down
+when something breaks. D-006 still holds for every larger part: CI green before deploy, the
+architect's review, and the owner's eye on anything visual.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

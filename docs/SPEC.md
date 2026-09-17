@@ -709,7 +709,9 @@ Strict regex whitelist. Never `eval`. Never interpolate user content into a call
 
 They are in `CLAUDE.md`, which Claude Code loads into every session automatically:
 vertical slices, the closed dependency list, the frozen contracts, `php tests/run.php`
-after a schema change, no abstraction without a second caller, files under 300 lines,
+after a schema change, no abstraction without a second caller, code files kept small and
+split along a real seam past 300 lines (hard limit 500; tests, language files and the
+browser suite exempt),
 migration before model before controller before view, `t('key')` for every admin string,
 a commit at the end of each slice, and the rule that a slice is done only once the
 architect has verified it in a browser.

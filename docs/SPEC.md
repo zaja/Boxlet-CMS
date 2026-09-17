@@ -313,6 +313,20 @@ page_blocks (
 
 page_revisions (id, page_id, data_json, created_at)
 
+menus (id, locale, name, created_at, updated_at)
+-- unique (locale, name): a menu belongs to one locale, so a translation has its own
+-- labels rather than borrowing the source language's
+
+menu_items (
+  id, menu_id, parent_id, page_id, url, label, sort, created_at, updated_at
+)
+-- menu_id and parent_id are ON DELETE CASCADE: an item has no meaning without its menu,
+-- and a submenu none without its parent. page_id is ON DELETE SET NULL instead — deleting
+-- a page must not delete the entry someone built, and must not leave a link to nothing
+-- either, so the row survives pointing nowhere, shown in the admin and left out of the
+-- site. An UNPUBLISHED page is a state rather than damage and is decided at render time.
+-- Depth is limited to one submenu in code: SQL cannot say "no grandchildren" portably.
+
 templates (id, name, layout_json, preview_image, is_builtin)
 
 media (

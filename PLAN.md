@@ -176,8 +176,10 @@ Measured on this server: GD 2.3.3 (JPEG, PNG, WebP, GIF, **no AVIF**); Imagick 6
 (**AVIF, WebP, HEIC**); exif and fileinfo present; no command-line encoders. On a synthetic
 2400×1600 source: GD WebP 1200×630 in 129 ms / 29 KB; Imagick WebP 261 ms / 21 KB; Imagick
 AVIF 385 ms / 9 KB; Imagick WebP 1920×1080 455 ms. Imagick is the primary encoder, GD the
-fallback, AVIF best-effort. **Not yet measured:** a real large photograph, and the GD-only
-path forced, so no figure is claimed for what ships.
+fallback, AVIF best-effort. Measured on a real photograph (2400×1600, 691 KB), all five
+presets: Imagick 15 files (AVIF, WebP, original format) 2227 KB in 6.1 s; forced GD 10 files
+(WebP, original format) 1989 KB in 2.4 s. The slowest single encode is a full-size AVIF at
+1.27 s. Thumbnails come out at 4–10 KB, hero at 117–361 KB, AVIF smallest every time.
 
 Built: the `media` and `media_meta` migrations (committed in `517cfbe`, **not applied on the
 live install**, and not to be amended or added to before O-1 is decided); the five presets
@@ -232,7 +234,13 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 3. **Foundations:** done 2026-09-17. D-019 updating an existing install and D-021
    maintenance mode (`edcb6cb`); D-020 serving without PHP on nginx and Apache (`3a65aef`).
    The owner ran the first real update on the live site (media tables applied).
-4. **Slice 5, media**, and per-page SEO (D-004). ← *next*
+4. **Slice 5, media**, and per-page SEO (D-004). ← *current*
+   - Done: 4a encoder, upload and resumable generation (`da428df`, migration 0013 applied
+     on live by the owner); admin strings split by concern and nested by locale
+     (`34b01d8`, `30214ff`).
+   - Since `30214ff` the executor works in `~/boxlet-dev` and deploys to the demo by pull
+     (D-023). Live is at `30214ff`.
+   - Next: 4b library, 4c picker, 4d front end, 4e page SEO, 4f development photos.
 5. **Site settings, header, footer and a menu builder.** The Design screen gains boxed
    layout, page background and header width. See O-7, O-8 and O-9.
 6. **Repeater field, the Columns block (D-008), more blocks.** See O-11.
@@ -643,6 +651,27 @@ the moment it was saved, and every new migration took the demo offline unannounc
 **Trade-offs.** One more step between finished work and the demo, and a second copy of the
 project on the server (a few MB plus `vendor/`). In return the demo only ever runs code
 that was finished, tested and pushed, which is how a client site will have to be treated.
+
+### D-024: A section's background picture lives in its section style
+
+**Status:** approved 2026-09-17
+
+Layer 2 (`page_blocks.style_json`) gains a sixth key, `image`: the id of a picture from
+the media library, or null. It is used only when `surface` is `image`.
+
+- It is not a free value. On save and on render it must name an existing media item;
+  anything else falls back to null, and `surface: image` without a picture renders as it
+  does today (like `contrast`).
+- It works identically for every block type, because section style belongs to every block.
+  No block definition gains a background field.
+- Checking whether a picture is in use therefore looks in `content_json` (media fields) and
+  in `style_json` (`image`).
+- Text over the picture stays legible through tokens only (D-012 thinking applied to the
+  site). The owner judges it under all five characters.
+
+**Trade-offs.** Layer 2 stops being five enumerated keys; SPEC §5.4 changes before v0.1.
+The constrained-freedom rule still holds, because the value is a reference to a picture
+already in the library, not an open input.
 
 ### Lessons from the browser checks (2026-09-16)
 

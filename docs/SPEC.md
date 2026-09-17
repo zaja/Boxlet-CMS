@@ -483,12 +483,15 @@ Layer 1  Tokens       eight decisions, not forty values:
                         shadow character (none / soft / hard / layered)
                         container width
                         surface contrast (low / medium / high)
-Layer 2  Section      per block instance, stored in page_blocks.style_json:
+Layer 2  Section      per block instance, stored in page_blocks.style_json —
+                      five enumerated keys and one media reference:
                         surface:  plain | tinted | contrast | image | gradient
                         rhythm:   tight | normal | airy
                         width:    narrow | normal | wide | full
                         align:    left | center
                         divider:  none | line | slant | curve
+                        image:    a media id, or null (D-024); meaningful only
+                                  when surface is `image`
 Layer 3  Layout       per block instance, one of block.php 'layouts', stored in
                       page_blocks.layout
 ```
@@ -584,11 +587,22 @@ way, because it loads into a document full of the site's tokens and what sits be
 controls is the user's design; its insertion control carries two tones so that one edge
 contrasts whatever is behind it (PLAN.md D-012).
 
-**Layer 2.** `page_blocks.style_json` holds all five keys. Values outside the closed sets
-fall back to the defaults (plain, normal, normal, left, none) on save and on render. The
-only CSS for these classes is `public/assets/sections.css`: each surface sets
-`--section-*` colour properties that block CSS uses, so every block works on every
-surface. The `image` surface renders like `contrast` until media exist (Slice 5).
+**Layer 2.** `page_blocks.style_json` holds all five enumerated keys, plus `image`: a
+media id or null (PLAN.md D-024). Values outside the closed sets fall back to the defaults
+(plain, normal, normal, left, none) on save and on render. The only CSS for these classes
+is `public/assets/sections.css`: each surface sets `--section-*` colour properties that
+block CSS uses, so every block works on every surface.
+
+`image` is a reference, not a class: a picture is rendered into the section rather than
+painted by CSS, so `SectionStyle::classes()` never emits it. It is validated against
+existing media on save, and an id naming a picture that has since been deleted becomes
+null — so `surface: image` without a picture renders exactly as it did before media
+existed, which is to say like `contrast`.
+
+The alternative — a background field on every block definition — was rejected: a surface
+belongs to the section, so every block would have carried the same field for something
+none of them owns, and the deletion check would have had as many places to look as there
+are block types.
 
 ### 5.5 Media presets
 

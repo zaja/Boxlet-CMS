@@ -243,7 +243,11 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    - Also done: 4b library (`c6195e1`), 4c picker (`9695e1d` and follow-ups), 4d pictures on
      the front end (`79113c5`), library renamed Media, CI repaired after twelve red runs
      (`14253eb`), D-025 suggested alt text (`d2bd06e`, migration 0014 applied by the owner).
-   - Next: D-026 crop, 4e page SEO, 4f development photos.
+   - Also done: D-026 crop (`47558d0`), a contrast guard for button variants (`19717d6`),
+     4e per-page SEO (`613bacf`), 4f CC0 photographs on the demo (`765236b`), confirmed by
+     the owner 2026-09-17.
+   - Left: the Slice 5 acceptance check from SPEC §8 (a ~4 MB photograph, served under
+     200 KB, second request served without PHP).
 5. **Site settings, header, footer and a menu builder.** The Design screen gains boxed
    layout, page background and header width. See O-7, O-8 and O-9.
 6. **Repeater field, the Columns block (D-008), more blocks.** See O-11.
@@ -753,6 +757,36 @@ same full cycle of browser checks, long reports and questions. Four changes:
 when something breaks. D-006 still holds for every larger part: CI green before deploy, the
 architect's review, and the owner's eye on anything visual.
 
+### D-028: Site chrome, menus and site settings
+
+**Status:** approved 2026-09-17 (resolves O-7, O-8 and most of O-9)
+
+**Header and footer are set once for the whole site**, on their own screen, not per page.
+They are drawn by the same block machinery as everything else, so they inherit the design
+tokens and the section style layers, and each character carries its own header variant
+(centred, left, transparent over a hero, sticky). The header holds a logo, a menu and an
+optional button; the footer holds text, a menu and small print.
+
+**Menus are built by hand** (O-7). A menu is its own thing, not the page tree. An item
+points at a page or at an address of its own, can carry its own label, is ordered by
+dragging, and may have one level of submenu. A menu exists per locale, so a translation
+has its own labels. The page tree still orders the admin list (D-011) and will feed a
+future page_list block.
+
+**Site settings** (O-9), this round: site name, logo, favicon, time zone, the default
+sharing image, and the maintenance message (D-021). Favicon and logo come from the media
+library.
+
+**Analytics is not built.** Embedding someone else's script touches a visitor's privacy and
+the admin's security policy, and it gets its own decision.
+
+**The design layer gains** header width, a boxed page layout, and a page background.
+
+**Trade-offs.** One header for the whole site means no per-page chrome; that is the
+constrained-freedom choice and it keeps a site coherent. A hand-built menu is a little more
+work than one derived from the page tree, in exchange for deciding what is in it and what it
+is called.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -768,6 +802,10 @@ architect's review, and the owner's eye on anything visual.
   image extensions CI lacked. Nobody was reading CI in that stretch, the architect
   included. A deploy now requires that commit's CI conclusion to be "success", checked
   and reported by the executor and checked again by the architect.
+- **The live demo's design is never changed by a script.** Screenshots under several
+  characters are taken on the copy. Applying a preset rewrites the site's design, and with
+  "reset section styles" it would rewrite every section too; a restore afterwards is not a
+  safety net, because nothing recorded what was there first.
 - **Checks run on a copy.** `env()` reads `$_ENV` and `$_SERVER`, and this PHP's
   `variables_order` leaves `$_ENV` empty. Browser checks therefore use a copied site tree
   with its own `.env` (`~/boxlet-browser/site`), never environment overrides, so nothing can
@@ -798,26 +836,16 @@ than forced (a single admin with forced 2FA and a lost phone means a lost site).
 dependency list. Options: Resend's SMTP endpoint through symfony/mailer, or its HTTP API
 called directly. *Step 8.*
 
-**O-7. Menus.** A menu as its own entity (what a "menu builder" implies) or derived from
-the page tree via `parent_id` and `sort`. Leaning: its own entity. Whether a menu gets a
-replacement tag is part of this. *Step 5.*
+*O-7, O-8 and most of O-9 resolved by D-028; analytics remains open there.*
 
-**O-8. Header and footer.** Blocks rendered by the same registry, which inherit every
-style layer for free but must appear on every page without the user adding them, or chrome
-outside the block system, which needs its own styling mechanism and duplicates what
-exists. Header variants (centred, left, transparent over a hero, sticky) are a design
-decision, so characters should carry them like any other composition default. The logo
-depends on media. Language switcher placement once Slice 6 enables a second locale.
-*Step 5.*
-
-**O-9. Site settings and SEO.** The settings table is written only by the installer.
-There is no screen for site name, favicon, time zone, default sharing image, analytics,
-robots.txt or sitemap.xml. Open: does a favicon go through the media pipeline (probably
-yes), and which sizes? Does the default sharing image belong to the site or to the
-character? Is sitemap.xml generated on demand or written on publish? It must carry hreflang
-after Slice 6. Analytics means third-party script, which collides with the admin CSP and
-the privacy posture behind self-hosted fonts, so it is decided deliberately rather than
-added as a snippet field. *Step 5.*
+**O-18. AVIF quality is ignored on this Imagick.** Measured on ImageMagick 6.9.12-98: AVIF
+and WebP come out byte-identical at quality 10, 40 and 82, while JPEG honours the number, so
+the setting reaches the encoder and the delegate discards it. Every AVIF made here and on CI
+is therefore at the delegate's own default, and the one-retry size guard can only help where
+GD does the encoding. Options when this is picked up: encode AVIF through GD when it is
+available, look for a build or delegate that honours quality, or accept the default and set
+the size budget from measurement. Decide it with real hosts in view, not this one machine.
+*Before release.*
 
 **O-10. Nested page addresses.** Addresses are one path segment, unique per locale, while
 `parent_id` expresses hierarchy only in the admin, so the data model and the address

@@ -151,7 +151,9 @@ phpstan/phpstan           static analysis, level 8, phpVersion 8.1, no baseline
 /config/
 /storage/                     never web-accessible: logs, cache, sessions, backups
   /uploads/                   original media, never modified, never served (§5.5)
-/lang/                        admin UI strings, one PHP file per locale
+/lang/                        admin UI strings: several files per locale, split by
+                              concern (pages, install, media, update, design). t()
+                              merges every file in the directory.
 /migrations/                  NNNN_name.sql, applied in filename order
 /vendor/
 .env.example
@@ -446,7 +448,8 @@ definition stops it with a message naming the block and key:
   in `page_blocks.layout` and validated against `layouts` on save; a stored layout the
   definition no longer declares renders as `defaults.layout` instead of failing.
 
-There is no `label` key: every admin label derives from the type through `lang/en.php`:
+There is no `label` key: every admin label derives from the type through the files in
+`lang/`, which `t()` merges:
 `block.{type}`, `block.{type}.{field}`, `block.{type}.{field}.{option}` and
 `block.{type}.layout.{layout}`. A test fails when any of these is missing.
 
@@ -970,7 +973,7 @@ questions are now `PLAN.md` §5.
             A new page or block starts its own content_group_id /
             block_group_id, set to its own id.
             §5.3 The block registry enforces the contract at boot; select
-            options are a list of values; admin labels come from lang/en.php;
+            options are a list of values; admin labels come from lang/;
             stored value shapes and the richtext whitelist are documented.
             Slugs are one path segment. Reserved as slugs: every ISO 639-1
             code, plus the system paths admin, assets, cache, uploads, m,

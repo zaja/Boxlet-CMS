@@ -109,8 +109,10 @@ Locale is in the router from the first commit. There is no code path that render
 page without knowing its locale. How pages and blocks link across locales, and how a
 translation goes stale, are in `docs/SPEC.md` §5.2.
 
-**Every admin string goes through `t('key')` and lands in `lang/en.php`.** No bare
-English in a template.
+**Every admin string goes through `t('key')` and lands in a file under `lang/`.** No
+bare English in a template. The files are split by concern (pages, install, media,
+update, design); `t()` merges all of them, so a new concern gets a new file rather
+than growing an existing one.
 
 ---
 

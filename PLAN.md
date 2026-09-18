@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 618 on both drivers, PHPStan clean at level 8 (2026-09-18) |
+| Tests | 635 on both drivers, PHPStan clean at level 8 (2026-09-18) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -260,7 +260,8 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    - Housekeeping: one session on the development site (D-033), pending migrations applied
      from the command line.
    - a. Links point at pages, not typed paths: a page reference wherever a link is entered,
-     rich text included.
+     rich text included (D-034). Built 2026-09-18 with tests on both drivers and browser
+     scenario 20-page-links.
    - b. The admin's own design system reworked (D-007 brought forward): spacing, type,
      panels, buttons, tables, forms, empty states. The owner judges before/after screenshots.
    - c. The design layer: D-032's chrome choices, a real mobile menu, the current page
@@ -927,6 +928,49 @@ pushes as it goes, and keeps this file current.
 **Trade-offs.** Half-written code is briefly live on the development site, and a migration
 takes it dark until the script runs — seconds, because the session runs it at once. In
 return the owner sees progress as it happens, with nobody relaying it.
+
+### D-034: A link points at a page, not at a typed path
+
+**Status:** decided 2026-09-18 on the owner's task A (links must point at pages); the
+owner was told what it changes before it was built
+
+A menu item could choose a page (D-028), but a block's link field and a link in rich text
+were typed addresses: `/about` copied by hand, broken the moment the address changed.
+
+- **One stored form for a page reference: `page:{n}`**, where `n` is the page's
+  `content_group_id`. It is the value of a link field's `url` and the `href` of a rich text
+  link alike, so the stored shapes stay what SPEC §5.3 already says — `{label, url}` and
+  `<a href>` — and only the set of allowed values grows by one. No new attribute enters the
+  rich text whitelist, and no column is added.
+- **The group, not the row.** A block is copied into a translation verbatim (only its words
+  are translated), so a reference by group means "this page, in whatever language the
+  visitor is reading": the Croatian copy of a link points at the Croatian page without
+  anyone editing it. On a one-language site the group is simply the page's id.
+- **Resolved at render, never stored as an address.** Every reference on a page is looked
+  up in one query before anything renders, the rule pictures already follow; a template
+  receives a plain URL and knows nothing of references. Renaming a page's address moves
+  every link to it at once.
+- **A reference that cannot be followed draws no link**: the page was deleted, is not
+  published, or has no version in the visitor's language. A link field's button is left out;
+  a rich text link becomes its plain text. This is what a menu already does with an item
+  whose page is gone (D-028), for the same reason: never a link to nothing. The editor marks
+  such a link so the owner sees why it is missing.
+- **The label may be left empty** when a page is chosen; the page's own title stands in, in
+  the visitor's language.
+- **Typed addresses stay** for everything that is not a page: another site, an email, a
+  phone number, a fragment. Choosing a page is the first option wherever a link is entered —
+  the link field, the rich text link panel, the header's button.
+- Menus keep `menu_items.page_id`. A menu belongs to one locale, so the row is the right
+  target there, and it already works.
+
+What the owner will see: a page chooser in front of every address field, and a link to an
+unpublished or deleted page quietly missing from the site while the editor says why.
+
+**Trade-offs.** A deleted page silently removes the links to it rather than being refused
+while something links to it, as a picture in use is. Blocking would be the safer default
+but needs a "where is this page linked from" search across every block; it is noted as a
+follow-up rather than built now. SPEC §5.6's `{{page:slug}}` tag, never built, is dropped
+in favour of this: a reference by slug breaks exactly the way typed paths do.
 
 ### Lessons from the browser checks (2026-09-16)
 

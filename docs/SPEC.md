@@ -494,14 +494,26 @@ richtext         HTML reduced on save to: p, br, strong, b, em, i, h2, h3, ul, o
                  their text; script, style, iframe, svg and similar are removed with
                  their content. Output unescaped by templates.
 media            media id (integer) or null; a placeholder renders until Slice 5
-link             {"label": string, "url": string}; url must start with /, #, ? or
-                 http:, https:, mailto:, tel:, with no whitespace or backslash
+link             {"label": string, "url": string}; url is a page reference, page:{n},
+                 or an address starting with /, #, ? or http:, https:, mailto:, tel:,
+                 with no whitespace or backslash
 select           one of the option values; the first is the default
 repeater         a JSON list of items, each an object holding that repeater's own fields,
                  every value stored exactly as its own type above. Never longer than max.
 ```
 
 Link URLs in richtext follow the same rule; an `href` that fails it is dropped.
+
+**A link to a page is a reference, never a typed path** (PLAN.md D-034). `page:{n}`, where
+`n` is the page's `content_group_id`, is the stored form in a link field's `url` and in a
+rich text `href` alike, so neither shape above changes and the whitelist gains no
+attribute. It is followed at render, in one query per page, into the URL of the published
+page of that group in the locale being rendered, and a template only ever receives that
+URL (`App\Modules\Pages\PageLinks`). A reference that leads nowhere — the page deleted,
+unpublished, or with no version in this locale — renders as no link: an empty `url`, which
+templates skip, and in rich text the link's own words without the `<a>`. A link field whose
+label is empty takes the page's title. Every place a link is entered offers a page before an
+address.
 
 **A repeater is trimmed on render and refused on save**, and the difference is deliberate.
 `Blocks::normalize()` keeps the first `max` items, so lowering a block's `max` cannot stop
@@ -740,8 +752,12 @@ Inline only, for use inside rich text. Anything structural is a block.
 Closed list for v1:
 
 ```
-{{form:slug}}  {{page:slug}}  {{snippet:key}}  {{lang:switcher}}  {{year}}
+{{form:slug}}  {{snippet:key}}  {{lang:switcher}}  {{year}}
 ```
+
+`{{page:slug}}` was on this list and never built. A reference by slug breaks exactly as a
+typed path does when the address changes; a link to a page is a `page:{n}` reference
+instead (§5.3, PLAN.md D-034).
 
 Strict regex whitelist. Never `eval`. Never interpolate user content into a callable.
 

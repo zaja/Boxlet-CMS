@@ -248,8 +248,12 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
      the owner 2026-09-17.
    - Left: the Slice 5 acceptance check from SPEC §8 (a ~4 MB photograph, served under
      200 KB, second request served without PHP).
-5. **Site settings, header, footer and a menu builder.** The Design screen gains boxed
-   layout, page background and header width. See O-7, O-8 and O-9.
+5. **Site settings, header, footer and a menu builder.** Built 2026-09-17/18 and green on
+   CI: menus (`bc7a370`), the browser suite moved into the repository (`b47a031`), the
+   render wrapper (`ca92d1c`), header and footer (`a782347`), the chrome screen
+   (`632a474`), the stale-code guard (`5a3a2fb`), and the page as a sheet (`521231d`).
+   Deployed to the demo on 2026-09-18 (`521231d`), with migration 0015 applied by the owner
+   through the update screen — D-019's gate behaved on the live site exactly as described.
 6. **Repeater field, the Columns block (D-008), more blocks.** See O-11.
 7. **Slice 6, languages**, including adding a language from the admin. See O-12.
 8. **Slice 7, forms and mail:** form builder, `{{form:slug}}`, submissions, SMTP and
@@ -849,6 +853,33 @@ to express something the directory already says.
 **Trade-offs.** Less freedom than a colour picker and a fourth width. In return the palette
 keeps its guarantee, the Design form gains two switches and one small choice rather than
 three more decisions, and the contrast work stays the size it is.
+
+### D-032: What the chrome lets the owner change, and what it never will
+
+**Status:** approved 2026-09-18
+
+There is no free-form header builder: no dragging elements, no colour picker, no per-page
+chrome, no hand-written HTML. The header and footer follow the same rule as blocks — a
+small set of tried choices, with colour and spacing coming from the character.
+
+Already there: logo, menu, button, footer text and small print; header layout (left,
+centred, transparent, sticky); footer layout (simple, columns); header width; everything
+the design tokens give.
+
+Added by this decision, each a closed set:
+- **Surface** for the header and for the footer: plain, tinted or contrast — the same
+  surfaces sections use, so contrast stays guaranteed.
+- **Density**: compact, normal or roomy.
+- **Rule under the header**: on or off.
+- **Logo size**: small, medium or large.
+
+Also owed, and the real gap for visitors: **a proper mobile menu** (a button that opens and
+closes it, correct for keyboard and screen readers), **the current page marked in the
+menu**, and a look at the transparent and sticky variants over real content, which nobody
+has judged yet.
+
+**Trade-offs.** Four more controls to design for every character. In return the owner can
+make the chrome feel like theirs without any combination that can come out unreadable.
 
 ### Lessons from the browser checks (2026-09-16)
 

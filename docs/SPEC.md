@@ -458,8 +458,19 @@ definition stops it with a message naming the block and key:
   for the page editor.
 - A field has `type`, optional boolean `required` and `translatable`, and for `select`
   a non-empty list of option values: `'options' => ['cover', 'contain']`.
+- A `repeater` declares `fields`, the fields of one item, and `max`, how many items it
+  takes, an integer of at least 1. **Both are required, and omitting `max` is refused at
+  boot**: a list with no stated limit is one that grows until the page editor stops being
+  usable and `max_input_vars` starts dropping fields. A repeater takes no `options`, and
+  no other field type takes `fields` or `max`. Its `fields` are ordinary field
+  declarations checked by the same rule, so a media field inside an item is a media field
+  and a richtext field inside one is sanitised like any other.
+- **A repeater cannot hold another repeater.** Groups nested without end are a table, not
+  a block, and nobody can read an editor built that way — the reasoning that stops a menu
+  at one level of submenu (PLAN.md D-028). Refused at boot, with the other malformed
+  definitions, rather than discovered at render.
 - Field types from the closed set that are not implemented yet are rejected. Implemented:
-  `text`, `textarea`, `richtext`, `media`, `link`, `select`.
+  `text`, `textarea`, `richtext`, `media`, `link`, `select`, `repeater`.
 - `defaults.layout` is one of `layouts`. The layout chosen for a block instance is stored
   in `page_blocks.layout` and validated against `layouts` on save; a stored layout the
   definition no longer declares renders as `defaults.layout` instead of failing.
@@ -467,7 +478,12 @@ definition stops it with a message naming the block and key:
 There is no `label` key: every admin label derives from the type through the files in
 `lang/`, which `t()` merges:
 `block.{type}`, `block.{type}.{field}`, `block.{type}.{field}.{option}` and
-`block.{type}.layout.{layout}`. A test fails when any of these is missing.
+`block.{type}.layout.{layout}`. A repeater's item fields take one segment more:
+`block.{type}.{field}.{itemfield}`, and an option inside an item
+`block.{type}.{field}.{itemfield}.{option}`. The third segment therefore names an option
+under a select and an item's field under a repeater, and the two can never collide,
+because a select cannot take `fields` and a repeater cannot take `options`. A test fails
+when any of these is missing.
 
 Stored field values (`page_blocks.content_json`):
 
@@ -481,9 +497,24 @@ media            media id (integer) or null; a placeholder renders until Slice 5
 link             {"label": string, "url": string}; url must start with /, #, ? or
                  http:, https:, mailto:, tel:, with no whitespace or backslash
 select           one of the option values; the first is the default
+repeater         a JSON list of items, each an object holding that repeater's own fields,
+                 every value stored exactly as its own type above. Never longer than max.
 ```
 
 Link URLs in richtext follow the same rule; an `href` that fails it is dropped.
+
+**A repeater is trimmed on render and refused on save**, and the difference is deliberate.
+`Blocks::normalize()` keeps the first `max` items, so lowering a block's `max` cannot stop
+a page that used the old one from drawing. The editor refuses a submission carrying more,
+because there somebody typed those items, and dropping the last one silently is how an
+owner loses work without being told. An item marked `_delete` is left out on save.
+
+The editor names one item's inputs `blocks[n][{field}][m][{itemfield}]`, so the block
+index and the item index are rewritten independently as either is reordered. Adding,
+removing and reordering items all work without JavaScript, through `action` values the
+save route understands (`item-add-{n}-{field}`, `item-up-{n}-{field}-{m}` and its `down`);
+where scripts run, `repeater.js` intercepts the same controls — one route for both paths,
+as D-011 sets out for blocks.
 
 ### 5.4 Design layers
 

@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 668 on both drivers, PHPStan clean at level 8 (2026-09-18) |
+| Tests | 681 on both drivers, PHPStan clean at level 8 (2026-09-18) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -268,7 +268,8 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
      marked (built 2026-09-18, D-036); then proposals for what makes two Boxlet sites look
      genuinely different (sent to the owner 2026-09-18, waiting for a yes).
    - d. Then the Columns block (D-008) and more blocks. The repeater field it stands on is
-     done (6a, `e141816`); it adds no browser scenario until Columns uses it. See O-11.
+     done (6a, `e141816`). Columns built 2026-09-18 (D-041), taken before 6c's answer with
+     the owner's go-ahead; scenarios 24-columns and 25-columns-look.
 7. **Slice 6, languages**, including adding a language from the admin. See O-12.
 8. **Slice 7, forms and mail:** form builder, `{{form:slug}}`, submissions, SMTP and
    Resend, admin notification, autoreply, honeypot, test-mail button. See O-6.
@@ -1116,6 +1117,68 @@ needs the network on a maintainer's machine, never on a user's server.
 **Trade-offs.** The controls now live inside the canvas frame, so they are reached by
 clicking the block first — which is also how a block is chosen. The plain editor keeps its
 own buttons.
+
+### D-041: The Columns block
+
+**Status:** built 2026-09-18, the owner's go-ahead to take step 6d before the answer on 6c
+
+D-008 built: one block, `columns`, whose layout is how many columns share a row — two,
+three (the default) or four. More items than that start a new row on the same grid, so a
+team of eight is two rows of four. At most twelve items, and at least one on save.
+
+- **A column** holds a picture, a heading, rich text and a link, all optional. The block
+  has its own optional heading and introduction, and one **picture shape** for every
+  column — landscape, square, or round — so a row lines up whatever was uploaded. Round is
+  a portrait at 60% of the column, cut by `clip-path`, not a radius token.
+- **A column without a picture is a column of words**, not a grey box; a picture chosen and
+  since deleted keeps its place as the placeholder the other blocks draw.
+- **A column's link is a text link**, not a button: three or four buttons in a row shout.
+- **Every item is drawn, an empty one too**, so the canvas and the page show the same grid.
+  The editor outlines an empty column (`is-empty`, canvas.css) and gives it height.
+- **A new block starts with three empty columns** (`Blocks::fresh()`, used wherever a
+  block is added): a repeater with no items drew an empty band. The library preview samples
+  three items the same way.
+- **Four in a row folds to two rows of two below 64rem**, and every layout to one column
+  on a phone. The editor's canvas is narrower than the screen, so on a 1400-wide window it
+  shows four in a row as two rows — correctly, as a tablet would.
+- The demo gains three: What we do (three, words only), The people (two, round) and How a
+  project runs (four, square); its seed now turns `demo:` links inside items into page
+  references too.
+
+Found and fixed on the way: `site.css` had passed the 500-line limit (my D-036 work); the
+header and footer are now `chrome.css` and the blocks `blocks.css`, both linked after
+`site.css` in the order the rules had. A hero heading with a word wider than a phone (Bold,
+"Northwind") pushed the page sideways; it now breaks.
+
+Open: the repeater's own labels say "Item 1" and "Add item", not "Column 1". A per-block
+word needs a label key that cannot collide with an item field's; not decided yet. And `app/Core/Blocks.php` is at 325 lines, past the 300 guideline (301 before `fresh()`);
+its seam is content shaping — `normalize`, `value`, `emptyItem`, `fresh` — to split out when
+it is next touched.
+
+### D-042: A scenario that asks for the copy goes to the copy
+
+**Status:** decided 2026-09-18, after a mistake of mine
+
+Scenario 25 declared `copy: true` but imported the development site's address, and
+`applyCharacter()` read that address from config regardless — so its first run applied all
+five characters to the development site. 03-design and 14-front applied characters there
+without declaring the copy at all, and 03 also resets section styles.
+
+- `applyCharacter(page, base, …)` takes the site as an argument.
+- 03, 14, 22 and 25 import `COPY_BASE as BASE` and declare `copy: true`.
+- `run.mjs` refuses, before a browser opens, a copy scenario that does not import
+  `COPY_BASE as BASE`, and any scenario that applies a character without being a copy one.
+
+What it changed on the development site: the design (its four hand-set decisions were
+overwritten; recovered exactly by matching the old stylesheet's hash, tokens.366b260d4cbb:
+spacing normal, container normal, boxed yes, page background surface, on Brutalist's
+colours and type), and About and Services were re-saved unchanged through the plain editor.
+Section styles, pictures and menus were untouched. The design is restored through the
+Design screen, not the database.
+
+The copy's server needs `PHP_CLI_SERVER_WORKERS=4`: the installer checks URL rewriting
+by requesting the server from inside a request, which a single-process `php -S` cannot
+answer.
 
 ### Lessons from the browser checks (2026-09-16)
 

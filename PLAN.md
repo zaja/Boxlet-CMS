@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 636 on both drivers, PHPStan clean at level 8 (2026-09-18) |
+| Tests | 646 on both drivers, PHPStan clean at level 8 (2026-09-18) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -265,7 +265,8 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    - b. The admin's own design system reworked (D-007 brought forward): spacing, type,
      panels, buttons, tables, forms, empty states. The owner judges before/after screenshots.
    - c. The design layer: D-032's chrome choices, a real mobile menu, the current page
-     marked; then proposals for what makes two Boxlet sites look genuinely different.
+     marked (built 2026-09-18, D-036); then proposals for what makes two Boxlet sites look
+     genuinely different (sent to the owner 2026-09-18, waiting for a yes).
    - d. Then the Columns block (D-008) and more blocks. The repeater field it stands on is
      done (6a, `e141816`); it adds no browser scenario until Columns uses it. See O-11.
 7. **Slice 6, languages**, including adding a language from the admin. See O-12.
@@ -998,6 +999,37 @@ its own fixed `--ui-*` tokens and never reads the site's (SPEC §5.4), and chang
 
 The bar's light inks on the dark bar are measured by their own contrast test; everything
 else stays inside the existing matrix.
+
+### D-036: How D-032 is built
+
+**Status:** decided 2026-09-18 while building the approved D-032
+
+- **Seven closed choices**, stored as settings and chosen on the Header and footer screen:
+  header arrangement (left, centred, over the first section, sticky), footer arrangement
+  (one column, words beside the menu), header and footer surface (plain, tinted,
+  contrast), density, a rule under the header, logo size. Each is empty until the owner
+  picks one, and empty means *as the character has it*: every character now carries a
+  chrome look (`ChromeLook::CHARACTER`), so changing character re-dresses the chrome the
+  way it re-composes the page, and the owner's own choices stay theirs.
+- **Found while building:** D-032 listed the header arrangements as already there. They
+  were declared, but nothing chose them and the stylesheet had no rules for them: every
+  site rendered "left". They are real now.
+- **Over the first section** takes that section's colours (contrast, picture, gradient or
+  tinted) rather than painting its own, which is what keeps it readable over any hero, and
+  gives the first section the room it covers.
+- **The current page** is marked in the menu with `aria-current` and a rule under the words;
+  its parent is marked when the page is one of its children. The renderer marks the
+  resolved menu, so templates compare no addresses.
+- **The mobile menu is the site's first script** (`site-nav.js`, first-party, loaded only
+  when the header has a menu). Without it the navigation wraps openly and submenus are
+  listed under their parents; with it, one Menu button folds the navigation and the call to
+  action on a phone, and each submenu opens from its own button, never from hover alone.
+  Escape closes and returns focus.
+- **Found while checking:** a boxed page's frame took 144 of a 390-pixel phone screen. The
+  frame is now capped on narrow screens.
+
+**Trade-offs.** One script on visitors' pages, where there were none; a page without it is
+complete, so the cost is only the file. Seven more controls on one screen, each a closed set.
 
 ### Lessons from the browser checks (2026-09-16)
 

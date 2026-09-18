@@ -7,13 +7,33 @@ no build step at install time.
 The differentiator is the design layer, not the feature list. Everything else stays
 boring and small.
 
-**Read `PLAN.md` first.** It is the one document that says what Boxlet is, where the work
-stands, what comes next, what has been decided and what is still open. Only the architect
-session writes it: you report progress by message and never edit it.
+**Read `PLAN.md` first.** It says what Boxlet is, where the work stands, what comes next,
+what has been decided and what is still open. Keep it current as you go: a decision that
+is not written there did not happen.
 
 **Read `docs/SPEC.md` before starting a slice.** It is the contract — the schema, the
 block contract, the design layer model, the acceptance criteria. Do not re-derive any of
 it from memory.
+
+---
+
+## How this project is worked on
+
+One session, working directly in this checkout, which is the development site at
+https://boxlet.svejedobro.hr. There is no separate development clone and no deploy step:
+what you save is what the site runs. Commit and push to origin as you go.
+
+The site is a demo with no real content. It may be reinstalled. The database is
+`boxletcms`; `boxletcms-test` belongs to the test suite and is wiped by it.
+
+**Pending migrations are applied from the command line:** `php migrations/migrate.php`
+(`--check` lists them and exits 1). After adding a migration, or pulling code that carries
+one, run it at once. The admin's "Database update needed" screen (PLAN.md D-019) is for
+real sites; the owner never presses it for development.
+
+Ask the owner about: anything they will see and judge (layout, wording, look), product
+decisions, this file, permissions and configuration. Everything else is yours — decide it,
+do it, and record the decision in `PLAN.md`.
 
 ---
 
@@ -25,25 +45,24 @@ spomky-labs/otphp, bacon/bacon-qr-code. Nothing else. No framework, no ORM, no T
 no imaging library, no Tailwind, no Alpine, no HTMX. If you think something needs a
 new runtime dependency, stop and ask.
 
-**Dev tools live in `require-dev`.** They never ship in the release ZIP (built with
-`--no-dev`) and never exist on a user's server. They are allowed when they earn their
-place, but ask first. Currently in use: PHPStan (level 8, `vendor/bin/phpstan analyse`).
+**Dev tools live in `require-dev`.** They never ship in the release ZIP and never exist on
+a user's server. Currently: PHPStan (level 8, `vendor/bin/phpstan analyse`).
 
 **Vendored front-end assets** are allowed when they earn their place, but ask first. The
-rule they must satisfy, and the list of what is vendored today, are in `docs/SPEC.md` §3.
-One exception to "no npm, no build step" exists, for maintainers only: the TipTap bundle,
-rebuilt from `tools/tiptap/` outside the project (PLAN.md D-017). A second one needs its
-own decision.
+rule and the list are in `docs/SPEC.md` §3. One exception to "no npm, no build step"
+exists, for maintainers only: the TipTap bundle, rebuilt from `tools/tiptap/` outside the
+project (PLAN.md D-017). A second one needs its own decision.
 
-**Frozen contracts.** The URL scheme, database schema, block definition format and
-design token schema are in `docs/SPEC.md` §5. Changing any of them after v0.1 breaks
-every install in the wild. Stop and ask before touching them.
+**Frozen contracts.** The URL scheme, database schema, block definition format and design
+token schema are in `docs/SPEC.md` §5. Changing any of them after v0.1 breaks every
+install in the wild. Before v0.1 they may change deliberately: say so, update SPEC, and
+record it in PLAN.md.
 
 **PHP 8.1 syntax only.** No 8.2+ features. Target is shared hosting.
 
-**No abstraction without a second caller.** No interface with one implementation, no
-hooks system before a second module needs it, no repository layer over PDO. If it has
-one caller, inline it.
+**No abstraction without a second caller.** No interface with one implementation, no hooks
+system before a second module needs it, no repository layer over PDO. If it has one
+caller, inline it.
 
 ---
 
@@ -52,15 +71,16 @@ one caller, inline it.
 The four layers, the eight decisions, what compiles to `tokens.css`, the contrast rule and
 the admin's own `--ui-*` token set are all in `docs/SPEC.md` §5.4.
 
-**No control is ever invisible at rest.** Every interactive control — button, link,
-toggle, insertion handle — has a legible resting state: readable text, or a visible
-shape, against the surface it sits on. Hover and focus *raise* a control; they never
-*reveal* it. A control nobody can see is a control nobody uses, and it hides bugs: a
-white-on-white button looks like a missing feature, not like a styling mistake.
+**The design layer is the product.** When a choice is between another feature and making
+the design layer richer or the admin better to look at, the design wins.
 
-This has already been got wrong twice — the hover-only insertion controls in the canvas,
-and ghost buttons in the toolbar whose anchor colour was outranked by `.admin a.button`.
-When fixing an instance of it, fix the rule.
+**No control is ever invisible at rest.** Every interactive control — button, link,
+toggle, insertion handle — has a legible resting state: readable text, or a visible shape,
+against the surface it sits on. Hover and focus *raise* a control; they never *reveal* it.
+
+**The admin has its own fixed design system** (`--ui-*`), never the site's tokens. A
+front-end stylesheet with a literal colour is a bug; an admin stylesheet reading a site
+token is a bug. `tests/contrast_test.php` enforces the contrast rules.
 
 ---
 
@@ -76,126 +96,102 @@ permits, are in `docs/SPEC.md` §5.3.
 ## Media
 
 The model — variants generated on upload and never on demand, the five presets, resumable
-generation, EXIF orientation — is in `docs/SPEC.md` §5.1 and §5.5.
-
----
-
-## Working practice that has already cost time twice
-
-**Fix the instrument before judging the subject.** The headless browser misreports both
-what it captures and what it types. Screenshot artifacts have twice looked like product
-defects, and in evaluating Trix, three of four "findings" — lost characters, shredded
-text, broken redo — were the harness driving the editor faster than it re-renders. Code
-written to work around a phantom survives for ever carrying a comment that explains the
-wrong reason, which is worse than the bug because it looks deliberate.
-
-So: slow the driver, drive through real input rather than an API, and **use a control** —
-the same input through a plain element with no library involved. That is what turned
-"Trix mangles Word paste" into "Trix is far better than the browser's own behaviour".
-
-**State when you exceed an instruction.** Extending a rule (demoting `h4–h6` as well as
-`h1`) is initiative and is welcome; doing it silently is drift. Say which it is.
-
-**Do not adjust a test to match new output.** If a test now contradicts intended
-behaviour, change the rule deliberately and say so — splitting the case if it covered two
-things. Especially for round-trip and idempotence tests, whose whole value is catching
-what the eye cannot see.
+generation, EXIF orientation, originals outside the web root — is in `docs/SPEC.md` §5.1
+and §5.5.
 
 ---
 
 ## Multilingual
 
-Locale is in the router from the first commit. There is no code path that renders a
-page without knowing its locale. How pages and blocks link across locales, and how a
-translation goes stale, are in `docs/SPEC.md` §5.2.
+Locale is in the router from the first commit. There is no code path that renders a page
+without knowing its locale. How pages and blocks link across locales is in `docs/SPEC.md`
+§5.2.
 
-**Every admin string goes through `t('key')` and lands in a file under `lang/`.** No
-bare English in a template. The files are split by concern (pages, install, media,
-update, design); `t()` merges all of them, so a new concern gets a new file rather
-than growing an existing one.
+**Every admin string goes through `t('key')` and lands in a file under `lang/en/`.** No
+bare English in a template. The files are split by concern; `t()` merges them, so a new
+concern gets a new file rather than growing an existing one.
+
+---
+
+## Working practice that has already cost time
+
+**Fix the instrument before judging the subject.** The headless browser misreports both
+what it captures and what it types; a test copy can be running older code; a probe can
+report success it never earned. Before believing a defect, check the tool: slow the
+driver, drive through real input, and use a control — the same input through a plain
+element with no library involved.
+
+**State when you exceed an instruction.** Extending a rule is initiative and is welcome;
+doing it silently is drift. Say which it is.
+
+**Do not adjust a test to match new output.** If a test contradicts intended behaviour,
+change the rule deliberately and say so, splitting the case if it covered two things.
+
+**A claim is measured, not reasoned.** Do not write in a commit message, a comment or a
+report anything you have not checked. Several times a rule that never applied was believed
+because a number moved for another reason.
 
 ---
 
 ## How to work
 
-1. **Vertical slices.** Every slice ends with something visible in a browser. Do not
-   build all of Core before anything renders.
-2. **Migration first**, then model, then controller, then view.
-3. **After any schema change**, run `php tests/run.php` with the MySQL test database
-   configured (`.env.test`), so migrations run on both drivers. Then add the demo site
-   to an empty install (`php migrations/seed.php`, or the installer's demo option) and
-   look at it under each design character.
-   All SQL must be portable between MySQL and SQLite; see SPEC §5.0.
-4. **Keep code files small.** Past 300 lines, split a file along a real seam of concern;
-   never shorten comments or code just to fit. The hard limit is 500 lines. Tests,
-   language files and browser-suite scripts are exempt. A controller growing past 300
-   usually means the feature is too big.
-5. **Every slice adds tests for what it builds.** The acceptance criteria in SPEC §8
-   are the starting point for what to assert. Run `php tests/run.php`; see SPEC §10.
-6. Commit at the end of each slice, message naming the slice.
-7. **A slice is done when the architect has verified it working in a browser** against
-   their checklist — not when it is committed, and not when the tests pass (PLAN.md
-   D-006).
-8. **A weak feature is fixed before anything is built on top of it.** No workaround
-   ships as a solution: if the right fix is too big for now, it is recorded in PLAN.md
-   as an open item rather than papered over.
-9. **Tasks from the architect session that cite an approved PLAN.md entry are followed
-   as written.** Only when the cited PLAN.md entry is marked approved and actually
-   covers what the task asks; anything beyond the entry goes back to the architect.
-   Ambiguity, or a conflict with the code or `docs/SPEC.md`, goes back to the architect
-   by message, not to the owner. The owner is asked only about `CLAUDE.md`, permissions
-   or configuration, and about anything PLAN.md marks as the owner's call.
-10. **Push `main` to origin after a commit whose tests pass on both drivers and whose
-    PHPStan run is clean**, without asking. Standing permission from the owner, given
-    2026-09-16. If either check did not run, or did not pass, the commit stays local and
-    the owner is told why — the permission is for verified work, not for every commit.
-11. **Never end a turn with a list of next steps. Run them.** A turn ends only when the
-    task is done, when you are blocked on the owner or the architect, or when you are
-    reporting to the architect by message. A background process such as a dev server is
-    not work in progress: stop it when the check that needed it is done.
-12. **Browser checks are a reusable suite** in `~/boxlet-browser`, run with one command,
-    one scenario file per area; a new feature adds its scenario instead of writing a
-    one-off probe.
-13. **Verify in proportion to the change.** A small logic or wording change: the test
-    suite. A visual change: one screenshot of what changed. The whole browser suite:
-    larger parts, and before a deploy that carries a migration or a new screen.
-14. **Work through a whole task without pausing between its parts**; the architect
-    reviews each commit as it lands.
-15. **Batch small changes and report briefly.** Several small changes share one round of
-    checks, one CI run and one deploy. A report is at most about 15 lines — commit, CI
-    conclusion, deviations, questions — with detail only when something went wrong.
+1. **Vertical slices.** Every slice ends with something visible in a browser.
+2. **Migration first**, then model, then controller, then view. All SQL portable between
+   MySQL and SQLite (SPEC §5.0); a committed migration is never edited, only followed by
+   a new one.
+3. **After any schema change**, run `php tests/run.php` with `.env.test` configured, so
+   migrations run on both drivers.
+4. **Keep code files small.** Past 300 lines, split along a real seam of concern; never
+   shorten comments or code just to fit. Hard limit 500. Tests, language files and the
+   browser suite are exempt.
+5. **Every slice adds tests for what it builds**, starting from the acceptance criteria in
+   SPEC §8.
+6. **Before each commit**, run `php tests/run.php` and `vendor/bin/phpstan analyse`, and
+   check every claim in the commit message against `git diff --cached`. Push to origin.
+7. **CI must stay green.** Read the conclusion without admin rights:
+   `curl -s https://api.github.com/repos/zaja/Boxlet-CMS/actions/runs?per_page=1`.
+   A red run is fixed before new work; failures are readable in the check-run annotations.
+8. **Browser checks are a reusable suite** in `tools/browser-suite`, run with one command,
+   one scenario file per area. A new feature adds its scenario. Verify in proportion:
+   a small logic change needs the test suite; a visual change needs a screenshot; the
+   whole suite belongs at the end of a slice. Scenarios that install a site or lock the
+   account run against a copy, never the development site.
+9. **NOT CHECKABLE means a limit of the environment.** Missing test data is a failure.
+10. **A weak feature is fixed before anything is built on top of it.** No workaround ships
+    as a solution: if the right fix is too big now, record it in PLAN.md as an open item.
+11. **Never end a turn with a list of next steps. Run them.** A turn ends when the task is
+    done, when you are blocked on the owner, or when you are reporting. A background
+    process such as a dev server is not work in progress: stop it when the check that
+    needed it is done.
+12. **Show the owner what they will judge.** Anything visual: a screenshot, and for design
+    work more than one character.
 
 ---
 
-## The live site's database is not a scratchpad
+## The database is not a scratchpad
 
-**Never run an ad-hoc INSERT, UPDATE or DELETE against `boxletcms`.** Not to clean up
-after a browser check, not to fix a row by hand, not "just this once".
+**Never run an ad-hoc INSERT, UPDATE or DELETE against `boxletcms`.** Not to clean up after
+a browser check, not to fix a row by hand, not "just this once". Cleanup happens through
+the application, through the test suite against `boxletcms-test`, or by reinstalling.
 
-Cleanup happens one of three ways: through the application, through the test suite
-against `boxletcms-test`, or by reinstalling.
-
-Throwaway data on the live site is created with a marker chosen in that same command —
-a fixed prefix, an id captured on creation — and deleted **by exact id**. Never by a
-`LIKE` pattern over user-facing text: a title is something a person can be halfway
-through typing, and an unsaved form field is not a safeguard.
+Throwaway data is created with a marker chosen in that same command and deleted **by exact
+id**. Never by a `LIKE` pattern over user-facing text.
 
 ---
 
 ## Security rules that are easy to forget
 
 - CSRF token on every state-changing request.
-- Media URLs use named presets only (`thumb`, `card`, `wide`, `hero`, `full`). Never
-  accept free-form dimensions from the URL.
+- Media URLs use named presets only (`thumb`, `card`, `wide`, `hero`, `full`). Never accept
+  free-form dimensions from the URL.
 - Cached images and pages are served without touching PHP on a hit. How that is done on
   both nginx and Apache is open — PLAN.md O-2.
-- Uploads: finfo MIME sniff and extension whitelist. Originals are stored outside the web
-  root in `storage/uploads/`; only generated variants are public. A file that is never
-  public cannot be executed on any server — an `.htaccess` cannot stop a script on nginx.
+- Uploads: finfo MIME sniff and extension whitelist. Originals live outside the web root in
+  `storage/uploads/`; only generated variants are public.
 - Form submissions store a hashed IP, never the raw address.
 - 2FA is optional, with ten recovery codes and a documented FTP reset. Never force it.
-- `install.php` writes `storage/install.lock`, refuses to re-run, tries to delete
-  itself, warns loudly if it cannot.
+- `install.php` writes `storage/install.lock`, refuses to re-run, tries to delete itself,
+  warns loudly if it cannot.
 
 ---
 
@@ -203,8 +199,8 @@ through typing, and an unsaved form field is not a safeguard.
 
 ```
 public/      document root: index.php, install.php, assets, m, cache
-app/         Core, Modules (Pages, Install, Auth, Admin, ...), Blocks, Support
-config/      storage/      lang/      migrations/      vendor/
+app/         Core, Modules (Pages, Media, Design, Menus, Chrome...), Blocks, Support
+config/      storage/      lang/      migrations/      tools/      vendor/
 PLAN.md      what it is, where it stands, what is decided and open
 docs/SPEC.md the full specification
 ```

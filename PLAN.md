@@ -3,10 +3,11 @@
 The one document to read to understand the project: what Boxlet is, where the work
 stands, what comes next, what has been decided and what is still open.
 
-**Who writes what.** Only the architect session edits this file, and the owner approves
-every decision before anyone acts on it. The executor reports progress by message and
-never edits this file. Section 2 is updated only after the architect has checked the
-work (D-006). How the system works technically is in `docs/SPEC.md`, the contract. How an
+**Who writes what.** Since D-033 one working session keeps this file current as it goes.
+The owner decides what they will see and judge and anything that changes the product's
+shape; small technical decisions are made by the session and recorded here. Older entries
+mention an architect and an executor, the arrangement before D-033, and are left as
+written. How the system works technically is in `docs/SPEC.md`, the contract. How an
 agent must work is in `CLAUDE.md`. Installing is covered in `README.md`. Each fact lives
 in one place; everywhere else only points to it.
 
@@ -81,14 +82,15 @@ still recognise it.
 
 ## 2. Where the work stands
 
-*Checked by the architect on 2026-09-16 against the code, the docs and git.*
+*The table is current as of 2026-09-18. The lists below it were last reviewed on
+2026-09-16; later progress is recorded under section 3.*
 
 | | |
 | --- | --- |
-| Last commit | `2054ec9`: push permission and PLAN.md additions; CI green on GitHub |
-| Tests | 259 passing on both drivers, PHPStan clean at level 8, as reported by the executor; not re-run by the architect |
-| CI | checked by the architect on GitHub after every push; see the latest run for the current tip |
-| Live site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site, Brutalist character (D-002) |
+| Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
+| Tests | 618 on both drivers, PHPStan clean at level 8 (2026-09-18) |
+| CI | read after every push from GitHub's public API (CLAUDE.md) |
+| Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
 
 Slices 1–4.6 are verified in a browser against the architect's checklist (2g and 2h,
@@ -254,7 +256,17 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    (`632a474`), the stale-code guard (`5a3a2fb`), and the page as a sheet (`521231d`).
    Deployed to the demo on 2026-09-18 (`521231d`), with migration 0015 applied by the owner
    through the update screen — D-019's gate behaved on the live site exactly as described.
-6. **Repeater field, the Columns block (D-008), more blocks.** See O-11.
+6. **Before more blocks, in the owner's order of 2026-09-18:** ← *current*
+   - Housekeeping: one session on the development site (D-033), pending migrations applied
+     from the command line.
+   - a. Links point at pages, not typed paths: a page reference wherever a link is entered,
+     rich text included.
+   - b. The admin's own design system reworked (D-007 brought forward): spacing, type,
+     panels, buttons, tables, forms, empty states. The owner judges before/after screenshots.
+   - c. The design layer: D-032's chrome choices, a real mobile menu, the current page
+     marked; then proposals for what makes two Boxlet sites look genuinely different.
+   - d. Then the Columns block (D-008) and more blocks. The repeater field it stands on is
+     done (6a, `e141816`); it adds no browser scenario until Columns uses it. See O-11.
 7. **Slice 6, languages**, including adding a language from the admin. See O-12.
 8. **Slice 7, forms and mail:** form builder, `{{form:slug}}`, submissions, SMTP and
    Resend, admin notification, autoreply, honeypot, test-mail button. See O-6.
@@ -544,7 +556,9 @@ D-016 are superseded (their requirements stand); SPEC §3 and §5.3 are updated.
 
 ### D-018: Working speed
 
-**Status:** approved 2026-09-17
+**Status:** approved 2026-09-17; its architect parts (restarting a stalled executor,
+reviewing each commit) are superseded by D-033, and the suite moved to
+`tools/browser-suite` (D-029)
 
 The work was stalling on process, not on the product: every command and every message
 waited for the owner, the executor ended turns without doing the steps it announced, and
@@ -646,7 +660,8 @@ and nothing to swap out before release.
 
 ### D-023: Develop in a separate checkout, deploy to the demo on purpose
 
-**Status:** decided by the architect on the owner's delegation, 2026-09-17
+**Status:** superseded by D-033 (decided by the architect on the owner's delegation,
+2026-09-17)
 
 Until now the executor worked directly in the live checkout, so half-written code was live
 the moment it was saved, and every new migration took the demo offline unannounced.
@@ -880,6 +895,38 @@ has judged yet.
 
 **Trade-offs.** Four more controls to design for every character. In return the owner can
 make the chrome feel like theirs without any combination that can come out unreadable.
+
+### D-033: One session, working on the development site
+
+**Status:** decided by the owner in the handover task of 2026-09-18
+
+There is no architect session and no separate development clone any more. One session
+works directly in the checkout that serves https://boxlet.svejedobro.hr, commits and
+pushes as it goes, and keeps this file current.
+
+- **D-023 is superseded.** `~/boxlet-dev` is gone and there is no deploy by pull: what is
+  saved is what the development site runs. The site is a demo with no real content and may
+  be reinstalled; the rule against ad-hoc writes to `boxletcms` stands (D-002).
+- **D-018's architect parts are gone**: nobody restarts a stalled session or reviews each
+  commit. Where D-006 says "verified against the architect's checklist", the session now
+  verifies its own work in the browser, and the owner judges anything visual from
+  screenshots.
+- **What stays:** the tests on both drivers and PHPStan before every commit, CI read after
+  every push and fixed before new work, and the browser suite (D-029).
+- **The browser suite runs against the development site.** Only the scenarios that would
+  damage it — installing from nothing, locking the account, writing into the database or
+  the migrations directory directly — declare `copy: true` and run against the throwaway
+  copy under `~/boxlet-browser`. The development site's admin password comes from a file
+  outside the repository (`~/boxlet-browser/dev-admin.json`) or the environment. This
+  replaces the lesson "checks run on a copy" below for everything else.
+- **Pending migrations are applied from the command line** (`php migrations/migrate.php`).
+  D-019's update screen stays as the product's way, because a real site has no shell; in
+  development it must never wait for the owner to press a button. The script goes through
+  the same code as the button, so the lock, the SQLite backup and the gate behave the same.
+
+**Trade-offs.** Half-written code is briefly live on the development site, and a migration
+takes it dark until the script runs — seconds, because the session runs it at once. In
+return the owner sees progress as it happens, with nobody relaying it.
 
 ### Lessons from the browser checks (2026-09-16)
 

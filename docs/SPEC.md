@@ -97,7 +97,14 @@ here rather than keeping a second copy of the list.
 sortablejs      1.15.6    MIT    reordering blocks inside the editor canvas
 tiptap.bundle   3.31.3    MIT    the rich text editor (§5.3)
 cropper         1.6.2     MIT    cropping a picture in the library (D-026), js and css
+lucide icons    1.47.0    ISC    the admin's icons, one SVG sprite (D-037)
 ```
+
+The icons are a sprite of only the icons the admin uses, `public/assets/vendor/icons.svg`,
+written by `tools/icons/build.php` from Lucide's published package at a pinned version. That
+script downloads SVG files and writes one; it installs nothing and needs no npm, so it is not
+a second exception to "no build step" — the sprite is committed and served as it is. An icon
+is drawn with `icon('name')` and is decoration: whatever holds it says what it does in words.
 
 SortableJS earns its place because reordering happens inside an iframe, where native
 HTML5 drag and drop does not handle touch usably, and a tablet is a real case for the

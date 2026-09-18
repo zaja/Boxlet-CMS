@@ -1031,6 +1031,28 @@ else stays inside the existing matrix.
 **Trade-offs.** One script on visitors' pages, where there were none; a page without it is
 complete, so the cost is only the file. Seven more controls on one screen, each a closed set.
 
+### D-037: Icons in the admin
+
+**Status:** approved by the owner 2026-09-18 ("an icon library in the admin, to use icons in
+many places"); the library chosen by the session
+
+Lucide (ISC licence, a large consistent outline set), vendored under the SPEC §3 rule as one
+SVG sprite holding only the icons in use, fetched at a pinned version by
+`tools/icons/build.php`. Drawn with `icon('name')`, in the text colour, hidden from assistive
+technology: a control showing an icon alone carries a visually-hidden label and a title. A
+test fails when the sprite is not well-formed or lacks an icon the code asks for.
+
+**Trade-offs.** One more vendored file (8 KB). Adding an icon means running the script, which
+needs the network on a maintainer's machine, never on a user's server.
+
+### D-038: The owner's review of the admin, 2026-09-18
+
+**Status:** approved by the owner 2026-09-18 (their list of changes)
+
+- The bar: Header and footer moves under Design, as a second entry in a Design group;
+  Settings leaves the navigation and joins View site and Log out on the right, all three as
+  icons. On a phone the navigation folds under a menu button.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

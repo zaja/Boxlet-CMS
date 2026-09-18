@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 661 on both drivers, PHPStan clean at level 8 (2026-09-18) |
+| Tests | 668 on both drivers, PHPStan clean at level 8 (2026-09-18) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1076,6 +1076,29 @@ needs the network on a maintainer's machine, never on a user's server.
   keeps the 3:1 contrast D-012 requires, so a field is still found at rest. A test holds it.
 - **Every field says what it does**, in `lang/en/hints.php`; a test fails for a block field
   without a description.
+
+### D-039: The owner's second review of the admin, 2026-09-18
+
+**Status:** approved by the owner 2026-09-18 (their list of changes)
+
+- **Wider lists.** Dashboard, Pages and Menus use the wide column, as Media and Design did: a
+  table in the reading column scrolled sideways.
+- **The status is the switch.** On the page list "Published" and "Draft" are the buttons
+  that change them; Delete is a trash icon. Both are named for a screen reader and on hover.
+- **Media:** the drop zone the full width, and under it a search field and button, with no
+  words around them. Replace opens a drop zone under the buttons, like the library's, and
+  replaces as soon as a picture is dropped or chosen.
+- **Editing a menu item happens in a dialog** over the list. Without a script the Edit link
+  asks the server for the page with that dialog drawn open, and Cancel and × close it.
+- **Emails and phone numbers are links as typed.** `info@example.com` becomes `mailto:`,
+  `+385 91 234 5678` becomes `tel:+385912345678`, in every link field, rich text, the
+  header's button and menus. A visitor on a phone can tap a number to call it, and an email
+  opens their mail app. A path of digits (`/2024/05/01`) is never taken for a number.
+- **The page editor's toolbar:** devices and View page as icons, Save for Save page. The
+  plain editor is offered only when the visual editor cannot run (without JavaScript); its
+  address still works.
+- Found on the way: a template error in the menu screen reached the development site for a
+  few minutes, because no test drew that screen. A test now draws every admin screen.
 
 ### Lessons from the browser checks (2026-09-16)
 

@@ -1100,6 +1100,23 @@ needs the network on a maintainer's machine, never on a user's server.
 - Found on the way: a template error in the menu screen reached the development site for a
   few minutes, because no test drew that screen. A test now draws every admin screen.
 
+### D-040: The page editor gives the block the room
+
+**Status:** approved by the owner 2026-09-18
+
+- **Page settings & SEO** is one folded line at the top of the panel, opened when wanted,
+  as a block's section style is. It opens by itself when one of its fields was refused, so
+  an error is never folded away.
+- **A selected block's controls are on the block**: move up, move down, duplicate and
+  remove, as icons on its top right corner in the canvas, drawn in the overlay like the
+  insertion control and in its two tones. They send the builder the same actions the
+  panel's buttons did; the panel's row of four buttons is gone. At the ends of the page the
+  move that would do nothing is shown as unavailable.
+
+**Trade-offs.** The controls now live inside the canvas frame, so they are reached by
+clicking the block first — which is also how a block is chosen. The plain editor keeps its
+own buttons.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

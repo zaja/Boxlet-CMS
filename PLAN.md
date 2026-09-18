@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 635 on both drivers, PHPStan clean at level 8 (2026-09-18) |
+| Tests | 636 on both drivers, PHPStan clean at level 8 (2026-09-18) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -971,6 +971,33 @@ while something links to it, as a picture in use is. Blocking would be the safer
 but needs a "where is this page linked from" search across every block; it is noted as a
 follow-up rather than built now. SPEC §5.6's `{{page:slug}}` tag, never built, is dropped
 in favour of this: a reference by slug breaks exactly the way typed paths do.
+
+### D-035: The admin's design system, second version
+
+**Status:** proposed 2026-09-18; built on the development site for the owner to judge from
+before/after screenshots of every screen
+
+The owner's verdict on the first version: cards with no vertical rhythm, buttons stuck to
+the card edge, no character anywhere. The second version keeps the rule that the admin has
+its own fixed `--ui-*` tokens and never reads the site's (SPEC §5.4), and changes:
+
+- **Character.** Warm paper neutrals instead of cool grey; one dark bar across the top with
+  a mark drawn in CSS beside the site's name; a deep indigo accent for what can be pressed.
+  Titles in Space Grotesk, text in Inter — both already shipped for the site's pairings,
+  declared under admin-only names so a site pairing can never change the admin.
+- **Rhythm.** One spacing scale. Panels, fieldsets, tables and a form's closing button never
+  touch: whatever follows one sits a panel's gap below it. A heading that opens a panel is
+  not spaced twice.
+- **Components.** One button height (2.5rem, 2rem inside table rows), inputs of the same
+  height with a focus ring, fieldset legends as panel titles, tables with row titles in ink
+  rather than as underlined links, status pills with a dot, empty states with a drawn box.
+- **A dashboard** that shows where the site stands (pages, pictures, character, menus) and
+  the four things an owner comes to do, instead of one sentence.
+- **Phones.** No screen scrolls sideways: three screens did before this, measured, and the
+  screens scenario now asserts it (`21-admin-screens`).
+
+The bar's light inks on the dark bar are measured by their own contrast test; everything
+else stays inside the existing matrix.
 
 ### Lessons from the browser checks (2026-09-16)
 

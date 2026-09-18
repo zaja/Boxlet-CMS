@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 646 on both drivers, PHPStan clean at level 8 (2026-09-18) |
+| Tests | 661 on both drivers, PHPStan clean at level 8 (2026-09-18) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1052,6 +1052,30 @@ needs the network on a maintainer's machine, never on a user's server.
 - The bar: Header and footer moves under Design, as a second entry in a Design group;
   Settings leaves the navigation and joins View site and Log out on the right, all three as
   icons. On a phone the navigation folds under a menu button.
+- **Pages:** the list shows when each page was last edited, in the site's time zone.
+- **Links everywhere a page can be chosen** (a block's link field, the header's button, a
+  menu item; not rich text): choosing a page fills in its address, read-only, and offers its
+  title as the text, which the owner may change. This replaces D-034's hidden address field.
+- **Menus:** arrows instead of Move up and Move down; an item can be edited in place; the
+  name and Rename on one line. Found while doing it: renaming a menu took it off the site,
+  because the header and footer find their menu by name. A rename is now followed.
+- **Media:** a drop zone that uploads as soon as pictures are dropped or chosen, beside the
+  search. On a picture's page: the focal point is gone (its controls and its route; stored
+  points keep their meaning, and the crop dialog still carries one over), Crop, Replace and
+  Delete are one word and an icon each, and Replace opens its form only when pressed. The
+  "Suggested — check it" badge is gone; a suggested description is still recorded as one, so
+  replacing a picture never overwrites a description the owner confirmed (D-025).
+- **Settings:** "Pictures" is Branding. The maintenance message sits with the maintenance
+  switch, explained, and saves on its own. There was a logo here that nothing drew, and a
+  second one on the header screen that the header did draw: now there is one, under
+  Branding, and the header's earlier choice is carried over until Branding is saved.
+- **The logo keeps its shape**, on the site and in its chooser: drawn from `full`, the one
+  size that is never cropped. The cost: a logo uploaded as a large photograph is sent at up
+  to 2400 pixels wide. Logos are usually small, so this was chosen over a new preset.
+- **Softer field borders.** The top and sides of a text field are light; its bottom edge
+  keeps the 3:1 contrast D-012 requires, so a field is still found at rest. A test holds it.
+- **Every field says what it does**, in `lang/en/hints.php`; a test fails for a block field
+  without a description.
 
 ### Lessons from the browser checks (2026-09-16)
 

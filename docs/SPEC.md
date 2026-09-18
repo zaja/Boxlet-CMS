@@ -528,7 +528,9 @@ caches and is still served from disk (`Url::versioned()`).
 
 **Layer 1 storage.** `design_tokens` holds the decisions, one row per key: `seed`,
 `secondary` ('' when unused), `typography`, `scale`, `spacing`, `radius`, `shadow`,
-`container`, `surface_contrast`. Derived values are never stored.
+`container`, `surface_contrast`, `header_width`, `boxed`, `page_background`. Derived values
+are never stored. A site saved before a decision existed loads with that decision at the
+default character's value, so an older `design_tokens` set is never an error.
 
 ```
 typography        editorial | classic | modern | grotesk | rounded | mono
@@ -539,7 +541,22 @@ radius            none | subtle | round | pill                --radius-s/m/l/but
 shadow            none | soft | hard | layered                --shadow-s/m/l, --border-width/card
 container         narrow | normal | wide | full               --container-width/narrow/wide
 surface_contrast  low | medium | high                         lightness of --color-surface
+header_width      content | full                              --page-header-width
+boxed             no | yes                                    --page-frame (0 when no)
+page_background   surface | border | contrast                 --page-bg, from the palette
 ```
+
+**The page as a sheet** (PLAN.md D-031). `boxed` insets the page by `--page-frame`, and
+`--page-bg` paints what that inset reveals; `--page-sheet` is the page itself and stays
+`--color-background`. The header takes its own width rather than the content's, so a
+full-width bar over a narrow column is one decision, not a second container.
+
+The background is a shade **from the palette**, never a free colour — the reasoning this
+section already uses to refuse a free colour per section. It gains no contrast pair, and
+that is a consequence of the geometry rather than an exemption: when `boxed` is `no` the
+frame is zero, so the colour is never visible, and when it is `yes` the sheet covers every
+element that renders text. `tests/page_test.php` asserts that nothing escapes the sheet
+rather than leaving it as a claim.
 
 **Palette.** Derived in OKLCH from the seed: background, tinted surface, border, text and
 muted text carry a trace of its hue; the seed itself is the accent and link colour; the

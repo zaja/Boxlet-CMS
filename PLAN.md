@@ -831,6 +831,25 @@ person can put on a page.
 alternative — a `scope` key in the block definition — would have changed a frozen contract
 to express something the directory already says.
 
+### D-031: The three new design decisions, and what they are not
+
+**Status:** decided by the architect on the owner's delegation, 2026-09-18
+
+- **Header width**: two values, "same as the content" or "full width". Not a second
+  container decision with four values: the header either lines up with the page's column or
+  it spans the window, and everything else follows the container the site already has.
+- **Boxed layout**: yes or no. No separate measure — a boxed page uses the container width
+  that is already chosen.
+- **Page background**: a shade derived from the palette (a small closed set), never a free
+  colour, for the same reason §5.4 refuses a free colour per section: an open colour puts
+  unreadable combinations back within reach. It applies only around a boxed page, so no
+  text ever sits directly on it, and `Palette::failures()` gains no new pairs. A test
+  asserts that: nothing places text on the page background.
+
+**Trade-offs.** Less freedom than a colour picker and a fourth width. In return the palette
+keeps its guarantee, the Design form gains two switches and one small choice rather than
+three more decisions, and the contrast work stays the size it is.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

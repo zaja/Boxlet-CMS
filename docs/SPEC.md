@@ -802,8 +802,10 @@ page, no third party, and nothing stored that identifies a visitor.
   not from the logged-in admin — told by the `boxlet_session` cookie, which a visitor never
   receives, without starting a session.
 - **What is stored:** per day, in the site's time zone: the path without its query string,
-  the source as a bare domain ("Direct" for none or the site's own), the country as an ISO
-  code (`--` when unknown), and the device, browser and system as families without versions.
+  the source as a bare domain (an Android app's package name for a view from an app), the
+  country as an ISO code, and the device, browser and system as families without versions.
+  An empty string is "none" or "unknown" in every dimension — a direct visit, which a link
+  from the site itself also is, or a country not known; the admin supplies the words.
   Views and visitors are counts.
 - **A visitor** is `HMAC-SHA256(IP, User-Agent, host)` under a salt made fresh each day and
   kept in `settings`. The first request of a new day replaces the salt and deletes the

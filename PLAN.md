@@ -280,7 +280,8 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    notification, autoreply, honeypot, test-mail button. Built 2026-09-19 (D-045, D-046);
    left: receiving both emails for real, with the owner's mail account.
 8a. **Statistics** (D-051), round 1: counting, the Statistics screen, the dashboard card,
-   Settings. ← *current*, started 2026-09-19. Round 2 is O-20.
+   Settings. ← *current*, started 2026-09-19; counting and the Settings panel done. Round 2
+   is O-20.
 9. **Slice 8, operations:** page cache, backup, update by ZIP upload, revisions,
    sitemap, regenerating media variants (O-13), and 2FA (O-4).
 10. **Slice 9, release:** replace the development photographs (D-022); six more blocks (gallery, features, CTA, accordion,
@@ -1447,6 +1448,31 @@ database, delete everything, a suggested privacy-policy text in English and Croa
 owner approved adding it when it comes), filtering by clicking with the state in the address
 and a chosen date range, export (CSV and Plausible's import format) and import, counting 404s,
 trusted proxies, grouping small numbers, an optional attribution in the footer.
+
+**Counting, as built (2026-09-19):**
+- `App\Modules\Stats\Tracker`, `Bots` and `Agent`, called from `public/index.php` after
+  `send()`.
+  - `Tracker::wanted()` needs no database: method, status, content type, path, prefetch,
+    the admin's cookie and the bot list. The connection is released and the database
+    touched only after it says yes.
+  - Measured on the development site: 10 counted and 10 uncounted requests each averaged
+    52–60 ms, with no difference between them.
+- **Three migrations, 0018–0020, not the one the plan named.** SPEC §5.0 keeps one table per
+  migration file.
+- **An empty string means "none" or "unknown"** in every dimension: a direct visit, an
+  unknown country, an unrecognised browser. The admin supplies the words, so SPEC §5.7's
+  `--` and "Direct" were changed to match.
+- **An Android app's Referer** (`android-app://com.slack/`) is kept as the package name. It
+  tells where the visitor came from as well as a domain would.
+- **Link previews are programs; in-app browsers are people.** WhatsApp, Telegram and the
+  other messengers' link previews are listed as bots. A page opened inside Instagram,
+  Facebook or Line is a person and is counted.
+- **Known gap:** while maintenance mode is on, `UpdateGate::isAdmin()` starts a session for
+  every visitor to see whether they are the admin. A visitor who came during maintenance
+  keeps that cookie until the browser closes, and is not counted until then. The fix would
+  read the cookie before starting the session, but the maintenance tests log in without a
+  cookie, so they would have to change with it. This is left for when maintenance is next
+  worked on.
 
 ### Lessons from the browser checks (2026-09-16)
 

@@ -342,8 +342,9 @@ media (
 )
 media_meta (id, media_id, locale, alt, caption)
 
-forms (id, name, slug, fields_json, settings_json)
-form_submissions (id, form_id, data_json, ip_hash, created_at)
+forms (id, locale, name, fields_json, settings_json, created_at, updated_at)
+  -- one language per form, like menus; placed on a page by the Form block (PLAN.md D-046)
+form_submissions (id, form_id, page_id, data_json, ip_hash, read_at, created_at)
 
 design_tokens (id, group_key, value_json)
 settings (key, value_json)
@@ -762,8 +763,11 @@ Inline only, for use inside rich text. Anything structural is a block.
 Closed list for v1:
 
 ```
-{{form:slug}}  {{snippet:key}}  {{lang:switcher}}  {{year}}
+{{snippet:key}}  {{lang:switcher}}  {{year}}
 ```
+
+`{{form:slug}}` was on this list; a form is a block instead (PLAN.md D-046), because
+anything structural is a block.
 
 `{{page:slug}}` was on this list and never built. A reference by slug breaks exactly as a
 typed path does when the address changes; a link to a page is a `page:{n}` reference

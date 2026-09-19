@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 735 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 746 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1278,6 +1278,32 @@ Passwords and the Resend key are sealed with APP_KEY (libsodium secretbox, `Secr
 never drawn back; an empty field keeps them. SMTP offers STARTTLS or SSL only: Symfony
 Mailer 6.4 cannot switch off its automatic STARTTLS, so a "none" choice would have done
 nothing. Tests on both drivers (with a capturing transport); scenario 30-mail saves nothing.
+
+### D-046: Forms
+
+**Status:** decided 2026-09-19 (Slice 7)
+
+- **A form is placed on a page with a Form block**, not the `{{form:slug}}` tag SPEC §5.6
+  listed: "anything structural is a block", and as a block it takes the section styles
+  every other block has. The tag is not built, as `{{page:slug}}` was not (D-034). Forms
+  have no slug.
+- **A form belongs to one language**, as a menu does (`forms.locale`, a schema addition
+  before v0.1): its labels, button and replies are words. A new one starts as a contact
+  form — name, email, message — labelled in its own language.
+- **Six field kinds**: short text, email, phone, message, list of choices, tick box. No
+  uploads: a public upload is a door. At most 20 fields.
+- A field's **key** is fixed when it is made and never follows its label. A message keeps
+  each answer **with the label it was asked under**, so editing a form later leaves old
+  messages readable as sent.
+- The edit screen needs no script: every button (add, move, remove, save) posts the whole
+  form and saves it. A new form notifies its owner and sends visitors no reply until the
+  owner writes one.
+
+7b built 2026-09-19: migration 0016 (forms, form_submissions), the Forms screen in the admin
+bar, the edit screen. The browser check found the default labels stored as undefined admin
+keys ("forms.default.email"); they are now visitor words in the form's language, and a test
+reads them. A disabled ghost button now looks disabled everywhere, not only on the pages
+list, where the rule used to live.
 
 ### Lessons from the browser checks (2026-09-16)
 

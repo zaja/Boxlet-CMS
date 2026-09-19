@@ -280,8 +280,8 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    notification, autoreply, honeypot, test-mail button. Built 2026-09-19 (D-045, D-046);
    left: receiving both emails for real, with the owner's mail account.
 8a. **Statistics** (D-051), round 1: counting, the Statistics screen, the dashboard card,
-   Settings. ← *current*, started 2026-09-19; counting, the Settings panel, the screen and
-   the dashboard card and countries done; the privacy text next. Round 2 is O-20.
+   Settings. Round 1 done 2026-09-19 (counting, Settings panel, screen, dashboard card,
+   countries, privacy text). Round 2 is O-20.
 9. **Slice 8, operations:** page cache, backup, update by ZIP upload, revisions,
    sitemap, regenerating media variants (O-13), and 2FA (O-4).
 10. **Slice 9, release:** replace the development photographs (D-022); six more blocks (gallery, features, CTA, accordion,
@@ -1519,6 +1519,18 @@ trusted proxies, grouping small numbers, an optional attribution in the footer.
   `'error'`, and `AdminView` drew anything but `'warning'` as success. A refused Mail save,
   two-step code, translation or language was shown in green. `AdminView` now passes
   `'error'` through to `notice-error`.
+
+
+**The privacy text (2026-09-19):**
+- Settings offers a suggested privacy-policy paragraph in English and Croatian, written for
+  the site's own settings:
+  - the retention period it has, with Croatian declension (24 mjeseca, 6 mjeseci);
+  - the country paragraph only while the database is in use;
+  - the Do Not Track paragraph only while that setting is on.
+- It lives in `lang/{code}/stats-privacy.php`, so another language is one new file. It is
+  never shown to a visitor.
+- It is labelled "a starting point, not legal advice".
+- **Round 1 is complete.** Round 2 stays O-20.
 
 
 ### Lessons from the browser checks (2026-09-16)

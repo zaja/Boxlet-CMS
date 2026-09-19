@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 771 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 773 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1333,6 +1333,23 @@ Scenario 33-form-look photographs the form under all five characters on the copy
 came out a narrow strip in its column and now fills it. The copy's sync now carries
 migrations/, which it never did: the demo seed needed table 0016 and the copy's install
 failed without it.
+
+### D-047: A replaced picture is a new address, and replacing asks first
+
+**Status:** decided 2026-09-19, from the owner's report
+
+Replacing a picture kept its id and name, so every variant came back at the address the old
+one had, and browsers kept showing the old picture from their cache — measured in the
+library, still red after a reload when the new one was blue. Every variant address now
+carries `?v=` and the first eight characters of the original's hash, which a replacement
+changes (`MediaPresets::version`); the file on disk and its serving without PHP are
+untouched, as with site.css. The picture's address in SPEC §5.1 is unchanged; only a query
+string is added.
+
+Dropping or choosing a file in Replace now asks first, naming the file and how many pages
+show the picture, because it changes all of them and the old picture cannot be brought
+back. Declining leaves everything as it was. Scenario 34-replace checks both, reading the
+colours off the thumbnails themselves.
 
 ### Lessons from the browser checks (2026-09-16)
 

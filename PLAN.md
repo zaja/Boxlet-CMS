@@ -280,8 +280,8 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    notification, autoreply, honeypot, test-mail button. Built 2026-09-19 (D-045, D-046);
    left: receiving both emails for real, with the owner's mail account.
 8a. **Statistics** (D-051), round 1: counting, the Statistics screen, the dashboard card,
-   Settings. ← *current*, started 2026-09-19; counting and the Settings panel done. Round 2
-   is O-20.
+   Settings. ← *current*, started 2026-09-19; counting, the Settings panel, the screen and
+   the dashboard card done; geolocation next. Round 2 is O-20.
 9. **Slice 8, operations:** page cache, backup, update by ZIP upload, revisions,
    sitemap, regenerating media variants (O-13), and 2FA (O-4).
 10. **Slice 9, release:** replace the development photographs (D-022); six more blocks (gallery, features, CTA, accordion,
@@ -1473,6 +1473,32 @@ trusted proxies, grouping small numbers, an optional attribution in the footer.
   read the cookie before starting the session, but the maintenance tests log in without a
   cookie, so they would have to change with it. This is left for when maintenance is next
   worked on.
+
+**The Statistics screen and dashboard card, as built (2026-09-19):**
+- **The screen**, `/admin/statistics?period=today|7d|30d|12m`:
+  - The period and a full table (`&all=`) are in the address. Nothing on it needs a script.
+  - `12m` is the last 365 days, charted by week (Monday first). Every other period is
+    charted by day.
+- **Today's chart is the week that today ends.** There is no hour in the counts, so one day
+  would be one point, not a line. Adding an hour would multiply every day's rows by up to
+  24, which the chart does not justify.
+- **Visitors over a period are the sum of each day's visitors.** A key lives one day, so
+  someone who comes on two days counts as two. The screen says so under the tables.
+- **The four figures:** visitors, views and views per visitor are each shown against the
+  period before. The share of visitors on a phone shows the period before's share instead
+  of a change: a percentage of a percentage reads badly.
+- **The chart**, drawn by `Chart` as SVG:
+  - The lines stretch to the box. The axis numbers are HTML, so they keep their size on a
+    phone.
+  - Exact figures are a `<title>` tooltip per point, plus a "show as a table" under the
+    chart.
+- **Share bars** are an SVG `<rect>` sized by attribute, since the admin CSP refuses a
+  `style` attribute.
+- **The bar item and the dashboard card** appear only while statistics are on.
+  `AdminView` reads that setting on every admin page, which costs one small query.
+- **Dark mode**, which the owner's specification asks for, is a question for the whole
+  admin, which has none. It is not settled for this screen alone.
+
 
 ### Lessons from the browser checks (2026-09-16)
 

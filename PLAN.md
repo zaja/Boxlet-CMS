@@ -1247,8 +1247,9 @@ language's page at another language's address — left until a site asks for it.
 **Status:** decided 2026-09-19 (resolves O-19)
 
 The few words Boxlet itself puts on a visitor's page — "page not found" and its sentence,
-the names of the menu and of the language switcher — live in `lang/site/{code}.php`, one
-file per language, read by `site_t($key, $locale)`: the page's language, else the site's
+the names of the menu and of the language switcher — live in `lang/{code}/site.php`, in
+each language's own folder beside the admin's (the owner's suggestion: one folder per
+language, so a Croatian admin later is `lang/hr/` too), read by `site_t($key, $locale)`: the page's language, else the site's
 main language, else English. Shipped complete for en, hr, de, fr, it, es and sl; a test
 fails if any file lacks a word English has. Not `t()`, which is the admin's language.
 
@@ -1256,6 +1257,18 @@ Not covered, deliberately: the maintenance and update pages. They are drawn with
 database (D-019, D-021), so they cannot know the site's languages; the maintenance page
 shows the owner's own message where there is one. Overriding these words from the admin is
 not built; the owner writes everything else a visitor reads.
+
+### D-045: Mail through Symfony Mailer, Resend through its API
+
+**Status:** approved by the owner 2026-09-19 (resolves O-6)
+
+symfony/mailer, already on the closed list, sends all mail. Transports: SMTP, for any mail
+server; Resend through its **HTTP API**, not its SMTP endpoint, because shared hosts often
+block outbound SMTP ports while HTTPS always gets out, and the API's errors say what went
+wrong; and the server's own sendmail as the last resort. The Resend transport is Boxlet's
+own — a small class on Symfony Mailer's transport interface calling the API with PHP's curl
+— rather than symfony/resend-mailer, which would add it and symfony/http-client to the
+closed list (the owner chose this over adding them).
 
 ### Lessons from the browser checks (2026-09-16)
 
@@ -1302,9 +1315,7 @@ placing `storage/disable-2fa` on the server over FTP. To confirm: it stays optio
 than forced (a single admin with forced 2FA and a lost phone means a lost site).
 *Step 9.*
 
-**O-6. Resend transport.** Slice 7 promises Resend, but no Resend package is on the closed
-dependency list. Options: Resend's SMTP endpoint through symfony/mailer, or its HTTP API
-called directly. *Step 8.*
+*O-6 resolved by D-045.*
 
 *O-7, O-8 and most of O-9 resolved by D-028; analytics remains open there.*
 

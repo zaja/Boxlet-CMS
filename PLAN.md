@@ -282,6 +282,15 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 8a. **Statistics** (D-051), round 1: counting, the Statistics screen, the dashboard card,
    Settings. Round 1 done 2026-09-19 (counting, Settings panel, screen, dashboard card,
    countries, privacy text). Round 2 is O-20.
+8b. **The admin redesign, "Workbench"** (D-052). ← *current*, started 2026-09-19. Steps:
+   1. Dark palette: every `--ui-*` token retuned, contrast matrix re-measured.
+   2. The shell: a grouped left rail and a top strip.
+   3. The activity log: migration, writes from the controllers, a Full log screen.
+   4. Overview: a metric strip, Needs attention, Most read, Recent activity.
+   5. Pages: the table restyled, a language filter, the Home badge, an overflow menu.
+   6. Media: a table with "Used on" and its filters.
+   7. Settings as a ledger with its own sub-navigation.
+   8. The ⌘K palette, with a `/admin/search` page behind it.
 9. **Slice 8, operations:** page cache, backup, update by ZIP upload, revisions,
    sitemap, regenerating media variants (O-13), and 2FA (O-4).
 10. **Slice 9, release:** replace the development photographs (D-022); six more blocks (gallery, features, CTA, accordion,
@@ -1554,6 +1563,45 @@ was traced before anything was believed. None came from statistics.
   other steps, ended the whole call with exit 144 and nothing after it ran. The cause is
   not known: a later check found that the pattern does not match the calling shell. The
   kill now runs in a call of its own.
+
+
+### D-052: The admin redesign, "Workbench" (v2)
+
+**Status:** approved by the owner 2026-09-19, from the handoff in
+`docs/design_handoff_admin_v2/`. That folder holds the prototype, Nocturne's tokens and
+`IMPLEMENTATION-boxlet.md`, the designer's notes after reading this code.
+
+This is D-007's "the admin must look good and be original", brought forward. The owner
+chose three things, and everything else follows the handoff.
+
+**The owner's three choices:**
+- **Dark, as drawn.** This reverses admin.css's "warm paper with one dark bar" position.
+  - Every `--ui-*` token is retuned, starting from the values in the implementation notes
+    §3.
+  - The contrast matrix in `tests/contrast_test.php` is re-measured, not loosened.
+  - The site's own tokens are untouched: the admin stays its own fixed system (SPEC §5.4).
+- **Buttons stay filled.** Nocturne's outlined primary gives way to CLAUDE.md's "no control
+  is ever invisible at rest". This is the one point where the design gives way.
+- **Everything, the activity log included.** The log is a new table written to from the
+  controllers.
+
+**Where the handoff meets the rules:**
+- **No style attributes** (the admin CSP). Every value goes in a stylesheet. Dynamic sizes
+  become bucketed classes or server-drawn SVG, as the statistics bars already are.
+- **No CDN and no new dependency.** Icons come from the existing Lucide sprite, extended
+  through `tools/icons/build.php`, not Phosphor from unpkg. Fonts stay self-hosted: Inter is
+  already "Boxlet UI".
+- **Every string goes through `t()`.**
+- **Controls stay controls.** Page status stays a switch with a visible edge (D-039).
+  Destructive actions go behind a scriptless `<details>` overflow menu, not a script-only
+  one.
+- **Things Boxlet does not have are left out:**
+  - the site switcher: one site per install;
+  - "Users": one admin, no accounts (CLAUDE.md);
+  - the actor column in the activity log: there is only ever one actor.
+  - The top strip shows the site's own host, without a switcher.
+- **Works without a script.** ⌘K is a script on top of a real `/admin/search` page that
+  works without one.
 
 
 ### Lessons from the browser checks (2026-09-16)

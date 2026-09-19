@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 717 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 722 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1228,6 +1228,19 @@ missing. SPEC §8 Slice 6's acceptance ("edit one Croatian block, only that bloc
 stale in both translations") is a test on both drivers and scenario 28-stale in the
 browser, which leaves the site as found. Marking current reloads the editor, so unsaved
 work there is guarded by the leave warning rather than kept.
+
+Step 4, built 2026-09-19: the switcher leads to **this page in each language** where a
+published translation exists, else to that language's home page, else leaves the language
+out (`Alternates`); a translated page names every published version with hreflang, the main
+language's as x-default; and a picture with **no alt row** in the page's language takes the
+fallback language's (the main one), while an alt left empty on purpose stays empty. Two
+tests encoded the old rules and were changed deliberately (switcher to every home; no alt
+fallback). Scenario 29-switcher leaves the site as found.
+
+Not built, and said so to the owner: the per-site setting D-043 mentions ("a site can change
+this"). Menus are per language and the switcher never links an untranslated page in another
+language, so there is nothing left for the setting to switch except serving the main
+language's page at another language's address — left until a site asks for it.
 
 ### Lessons from the browser checks (2026-09-16)
 

@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 681 on both drivers, PHPStan clean at level 8 (2026-09-18) |
+| Tests | 682 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -248,8 +248,11 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    - Also done: D-026 crop (`47558d0`), a contrast guard for button variants (`19717d6`),
      4e per-page SEO (`613bacf`), 4f CC0 photographs on the demo (`765236b`), confirmed by
      the owner 2026-09-17.
-   - Left: the Slice 5 acceptance check from SPEC §8 (a ~4 MB photograph, served under
-     200 KB, second request served without PHP).
+   - The Slice 5 acceptance check from SPEC §8 passed 2026-09-19 on the development site
+     (scenario 16, rewritten to save nothing and delete its photograph): the 4.16 MB
+     photograph is served in the hero as AVIF at 144 KB, and the second request is answered
+     from disk — its ETag is the file's own mtime and size, which only nginx reading the
+     file sends. It first failed at 279 KB, which is how O-18's cause was found.
 5. **Site settings, header, footer and a menu builder.** Built 2026-09-17/18 and green on
    CI: menus (`bc7a370`), the browser suite moved into the repository (`b47a031`), the
    render wrapper (`ca92d1c`), header and footer (`a782347`), the chrome screen
@@ -270,7 +273,9 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    - d. Then the Columns block (D-008) and more blocks. The repeater field it stands on is
      done (6a, `e141816`). Columns built 2026-09-18 (D-041), taken before 6c's answer with
      the owner's go-ahead; scenarios 24-columns and 25-columns-look.
-7. **Slice 6, languages**, including adding a language from the admin. See O-12.
+7. **Slice 6, languages**, including adding a language from the admin. Decisions in D-043.
+   ← *next*, started 2026-09-19. Design elements are paused while the owner analyses
+   them (6c and the header and footer proposals).
 8. **Slice 7, forms and mail:** form builder, `{{form:slug}}`, submissions, SMTP and
    Resend, admin notification, autoreply, honeypot, test-mail button. See O-6.
 9. **Slice 8, operations:** page cache, backup, update by ZIP upload, revisions,
@@ -1173,12 +1178,27 @@ What it changed on the development site: the design (its four hand-set decisions
 overwritten; recovered exactly by matching the old stylesheet's hash, tokens.366b260d4cbb:
 spacing normal, container normal, boxed yes, page background surface, on Brutalist's
 colours and type), and About and Services were re-saved unchanged through the plain editor.
-Section styles, pictures and menus were untouched. The design is restored through the
-Design screen, not the database.
+Section styles, pictures and menus were untouched. Restored 2026-09-19 with the owner's
+permission, through the Design screen: the site links tokens.366b260d4cbb.css again, the
+exact file it had.
 
 The copy's server needs `PHP_CLI_SERVER_WORKERS=4`: the installer checks URL rewriting
 by requesting the server from inside a request, which a single-process `php -S` cannot
 answer.
+
+### D-043: Languages, the owner's answers before Slice 6
+
+**Status:** approved by the owner 2026-09-19 (resolves O-12)
+
+- **AI translation ships switched off.** It works once the site owner enters their own
+  key; Boxlet never carries someone else's bill. Which provider comes first is decided when
+  the owner has a key to try; the provider interface has one implementation until then, and
+  the AI part is built last in the slice.
+- **A page with no translation yet is not shown in that language**: it is left out of
+  that language's navigation, and its address there answers "not found" rather than the
+  source language's page. A site can change this in its settings.
+- **What a translation is missing falls back to the site's primary language** — alt text
+  first among it — rather than being drawn empty.
 
 ### Lessons from the browser checks (2026-09-16)
 
@@ -1231,14 +1251,13 @@ called directly. *Step 8.*
 
 *O-7, O-8 and most of O-9 resolved by D-028; analytics remains open there.*
 
-**O-18. AVIF quality is ignored on this Imagick.** Measured on ImageMagick 6.9.12-98: AVIF
-and WebP come out byte-identical at quality 10, 40 and 82, while JPEG honours the number, so
-the setting reaches the encoder and the delegate discards it. Every AVIF made here and on CI
-is therefore at the delegate's own default, and the one-retry size guard can only help where
-GD does the encoding. Options when this is picked up: encode AVIF through GD when it is
-available, look for a build or delegate that honours quality, or accept the default and set
-the size budget from measurement. Decide it with real hosts in view, not this one machine.
-*Before release.*
+**O-18. WebP quality is ignored on this Imagick.** AVIF's half is resolved (2026-09-19):
+the AVIF writer on ImageMagick 6.9.12-98 reads the wand's quality, not the image's, and
+MediaWriter now sets both, so the one-retry size guard works on Imagick hosts too (and its
+threshold is §8's 200 KB, down from 250). WebP still comes out byte-identical at 82 and 75
+through both setters. Browsers that take AVIF never see the WebP, so this matters only to
+the few that do not. Pictures uploaded before the fix keep their heavier AVIF until
+variants can be regenerated (O-13). *Before release.*
 
 **O-19. Front-end text has no translation mechanism.** `t()` is the admin's. Visitor-facing
 strings are written by the site owner, except for the few the product itself supplies — the
@@ -1259,15 +1278,7 @@ the closed field-type list and has never been built. It is the basis of the Colu
 (D-008). It comes after media, because a team grid without photographs cannot be judged.
 *Step 6.*
 
-**O-12. Before Slice 6, languages.** Which AI translation provider ships as the default,
-and does Boxlet ship with translation switched off until the owner adds their own key
-(almost certainly yes, since the alternative is shipping someone else's bill)? What does a
-visitor get for a page with no translation yet? Recommended: configurable per site,
-defaulting to hidden from navigation and a 404 on a direct hit. Also for Slice 6: the
-fallback chain between locales, including what populates `locales.fallback` (nothing does
-today) and how it applies to alt text. Until then a picture with no alt text in the page's
-language renders with an empty alt, which for a picture that carries meaning is worse than
-the source language's alt. *Step 7.*
+*O-12 resolved by D-043.*
 
 **O-13. Regenerating media variants.** Adding, removing or resizing a preset leaves
 existing media with the wrong set. A regeneration pass must be runnable from the admin,

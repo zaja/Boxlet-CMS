@@ -1551,7 +1551,8 @@ was traced before anything was believed. None came from statistics.
 - **Flaky under a full run, passed alone:** `12-picker`.
 - **The copy's sync now includes `public/index.php`** (see sync-copy.sh).
 - **Stopping the copy's server:** `pgrep -f "127.0.0.1:8100"` also matches the shell
-  running it, and kills that shell. Match `"php -S 127.0.0.1:8100"` instead.
+  running it, and kills that shell. Any literal pattern does, since it is in that shell's
+  command line. Use `pgrep -f "php -S 127.0.0.1:810[0]"`, which does not match itself.
 
 
 ### Lessons from the browser checks (2026-09-16)

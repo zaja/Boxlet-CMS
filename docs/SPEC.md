@@ -387,7 +387,8 @@ return [
 ```
 
 Field types (closed set for v1): `text`, `textarea`, `richtext`, `media`,
-`media_multi`, `link`, `select`, `toggle`, `number`, `repeater`.
+`media_multi`, `link`, `select`, `toggle`, `number`, `repeater`, `form` (a form's id, for the
+Form block; added 2026-09-19, PLAN.md D-046).
 
 `translatable: true` marks a field the AI translator touches. Everything else is
 copied verbatim across locales.
@@ -478,7 +479,7 @@ definition stops it with a message naming the block and key:
   at one level of submenu (PLAN.md D-028). Refused at boot, with the other malformed
   definitions, rather than discovered at render.
 - Field types from the closed set that are not implemented yet are rejected. Implemented:
-  `text`, `textarea`, `richtext`, `media`, `link`, `select`, `repeater`.
+  `text`, `textarea`, `richtext`, `media`, `link`, `select`, `repeater`, `form`.
 - `defaults.layout` is one of `layouts`. The layout chosen for a block instance is stored
   in `page_blocks.layout` and validated against `layouts` on save; a stored layout the
   definition no longer declares renders as `defaults.layout` instead of failing.
@@ -502,6 +503,7 @@ richtext         HTML reduced on save to: p, br, strong, b, em, i, h2, h3, ul, o
                  their text; script, style, iframe, svg and similar are removed with
                  their content. Output unescaped by templates.
 media            media id (integer) or null; a placeholder renders until Slice 5
+form             form id (integer) or null; drawn only on a page of the form's language
 link             {"label": string, "url": string}; url is a page reference, page:{n},
                  or an address starting with /, #, ? or http:, https:, mailto:, tel:,
                  with no whitespace or backslash

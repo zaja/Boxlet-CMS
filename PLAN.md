@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 746 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 771 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -277,8 +277,8 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    ← *next*, started 2026-09-19. Design elements are paused while the owner analyses
    them (6c and the header and footer proposals).
 8. **Slice 7, forms and mail:** form builder, submissions, SMTP and Resend, admin
-   notification, autoreply, honeypot, test-mail button. ← *current*, started 2026-09-19:
-   7a mail settings (D-045), then forms, the Form block, notifications, the inbox.
+   notification, autoreply, honeypot, test-mail button. Built 2026-09-19 (D-045, D-046);
+   left: receiving both emails for real, with the owner's mail account.
 9. **Slice 8, operations:** page cache, backup, update by ZIP upload, revisions,
    sitemap, regenerating media variants (O-13), and 2FA (O-4).
 10. **Slice 9, release:** replace the development photographs (D-022); six more blocks (gallery, features, CTA, accordion,
@@ -1304,6 +1304,35 @@ bar, the edit screen. The browser check found the default labels stored as undef
 keys ("forms.default.email"); they are now visitor words in the form's language, and a test
 reads them. A disabled ghost button now looks disabled everywhere, not only on the pages
 list, where the rule used to live.
+
+7c–7e built 2026-09-19:
+- **The Form block** chooses a form through a new field type, `form` (a reference, like
+  `media`; the frozen field list changed deliberately before v0.1, SPEC §5.3). It draws only
+  on a page of the form's own language, so a translated page shows nothing until the owner
+  picks a form in its language. Layouts: heading above, or beside the form.
+- **Sending** posts to `/form/{id}`, the one route exempt from the session CSRF check
+  (`Router::visitorPost`, guarded by a test): visitors have no session. It stands guard
+  itself — a signed time token (three seconds at least, no upper limit, because the Slice 8
+  page cache will serve old tokens), a honeypot, and five messages per sender in ten
+  minutes. Honeypot and timing failures are thanked and dropped. A refused send draws the
+  page again with the answers kept and each problem beside its field; a good one is stored
+  and redirected (303) to the page with the thank-you. The words a visitor reads are
+  site_t() in seven languages.
+- **Mail after a send**: the owner is notified (reply-to set to the sender), and the sender
+  gets the owner's own reply if one is written. A mail failure never costs the message: it
+  is recorded and shown on the messages screen until a test message succeeds.
+- **Messages** in the admin: the list (who, when, new ones marked), one message (marked read
+  on opening, a Reply by email button), delete, and a CSV of all of them — a column per
+  field now or once asked, a cell starting like a formula kept as text.
+
+SPEC §8 Slice 7's acceptance: the form is built, embedded, sent and seen in the admin in the
+browser (scenario 32-contact, leaving the site as found); both emails are asserted through a
+capturing transport. **Receiving them for real waits for the owner's mail account** — the
+development site has no way of sending chosen, and choosing one would send real mail.
+Scenario 33-form-look photographs the form under all five characters on the copy; "beside"
+came out a narrow strip in its column and now fills it. The copy's sync now carries
+migrations/, which it never did: the demo seed needed table 0016 and the copy's install
+failed without it.
 
 ### Lessons from the browser checks (2026-09-16)
 

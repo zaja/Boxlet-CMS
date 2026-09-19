@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 682 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 694 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1199,6 +1199,13 @@ answer.
   source language's page. A site can change this in its settings.
 - **What a translation is missing falls back to the site's primary language** — alt text
   first among it — rather than being drawn empty.
+
+Built in steps, each visible: (1) the Languages panel on the Settings screen, 2026-09-19 —
+add from the installer's ISO list (a blank first choice, so nothing is added by accident),
+switch on and off, order, and remove only while no page or menu is written in it; the
+main language is fixed, first and always on; (2) translating a page; (3) a stale mark on
+the block whose source changed; (4) the switcher leading to the same page, hreflang, and
+the D-043 rules on the front end; (5) AI translation, once there is a key.
 
 ### Lessons from the browser checks (2026-09-16)
 

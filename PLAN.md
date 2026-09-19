@@ -282,7 +282,8 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 8a. **Statistics** (D-051), round 1: counting, the Statistics screen, the dashboard card,
    Settings. Round 1 done 2026-09-19 (counting, Settings panel, screen, dashboard card,
    countries, privacy text). Round 2 is O-20.
-8b. **The admin redesign, "Workbench"** (D-052). ← *current*, started 2026-09-19. Steps:
+8b. **The admin redesign, "Workbench"** (D-052). Done 2026-09-19; the whole browser suite
+   green at the end of it. Steps:
    1. Dark palette: every `--ui-*` token retuned, contrast matrix re-measured.
    2. The shell: a grouped left rail and a top strip.
    3. The activity log: migration, writes from the controllers, a Full log screen.
@@ -1617,6 +1618,25 @@ chose three things, and everything else follows the handoff.
 - The shell's stylesheet was split at the same time: `admin-shell.css` (the rail),
   `admin-strip.css` (the strip) and `admin-rail-compact.css` (the folded rail, its rules
   written twice because a media query cannot sit in a selector list).
+
+
+**The redesign as built (2026-09-19), beyond the steps in §2:**
+- **Ctrl+K belongs to the editor inside rich text.** The palette took it everywhere at
+  first, and with it the editor's "make a link" (D-034). Caught by scenario 20-page-links.
+- **The page list's address is words, not a link:** opening a page on the site moved into
+  the row's menu. Scenario 32-contact read the address from that link and then visited
+  `https://…hrnull`; its cleanup also clicked a delete button inside a closed `<details>`
+  and left a page behind. Both fixed in the scenario, and the two pages it left were
+  deleted through the admin by their ids.
+- **A guessed description counts as described.** The first Media table brought back the
+  "check it" mark the owner removed in D-038; scenario 10-media caught it.
+- **install.php deletes itself when it is opened on an installed site**, which on this
+  development checkout removes a file git tracks. It happened at 20:44 UTC on 19 September
+  from the owner's browser, and `git checkout -- public/install.php` put it back. The
+  behaviour is right (SPEC §6); only the development site feels it.
+- **Sizes:** admin-ui.css was split (admin-parts.css), admin-shell.css split three ways,
+  and admin-media-table.css, admin-activity.css, admin-settings.css and admin-palette.css
+  are new. Every admin stylesheet is under the 300-line rule.
 
 
 ### Lessons from the browser checks (2026-09-16)

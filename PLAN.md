@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 725 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 735 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -276,8 +276,9 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 7. **Slice 6, languages**, including adding a language from the admin. Decisions in D-043.
    ← *next*, started 2026-09-19. Design elements are paused while the owner analyses
    them (6c and the header and footer proposals).
-8. **Slice 7, forms and mail:** form builder, `{{form:slug}}`, submissions, SMTP and
-   Resend, admin notification, autoreply, honeypot, test-mail button. See O-6.
+8. **Slice 7, forms and mail:** form builder, submissions, SMTP and Resend, admin
+   notification, autoreply, honeypot, test-mail button. ← *current*, started 2026-09-19:
+   7a mail settings (D-045), then forms, the Form block, notifications, the inbox.
 9. **Slice 8, operations:** page cache, backup, update by ZIP upload, revisions,
    sitemap, regenerating media variants (O-13), and 2FA (O-4).
 10. **Slice 9, release:** replace the development photographs (D-022); six more blocks (gallery, features, CTA, accordion,
@@ -1269,6 +1270,14 @@ wrong; and the server's own sendmail as the last resort. The Resend transport is
 own — a small class on Symfony Mailer's transport interface calling the API with PHP's curl
 — rather than symfony/resend-mailer, which would add it and symfony/http-client to the
 closed list (the owner chose this over adding them).
+
+Built 2026-09-19 as step 7a of Slice 7: the Email panel on the Settings screen — way of
+sending, sender, where notifications go (else the admin's login address), the chosen way's
+fields only (a script hides the others; without it all are shown), and a test message.
+Passwords and the Resend key are sealed with APP_KEY (libsodium secretbox, `Secret`) and
+never drawn back; an empty field keeps them. SMTP offers STARTTLS or SSL only: Symfony
+Mailer 6.4 cannot switch off its automatic STARTTLS, so a "none" choice would have done
+nothing. Tests on both drivers (with a capturing transport); scenario 30-mail saves nothing.
 
 ### Lessons from the browser checks (2026-09-16)
 

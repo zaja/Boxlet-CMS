@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 790 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 802 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1394,6 +1394,28 @@ only one the site wrote itself, marked on its first line; the owner's own is nev
 Both are ignored by git. Tests write into their own public directory (a new `PUBLIC_PATH`
 setting), never the development site's.
 
+### D-050: Two-step login
+
+**Status:** built 2026-09-19 (resolves O-4)
+
+Optional, never forced, from a panel on the Settings screen. Setting up shows a QR code drawn
+on this server (bacon-qr-code, SVG) and the key as text; it is switched on only by a code
+the app then makes, so nobody is left with it on and no app holding the secret. Ten
+recovery codes are shown once, on the page that answers that step, and stored only as
+password hashes; each works once. The secret is sealed with APP_KEY like the mail
+passwords. New codes need a code from the app; switching off needs the password.
+
+At login the password is checked as before; with two-step login on, the session holds a
+pending login for ten minutes and `/admin/login/code` takes the app's code or a recovery
+code in the same box. Wrong codes count against the same LoginThrottle as wrong passwords.
+The FTP way back in: an empty `storage/disable-2fa` switches it off for every admin at the
+next login attempt and is removed, and the login screen says so (and warns if the file
+could not be removed). Codes are accepted one 30-second period either side of now.
+
+The secret is 160 bits, as RFC 4226 recommends: otphp's default is 64 bytes, which the
+setup screen showed as a 103-letter key nobody could type. Scenario 37-two-step runs on the
+copy, never the development site, whose one account is the owner's.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -1434,10 +1456,7 @@ kept outside the web root and served through PHP, which also allows counting dow
 later); size limits; and how a download is placed on a page (a link from rich text, a
 link field, or a small "file" block). *After Slice 5, before release.*
 
-**O-4. 2FA.** SPEC §6 describes it: optional, ten single-use recovery codes, and a reset by
-placing `storage/disable-2fa` on the server over FTP. To confirm: it stays optional rather
-than forced (a single admin with forced 2FA and a lost phone means a lost site).
-*Step 9.*
+*O-4 resolved by D-050.*
 
 *O-6 resolved by D-045.*
 

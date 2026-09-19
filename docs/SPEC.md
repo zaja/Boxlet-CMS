@@ -338,7 +338,8 @@ templates (id, name, layout_json, preview_image, is_builtin)
 
 media (
   id, filename, original_name, path, mime, size,
-  width, height, hash, focal_x, focal_y, created_at
+  width, height, hash, focal_x, focal_y, created_at,
+  revision, remake            -- a remake pass's progress and count (PLAN.md D-048)
 )
 media_meta (id, media_id, locale, alt, caption)
 

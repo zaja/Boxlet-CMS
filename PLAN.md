@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 773 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 781 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1351,6 +1351,31 @@ show the picture, because it changes all of them and the old picture cannot be b
 back. Declining leaves everything as it was. Scenario 34-replace checks both, reading the
 colours off the thumbnails themselves.
 
+### D-048: Making every picture's sizes again
+
+**Status:** built 2026-09-19 (resolves O-13)
+
+A panel under the Media library, "Make every size again": Start owes every finished picture
+a remake, and each Continue does what fits in one request; media-remake.js presses Continue
+by itself, so with a script the pass runs to the end while the page is open, and leaving
+simply pauses it. Migration 0017 adds `media.remake` (the variants already remade in this
+pass, NULL when nothing is owed) and `media.revision`.
+
+Safe on a live site: nothing is deleted first; every variant is written beside its file and
+moved over it whole, so a visitor gets the old file or the new one, never half. When all of
+a picture's variants are new its revision goes up, and `?v=` carries it with the hash
+(D-047), so browsers fetch the new files. A picture whose original is missing is dropped
+from the pass rather than holding up the rest. Encoding and the AVIF size rule are the
+upload's own (MediaWriter, MediaVariants::smallerAvif) — the thin wrapper O-13 asked for.
+
+The first use: the pictures on the development site were made before D-047's AVIF fix and
+are heavier than they need be; pressing the button makes them again.
+
+Found on the way, the D-042 trap once more: media-helpers.mjs went to the development site's
+address whatever site a scenario ran on, so a copy scenario's uploads reached the development
+site's login screen and uploaded nothing. The helpers now act on the site the page is on, and
+harness.mjs no longer imports the development site's address at all.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -1425,10 +1450,7 @@ the closed field-type list and has never been built. It is the basis of the Colu
 
 *O-12 resolved by D-043.*
 
-**O-13. Regenerating media variants.** Adding, removing or resizing a preset leaves
-existing media with the wrong set. A regeneration pass must be runnable from the admin,
-resumable and safe on a live site. It should be a thin wrapper around the resumable upload
-machinery from Slice 5, not a new subsystem. *Step 9.*
+*O-13 resolved by D-048.*
 
 **O-14. News / blog.** Rejected: a separate post type, which brings chronological indexes,
 pagination, archives, RSS and prev/next, each multiplied by language, and tags, which the

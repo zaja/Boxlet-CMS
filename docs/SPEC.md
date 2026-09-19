@@ -347,6 +347,12 @@ forms (id, locale, name, fields_json, settings_json, created_at, updated_at)
   -- one language per form, like menus; placed on a page by the Form block (PLAN.md D-046)
 form_submissions (id, form_id, page_id, data_json, ip_hash, read_at, created_at)
 
+stats_views (day, path, source, country, device, browser, os, views, visitors)
+  -- one row per day and combination; visitors counts a visitor once a day, in the row of
+  -- their first view (§5.7)
+stats_page_visitors (day, path, visitors)
+stats_seen (day, hash, path)   -- today only: which visitor keys were seen, and where
+
 design_tokens (id, group_key, value_json)
 settings (key, value_json)
 locales (code, label, is_primary, fallback, sort, enabled)
@@ -780,7 +786,38 @@ Strict regex whitelist. Never `eval`. Never interpolate user content into a call
 
 ---
 
-## 6. Security rules
+### 5.7 Statistics
+
+Visits are counted on the site's own server (PLAN.md D-051): no cookie, no script on the
+page, no third party, and nothing stored that identifies a visitor.
+
+- **Counted after the page is sent.** `public/index.php` releases the visitor
+  (`fastcgi_finish_request()` where there is one) and then records the view. A failure there
+  is caught and never shown. A page served from the page cache still passes through
+  `public/index.php` (D-020), so it is still counted; only the optional server rule that skips
+  PHP altogether would not be.
+- **What counts:** a GET answered 200 with an HTML page, outside `/admin`, `/form`, `/sitemap`
+  and the installer, that is not a prefetch, not a bot (a pattern list, and an empty
+  User-Agent), not sent with DNT or Sec-GPC while the site honours them (the default), and
+  not from the logged-in admin — told by the `boxlet_session` cookie, which a visitor never
+  receives, without starting a session.
+- **What is stored:** per day, in the site's time zone: the path without its query string,
+  the source as a bare domain ("Direct" for none or the site's own), the country as an ISO
+  code (`--` when unknown), and the device, browser and system as families without versions.
+  Views and visitors are counts.
+- **A visitor** is `HMAC-SHA256(IP, User-Agent, host)` under a salt made fresh each day and
+  kept in `settings`. The first request of a new day replaces the salt and deletes the
+  previous day's `stats_seen` rows, and with them any way of linking a visitor across days.
+  The same moment deletes counts older than the retention period (default 24 months). No IP
+  address is stored anywhere.
+- **Country** comes from DB-IP's IP-to-Country Lite database (CC BY 4.0, attributed on the
+  Statistics screen), read by Boxlet's own MaxMind DB reader from `storage/geo/`. The owner
+  downloads or uploads it from Settings; without it every country is unknown and nothing else
+  changes.
+- **The module can be switched off** in Settings; it is on by default. Off, nothing is
+  recorded and the Statistics screen and dashboard card are not shown.
+
+
 
 - CSRF token on every state-changing request.
 - Sessions: `httponly`, `secure` whenever the request is HTTPS, `samesite=strict`,

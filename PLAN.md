@@ -279,6 +279,8 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 8. **Slice 7, forms and mail:** form builder, submissions, SMTP and Resend, admin
    notification, autoreply, honeypot, test-mail button. Built 2026-09-19 (D-045, D-046);
    left: receiving both emails for real, with the owner's mail account.
+8a. **Statistics** (D-051), round 1: counting, the Statistics screen, the dashboard card,
+   Settings. ← *current*, started 2026-09-19. Round 2 is O-20.
 9. **Slice 8, operations:** page cache, backup, update by ZIP upload, revisions,
    sitemap, regenerating media variants (O-13), and 2FA (O-4).
 10. **Slice 9, release:** replace the development photographs (D-022); six more blocks (gallery, features, CTA, accordion,
@@ -1416,6 +1418,36 @@ The secret is 160 bits, as RFC 4226 recommends: otphp's default is 64 bytes, whi
 setup screen showed as a 103-letter key nobody could type. Scenario 37-two-step runs on the
 copy, never the development site, whose one account is the owner's.
 
+### D-051: Statistics on the site's own server
+
+**Status:** approved by the owner 2026-09-19, from his specification ("Statistika posjeta —
+bazična+") and two sketches; built in rounds, SPEC §5.7
+
+Visits counted by the site itself: no external service, no script on the page, no cookie,
+nothing stored that identifies a visitor, so no consent banner. The owner can switch it off
+in Settings for a site that uses another tool; it is **on by default**.
+
+**Fitted to Boxlet**, where the specification was written without the code in view:
+- **No new dependency.** A MaxMind DB reader of Boxlet's own instead of MaxMind's library;
+  charts drawn on the server as SVG instead of Chart.js; countries shown by their code, as in
+  the owner's sketch, instead of flag icons.
+- **No cron** (a non-goal): the daily salt and the retention clean-up run on the first counted
+  request of a day; the country database is refreshed by a button.
+- **The page cache** (Slice 8) is read inside `public/index.php`, so cached pages are still
+  counted without any script. The optional server rule that skips PHP will say that it skips
+  counting too.
+
+**Round 1 — the reduced version:** counting (views and daily unique visitors by page, source,
+country, device, browser, system); the Statistics screen (today, 7 days, 30 days, 12 months;
+four figures against the previous period; a trend chart; six tables with share bars and
+"show all"); a dashboard card; a Settings panel (on or off, DNT/GPC, retention, the country
+database, delete everything, a suggested privacy-policy text in English and Croatian).
+
+**Round 2**, open as O-20: the world map (one SVG map, Natural Earth, public domain — the
+owner approved adding it when it comes), filtering by clicking with the state in the address
+and a chosen date range, export (CSV and Plausible's import format) and import, counting 404s,
+trusted proxies, grouping small numbers, an optional attribution in the footer.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -1445,6 +1477,10 @@ copy, never the development site, whose one account is the owner's.
 ## 5. Open items
 
 *O-1 and O-2 resolved by D-019 and D-020.*
+
+**O-20. Statistics, round 2** (D-051): the world map (asset approved), click filters with
+the state in the address and a chosen range, export (CSV, Plausible ZIP) and import, 404
+counting, trusted proxies, grouping small numbers, attribution in the footer. *After round 1.*
 
 **O-17. Downloads: documents and archives in Media.** The owner wants to offer visitors
 files to download (PDF, ZIP, TAR and similar) from the same library, which is why it is

@@ -1533,6 +1533,27 @@ trusted proxies, grouping small numbers, an optional attribution in the footer.
 - **Round 1 is complete.** Round 2 stays O-20.
 
 
+**The whole browser suite at the end of statistics round 1 (2026-09-19).** Every failure
+was traced before anything was believed. None came from statistics.
+- **Four stale checks, fixed in the suite:**
+  - `17-settings` looked for Settings in `.admin-nav`. Settings has been an icon at the
+    bar's end since D-038.
+  - `15-crop` judged what it left behind by a name pattern, which caught a picture the owner
+    had cropped on 17 September. It now checks the ids it made.
+  - `20-page-links` required no `/services` link before its own. The owner's text on the
+    development site already has one, so it now counts one more.
+  - `35-remake` allowed 25 s for the first batch, which a full run exceeded. It now allows
+    180 s.
+- **Missing test data, fixed:** the demo seed ships no menu, so a freshly installed copy
+  draws no header. `03-design` measured a header of width 0, and `22-chrome-look` found
+  nothing to fold. `ensureHeaderMenu()` in the harness now puts a menu in the copy's header
+  through the admin, only where none is named.
+- **Flaky under a full run, passed alone:** `12-picker`.
+- **The copy's sync now includes `public/index.php`** (see sync-copy.sh).
+- **Stopping the copy's server:** `pgrep -f "127.0.0.1:8100"` also matches the shell
+  running it, and kills that shell. Match `"php -S 127.0.0.1:8100"` instead.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

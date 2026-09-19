@@ -1550,9 +1550,10 @@ was traced before anything was believed. None came from statistics.
   through the admin, only where none is named.
 - **Flaky under a full run, passed alone:** `12-picker`.
 - **The copy's sync now includes `public/index.php`** (see sync-copy.sh).
-- **Stopping the copy's server:** `pgrep -f "127.0.0.1:8100"` also matches the shell
-  running it, and kills that shell. Any literal pattern does, since it is in that shell's
-  command line. Use `pgrep -f "php -S 127.0.0.1:810[0]"`, which does not match itself.
+- **Stopping the copy's server:** `pgrep -f "127.0.0.1:8100" | xargs kill`, chained with
+  other steps, ended the whole call with exit 144 and nothing after it ran. The cause is
+  not known: a later check found that the pattern does not match the calling shell. The
+  kill now runs in a call of its own.
 
 
 ### Lessons from the browser checks (2026-09-16)

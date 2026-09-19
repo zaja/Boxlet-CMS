@@ -281,7 +281,7 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    left: receiving both emails for real, with the owner's mail account.
 8a. **Statistics** (D-051), round 1: counting, the Statistics screen, the dashboard card,
    Settings. ← *current*, started 2026-09-19; counting, the Settings panel, the screen and
-   the dashboard card done; geolocation next. Round 2 is O-20.
+   the dashboard card and countries done; the privacy text next. Round 2 is O-20.
 9. **Slice 8, operations:** page cache, backup, update by ZIP upload, revisions,
    sitemap, regenerating media variants (O-13), and 2FA (O-4).
 10. **Slice 9, release:** replace the development photographs (D-022); six more blocks (gallery, features, CTA, accordion,
@@ -1498,6 +1498,27 @@ trusted proxies, grouping small numbers, an optional attribution in the footer.
   `AdminView` reads that setting on every admin page, which costs one small query.
 - **Dark mode**, which the owner's specification asks for, is a question for the whole
   admin, which has none. It is not settled for this screen alone.
+
+
+**Countries, as built (2026-09-19):**
+- **`Mmdb`**, Boxlet's own MaxMind DB reader. It reads the file where it lies, a few bytes
+  at a time.
+  - Checked against DB-IP's real September 2026 file (8.3 MB): 8.8.8.8 → US, two Croatian
+    addresses → HR, an IPv6 address → DE, private addresses → unknown.
+  - About 0.4 ms per lookup, 1 ms to open, 0.8 MB peak memory.
+  - The tests write their own small files with record sizes 24, 28 and 32. DB-IP uses 24.
+- **`Geo`** keeps the file in `storage/geo/`. Before a file replaces the one in use:
+  - it must open and know a country for 8.8.8.8;
+  - it replaces the old one in one rename;
+  - a download takes this month's file, or last month's when this month's is not out.
+  - It downloads with curl over HTTPS where PHP has curl, and with PHP's streams otherwise.
+  - The real download through the Settings button worked on the development site.
+- **Credit:** "IP geolocation by DB-IP" appears on the Statistics screen only while its
+  database is in use (CC BY 4.0).
+- **Bug found and fixed outside statistics:** five controllers set a refusal's flash as
+  `'error'`, and `AdminView` drew anything but `'warning'` as success. A refused Mail save,
+  two-step code, translation or language was shown in green. `AdminView` now passes
+  `'error'` through to `notice-error`.
 
 
 ### Lessons from the browser checks (2026-09-16)

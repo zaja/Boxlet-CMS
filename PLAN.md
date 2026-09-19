@@ -1604,6 +1604,21 @@ chose three things, and everything else follows the handoff.
   works without one.
 
 
+**The rail folds (owner's request, 2026-09-19):**
+- **The page editor opens with the rail folded to its icons.** The server marks the frame,
+  so this needs no script, and the canvas gains 164px.
+- **A round toggle on the rail's edge folds it or opens it again, anywhere.**
+  - The choice is kept in a `boxlet_rail` cookie on `/admin`, set by admin-nav.js and read
+    by AdminView. The server draws the next page folded or open before any script runs,
+    and scenario 39-rail measures that at DOMContentLoaded.
+  - A change made in the editor is not remembered.
+  - Under 1000px the rail starts folded and can be opened. On a phone the toggle gives way
+    to the drawer.
+- The shell's stylesheet was split at the same time: `admin-shell.css` (the rail),
+  `admin-strip.css` (the strip) and `admin-rail-compact.css` (the folded rail, its rules
+  written twice because a media query cannot sit in a selector list).
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

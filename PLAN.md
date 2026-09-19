@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 722 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 725 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1242,6 +1242,21 @@ this"). Menus are per language and the switcher never links an untranslated page
 language, so there is nothing left for the setting to switch except serving the main
 language's page at another language's address — left until a site asks for it.
 
+### D-044: The site's own words to visitors
+
+**Status:** decided 2026-09-19 (resolves O-19)
+
+The few words Boxlet itself puts on a visitor's page — "page not found" and its sentence,
+the names of the menu and of the language switcher — live in `lang/site/{code}.php`, one
+file per language, read by `site_t($key, $locale)`: the page's language, else the site's
+main language, else English. Shipped complete for en, hr, de, fr, it, es and sl; a test
+fails if any file lacks a word English has. Not `t()`, which is the admin's language.
+
+Not covered, deliberately: the maintenance and update pages. They are drawn without the
+database (D-019, D-021), so they cannot know the site's languages; the maintenance page
+shows the owner's own message where there is one. Overriding these words from the admin is
+not built; the owner writes everything else a visitor reads.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -1301,11 +1316,7 @@ through both setters. Browsers that take AVIF never see the WebP, so this matter
 the few that do not. Pictures uploaded before the fix keep their heavier AVIF until
 variants can be regenerated (O-13). *Before release.*
 
-**O-19. Front-end text has no translation mechanism.** `t()` is the admin's. Visitor-facing
-strings are written by the site owner, except for the few the product itself supplies — the
-404 page, the language switcher's label, and now chrome (small print, button labels). Today
-each is a small per-locale list in the code. Slice 6 should decide whether that becomes a
-mechanism, and where a site owner overrides it. *Slice 6.*
+*O-19 resolved by D-044.*
 
 **O-10. Nested page addresses.** Addresses are one path segment, unique per locale, while
 `parent_id` expresses hierarchy only in the admin, so the data model and the address

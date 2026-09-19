@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 706 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 717 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1217,6 +1217,17 @@ falls behind on). The address is the source's if free in that language, else one
 title; the parent is the parent's translation where there is one. Links to pages that have
 no version in the new language draw as no link there until those pages are translated
 (D-034, as designed). Scenario 27-translate leaves the site as found.
+
+Step 3, built 2026-09-19: a translation's block is **stale** when its source block's
+translatable words today hash differently from what it was translated from — computed when
+asked (`TranslationStatus`), never stored, so no save has to remember to set a flag. Shown
+at rest as an amber edge on the canvas (kept through a redraw), in the inspector as a notice
+with what the original says now and "Mark as up to date", as a count at the top of the
+panel, and as a badge on the pages list. Blocks added to the source since are counted as
+missing. SPEC §8 Slice 6's acceptance ("edit one Croatian block, only that block shows as
+stale in both translations") is a test on both drivers and scenario 28-stale in the
+browser, which leaves the site as found. Marking current reloads the editor, so unsaved
+work there is guarded by the leave warning rather than kept.
 
 ### Lessons from the browser checks (2026-09-16)
 

@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 694 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 706 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1206,6 +1206,17 @@ switch on and off, order, and remove only while no page or menu is written in it
 main language is fixed, first and always on; (2) translating a page; (3) a stale mark on
 the block whose source changed; (4) the switcher leading to the same page, hreflang, and
 the D-043 rules on the front end; (5) AI translation, once there is a key.
+
+Step 2, built 2026-09-19: the builder's language menu (a `<details>`, no script needed)
+lists every language with this page's version there — "Open" where it exists,
+"Translate" where it does not. Translating makes a **draft copy** in the same content group,
+from the group's source whichever version it was asked from, each block tied to its source
+block by block_group_id and carrying `source_hash`: a hash of the source block's
+**translatable fields only** (a picture swapped in the source is not something a translation
+falls behind on). The address is the source's if free in that language, else one from the
+title; the parent is the parent's translation where there is one. Links to pages that have
+no version in the new language draw as no link there until those pages are translated
+(D-034, as designed). Scenario 27-translate leaves the site as found.
 
 ### Lessons from the browser checks (2026-09-16)
 

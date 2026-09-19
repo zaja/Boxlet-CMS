@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 781 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 790 on both drivers, PHPStan clean at level 8 (2026-09-19) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -1375,6 +1375,24 @@ Found on the way, the D-042 trap once more: media-helpers.mjs went to the develo
 address whatever site a scenario ran on, so a copy scenario's uploads reached the development
 site's login screen and uploaded nothing. The helpers now act on the site the page is on, and
 harness.mjs no longer imports the development site's address at all.
+
+### D-049: The sitemap is a file the site writes
+
+**Status:** built 2026-09-19
+
+`public/sitemap.xml` lists every published page in every language that is switched on, with
+its translations as hreflang alternates and its last change. It is a real file because
+managed nginx answers any address ending in .xml or .txt from disk and never asks PHP (the
+same reason no route may end in an extension). It is written again after anything that
+changes what it lists — a page saved, published, unpublished or deleted, a language
+switched on, off or removed — and on a dashboard visit when it is missing, which gives a
+site installed before this existed its file. Where public/ cannot be written, nothing
+fails, and the same document is at `/sitemap` for the owner to hand a search engine.
+
+`robots.txt` is written beside it, pointing at it and keeping crawlers out of /admin — but
+only one the site wrote itself, marked on its first line; the owner's own is never touched.
+Both are ignored by git. Tests write into their own public directory (a new `PUBLIC_PATH`
+setting), never the development site's.
 
 ### Lessons from the browser checks (2026-09-16)
 

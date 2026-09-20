@@ -1879,10 +1879,23 @@ Built: narrowing by clicking with the state in the address and a range of your o
 the addresses that are not there, the world map, the visitor's own address behind a proxy,
 gathering the rows of one or two visitors, and export and import.
 
-*Left, and why:* **an attribution line in the site's footer** waits for Boxlet to have a
-public address to point at; a line that credits a product nobody can look up is noise.
-**Plausible's import format** waits for someone to ask: it needs PHP's zip extension, which
-is not on every shared host, and their schema.
+*Left, and why* — and both reasons were corrected on 2026-09-20, when the owner asked:
+
+**An attribution line in the site's footer** is not waiting on anything technical. It is
+twenty lines: a setting, and a line in the footer template. What it waits on is an address
+for it to point at. The line exists to be a link — a credit in somebody's client's footer
+that leads nowhere is a word, and the first thing that site's owner turns off. The moment
+Boxlet has a public page, the address is one constant and the feature is an afternoon.
+
+**Plausible's CSV format** does NOT need PHP's zip extension, which is what this said
+before. Measured: zip is on this server, and it is on most shared hosting, but it is
+genuinely optional in PHP — and it does not matter, because a ZIP is a local header, the
+data, a central directory and an end record, and `crc32()` and `gzdeflate()` are zlib,
+which is everywhere. Reading and writing one is about 150 lines, the same call that was
+made for the MaxMind reader. What it really waits on is whether anybody wants it: it is
+their schema, their file names, their date ranges, and their meaning for metrics Boxlet
+does not keep (bounce rate, time on page, entry and exit pages), all of which would be
+written as zeros.
 
 **O-17. Downloads: documents and archives in Media.** The owner wants to offer visitors
 files to download (PDF, ZIP, TAR and similar) from the same library, which is why it is

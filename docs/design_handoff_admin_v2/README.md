@@ -266,17 +266,41 @@ Prototype state is `{ screen, palette }`. Real state:
 
 | File | Screen |
 | --- | --- |
-| `screens/01-overview.png` | Overview |
-| `screens/02-pages.png` | Pages |
-| `screens/03-media.png` | Media library |
-| `screens/04-settings.png` | Site settings |
-| `screens/05-command-palette.png` | Command palette |
+| `screens/01-overview-dark.png` · `-light.png` | Overview, both themes |
+| `screens/02-pages-dark.png` · `-light.png` | Pages |
+| `screens/03-media-dark.png` · `-light.png` | Media library |
+| `screens/04-settings-dark.png` · `-light.png` | Site settings |
+| `screens/05-command-palette-dark.png` | Command palette |
+| `screens/05-overview-light-switch.png` | Overview in light, theme switch selected |
 
 References for composition and tone; use the tables above and the HTML for exact values.
+
+## Both themes
+
+The prototype now carries a **light (warm paper) theme and a dark theme**, switched from the
+three-way control in the top strip (sun / moon / match-system, persisted in localStorage).
+
+Every colour in the prototype resolves through a `--ui-*` custom property — there is no hex
+literal left in the markup — so a theme is a block of values, not a second stylesheet. Two
+things to carry over, both learned the hard way here:
+
+- **A token whose name states a direction lies in one of the two themes.** Nocturne's ramp
+  steps (`-800` = "dark tint") had to be inverted for the light block, or accent tags render
+  as navy chips on paper. In `admin.css` the equivalents are `--ui-accent-dark` and
+  `--ui-on-accent`.
+- **Anything styled outside the token system wins and breaks the theme.** In the prototype
+  that was inline `style` on the switch buttons; in the repo it will be any literal colour in
+  a per-screen stylesheet. Grep for `#` outside `admin.css` first.
+
+`IMPLEMENTATION-theme-switch.md` has the full plan for the repo: where the two token blocks
+go, the dark `--ui-*` values, the form-POST switch (no JS, no flash, CSP-safe), the
+per-user migration, and what to check.
 
 ## Files
 
 - `Boxlet Admin v2.dc.html` — the design reference. Markup + inline styles + a logic class holding sample data.
+- `IMPLEMENTATION-boxlet.md` — how this lands in `zaja/Boxlet-CMS`: the real files, and five repo rules the prototype breaks. **Read before the README's styling advice.**
+- `IMPLEMENTATION-theme-switch.md` — adding the light/dark themes and the switch to the repo.
 - `nocturne-tokens.css` — the Nocturne stylesheet: `:root` tokens plus the `.btn` / `.input` / `.field` / `.seg` / `.tag` / `.card` / `.table` / `.dialog` / `.hr` / `.lighten` component layer. Port this first.
 
 ## Design-system rules to honor

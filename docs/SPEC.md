@@ -680,6 +680,14 @@ way, because it loads into a document full of the site's tokens and what sits be
 controls is the user's design; its insertion control carries two tones so that one edge
 contrasts whatever is behind it (PLAN.md D-012).
 
+**Two palettes, one admin.** Every `--ui-*` colour lives in `public/assets/admin-tokens.css`
+and nowhere else, in three blocks: the dark default, a warm-paper light set, and that same
+light set again under `prefers-color-scheme: light` for the reader who asked to follow their
+machine. Which one is drawn comes from the `boxlet_theme` cookie, written into
+`data-ui-theme` on the `.admin` element by the server, so a page is never painted in the
+wrong palette first. The contrast rule above is measured over **both** palettes, and nothing
+in it is loosened for either (PLAN.md D-054).
+
 **Layer 2.** `page_blocks.style_json` holds all five enumerated keys, plus `image`: a
 media id or null (PLAN.md D-024). Values outside the closed sets fall back to the defaults
 (plain, normal, normal, left, none) on save and on render. The only CSS for these classes

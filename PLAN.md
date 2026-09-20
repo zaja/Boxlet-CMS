@@ -1671,6 +1671,60 @@ A visitor's page is written to disk as it is sent, and the next visitor gets the
   cached; the honeypot and the rate limit stand beside it, as that file already says.
 
 
+### D-054: The light theme, and a switch for it
+
+**Status:** asked for by the owner 2026-09-20, from the designer's second handoff
+(`docs/design_handoff_admin_v2/IMPLEMENTATION-theme-switch.md`, read after
+`IMPLEMENTATION-boxlet.md` and the README, in that order at the owner's instruction).
+
+The admin can be read in two palettes. **Dark stays the default** — D-052 is the owner's
+choice and what every install without a preference gets.
+
+- **Three choices, not two:** Light, Dark, and Match the system. A two-state toggle cannot
+  say "follow the machine", and its label would mean the state one moment and the action the
+  next, which is the control CLAUDE.md calls invisible at rest.
+- **A form, not a script.** `POST /admin/appearance` stores the choice and returns to the
+  screen it was pressed on, already painted. Server-rendered into `data-ui-theme` on the
+  `.admin` element, so there is no flash of the other palette and none of the blocking
+  inline script the admin's CSP would refuse anyway.
+- **Kept in a cookie** (`boxlet_theme`, path `/admin`, a year), like the rail's folded state
+  and for the same reason: it is how the admin looks on this screen, not something about the
+  site. No migration; a laptop in the dark and a desktop by a window may disagree.
+- **`public/assets/admin-tokens.css` is new** and holds every colour the admin has, in three
+  blocks: the dark default, the light set, and the light set again inside
+  `@media (prefers-color-scheme: light)` for "match the system". Plain CSS cannot give one
+  block two selectors across a media query and Boxlet has no build step, so the duplication
+  is honest and a test fails if the two copies ever differ by a character. admin.css keeps
+  the measurements and the type and writes no colour at all; the palette test now skips
+  admin-tokens.css, because that file *is* the palette.
+- **The light palette is D-007's warm paper**, which had years of measurement behind it, put
+  into the Workbench's roles: a panel a step up from the page, the rail a step down — which
+  on paper means the rail is the darker one.
+- **`tests/contrast_test.php` runs its whole matrix twice**, once per palette, and both pass
+  unloosened. It also now measures what the rail actually paints — the faint ink its counts
+  are set in, and the accent tint behind its current entry — and the brand mark against the
+  rail, a panel and the page.
+
+**Where you are, more quietly** (the owner, on seeing the light admin): the current entry in
+the rail sat on the accent tint, which on paper is a pale lavender *lighter* than the rail —
+a highlight rather than a place. It has its own token now, `--ui-current`, deeper than its
+surroundings in both palettes, with the accent spent on the bar down its left edge. The
+Settings sub-navigation, drawn as the same control, follows it. The dark value is the one
+that was already there, so the dark admin is unchanged. The count in the current rail row
+moves to the muted ink: the faint one measured 4.09:1 on that deeper ground.
+
+**Two things the handoff was wrong about, and both were measured:**
+- **The orange mark does not survive the move.** `#ff6b3d` on warm paper's rail is 2.27:1,
+  under the 3:1 a shape needs. The light palette carries `#d94f1e`: the same hue, a value
+  that reads on paper. "The mark stays" is true of its hue, not of its number.
+- **A token named for a role lies in one of the two palettes.** The checkerboard behind a
+  transparent logo was drawn in `--ui-ink` and `--ui-ink-muted`, which are light on the dark
+  ground; on paper it became a black-and-grey block. It has its own `--ui-checker` pair now,
+  light in both palettes, because a logo is drawn for a light site.
+
+**Also fixed while looking at it:** the Overview said "unchanged for 1 days" for as long as
+that metric has existed. One day has its own wording now, with a test.
+
 **A deprecation the local suite could not see (2026-09-20).** `StatsFilter::where(string
 $fromDay = null)` is implicitly nullable, which PHP 8.4 deprecates. The suite fails a test on
 any notice, warning or deprecation — but only where one is raised while that test runs, and

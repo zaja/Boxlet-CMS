@@ -292,11 +292,11 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    6. Media: a table with "Used on" and its filters.
    7. Settings as a ledger with its own sub-navigation.
    8. The ⌘K palette, with a `/admin/search` page behind it.
-8c. **Statistics, round 2** (O-20). ← *current*, started 2026-09-20, at the owner's choice
-   over Slice 8: filtering by clicking with the state in the address and a chosen range,
-   404 counting, the world map, trusted proxies, grouping small numbers, export and import,
-   and the optional attribution.
-9. **Slice 8, operations:** the page cache (D-053, decided and not yet built), backup,
+8c. **Statistics, round 2** (O-20). Done 2026-09-20, at the owner's choice over Slice 8:
+   narrowing by clicking with the state in the address and a range of your own, counting the
+   addresses that are not there, the world map, the visitor's address behind a proxy,
+   gathering small rows, export and import. The footer attribution is left (O-20).
+9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
    variants (O-13, D-048) and two-step login (O-4, D-050).
 10. **Slice 9, release:** replace the development photographs (D-022); six more blocks (gallery, features, CTA, accordion,
@@ -1714,9 +1714,15 @@ silent. `php -l` does not see this class of problem at all.
 
 *O-1 and O-2 resolved by D-019 and D-020.*
 
-**O-20. Statistics, round 2** (D-051): the world map (asset approved), click filters with
-the state in the address and a chosen range, export (CSV, Plausible ZIP) and import, 404
-counting, trusted proxies, grouping small numbers, attribution in the footer. *After round 1.*
+**O-20. Statistics, round 2** (D-051): done 2026-09-20, except the footer attribution.
+Built: narrowing by clicking with the state in the address and a range of your own, counting
+the addresses that are not there, the world map, the visitor's own address behind a proxy,
+gathering the rows of one or two visitors, and export and import.
+
+*Left, and why:* **an attribution line in the site's footer** waits for Boxlet to have a
+public address to point at; a line that credits a product nobody can look up is noise.
+**Plausible's import format** waits for someone to ask: it needs PHP's zip extension, which
+is not on every shared host, and their schema.
 
 **O-17. Downloads: documents and archives in Media.** The owner wants to offer visitors
 files to download (PDF, ZIP, TAR and similar) from the same library, which is why it is

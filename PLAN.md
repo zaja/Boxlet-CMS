@@ -299,9 +299,9 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 8d. **Appearance: one screen for the design, the header and the footer** (D-057). Begun
    2026-09-20 at the owner's request, against `docs/design_handoff_appearance/`. Three rounds
    were approved, then a reassessment: (1) the preview draws the real header and footer;
-   (2) the feedback loop closes (D-058); (3) Design and Header & footer become one
-   `/admin/appearance` with a five-tab inspector, and `/admin/chrome` is renamed for the
-   words it keeps.
+   (2) the feedback loop closes (D-058); (3) the two screens become one `/admin/appearance`
+   with five tabs (D-059), the old addresses redirect (O-22), and the toolbar over the
+   picture — viewport, zoom, Compare — follows.
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
    variants (O-13, D-048) and two-step login (O-4, D-050).
@@ -1998,6 +1998,58 @@ JavaScript the button is there and everything still works.
 now say `button[form="design-form"][…]`. That is the price of the move, paid once.
 
 
+### D-059: Design and Header & footer become one screen
+
+**Status:** round 3 of the Appearance rebuild, built 2026-09-20.
+
+**Two screens were one screen cut in half.** Header & footer had seven look choices and **no
+picture at all**; Design had a picture that deliberately drew no header or footer. Each was
+incomplete in exactly the way the other would have fixed, and the owner had to hold the
+result in their head while walking between them. They are now `/admin/appearance`: the
+character strip, five tabs of controls, and one picture of the whole site.
+
+**The five tabs are the questions a person actually asks** — Colour, Type, Shape, The page,
+Header and footer — instead of one column 3604px tall. Without JavaScript they are a row of
+LINKS and every panel is on the page, exactly as before; `appearance-tabs.js` upgrades that
+into a real tablist with arrow keys. **The tab holding a refusal opens by itself**, because a
+message inside a closed panel is a message nobody reads.
+
+**The words went in too, and the old route dies with the screen.** The plan had kept the
+per-language words — the button, the footer line, the small print — on `/admin/chrome`,
+renamed. The owner asked what that route would then be FOR, and the honest answer was
+"nothing but those five fields per language", which is the same arrangement this rebuild
+exists to end. So they are the fifth tab's second half, and `/admin/design` and
+`/admin/chrome` are redirects and nothing more. The rail lost two items and gained one.
+
+**A name collision had to be settled first:** `/admin/appearance` already belonged to the
+admin's own light/dark switch (D-054). The site's look is what an owner goes looking for
+under that word, so the switch moved to `/admin/theme` and its controller is now
+`ThemeController` — which is what it always was.
+
+**What the merge cost, and what it caught.** One screen means one form, so a post that
+carries half of it is refused rather than half-applied; the tests now send the whole screen
+through `appearanceFields()`, as a browser does. And the character cards were each their own
+little form posting nothing but a character's name — harmless while the screen held only the
+design, **destructive the moment it also held the header**: loading a character posted a
+screen whose every chrome field was empty, and the menu and the words were read back as
+cleared. The browser suite caught it on the copy, where the site lost its header. A card is
+no longer a form; its button names the one form, so loading a character carries the whole
+screen.
+
+**The preview draws the words as they are typed**, for the language it renders (the site's
+main one). `PageLayoutData::forPreview()` now takes one `$trying` array — character, look,
+menu, words — rather than a parameter per thing, because they all mean the same: draw the
+site as it WOULD be.
+
+**New seams, so nothing grew past the size where a file stops being readable:**
+`AppearanceForm` (what the screen sends and the preview reads back, agreed in one place),
+`AppearancePreview` (the three endpoints, which answer a machine), `ChromeWords` (the words,
+which are free text that needs checking, beside `ChromeLook`, which is closed sets).
+
+**Still to come in this round:** the toolbar over the picture — viewport widths, zoom, and
+Compare against what is published.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -2027,6 +2079,11 @@ now say `button[form="design-form"][…]`. That is the price of the move, paid o
 ## 5. Open items
 
 *O-1 and O-2 resolved by D-019 and D-020.*
+
+**O-22. The old Appearance addresses** (D-059). `/admin/design` and `/admin/chrome` are
+redirects to `/admin/appearance`, kept while bookmarks and habits catch up. The owner asked
+for them to be **removed entirely** later, not redirected for ever, with the ⌘K search
+entries and any remaining links adjusted at the same time. Not urgent; one release of grace.
 
 **O-21. Live links inside the design preview** (D-057). Now that the preview draws the real
 header, the iframe contains a menu whose links WORK: clicking one navigates the frame to that

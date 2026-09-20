@@ -1747,6 +1747,71 @@ run against the old signature first, where it fails, and against the new one, wh
 silent. `php -l` does not see this class of problem at all.
 
 
+### D-055: Where visitors are, past the country
+
+**Status:** asked for by the owner 2026-09-20, from the updated specification in
+`docs/Statistika posjeta za PHP CMS – specifikacija (bazična+) (1).md` §"Lokacija: regija i
+grad". His reason, and it is the right one: **a site that serves one country learns nothing
+from a map that says everybody is in that country.** An admin in the United States seeing
+"United States: 100%" has been told nothing.
+
+**Measured before deciding anything** (the specification's own figures were out by a factor
+of three, so these are this machine's):
+
+| | Country Lite | City Lite |
+| --- | --- | --- |
+| Download | 3.9 MB | **57.5 MB** (the spec said 19) |
+| On disk | 9.6 MB | **121.4 MB** |
+| One lookup | — | **0.47 ms** |
+| Unpacking it | — | **0.7 s** for the whole file |
+
+What the City Lite record actually carries: the country's ISO code, `subdivisions[0].names.en`
+(there is **no** `iso_code` in the Lite file, whatever the specification says), `city.names.en`
+and the city's latitude and longitude. Boxlet's own reader already decodes every type in it.
+
+**The decisions:**
+
+- **Three levels, one setting** (`stats_location`): **Country** stays the default, then
+  Region, then City. The level is a choice, not a consequence of which file is installed:
+  a site may hold the city database and still count only countries.
+- **The city database is the owner's to fetch**, from the same Settings panel, and the
+  country one stays supported. 121 MB is not a thing to put on a shared host without asking.
+- **Downloaded in pieces and resumable.** 57 MB will not come down inside one request on a
+  shared host's execution limit. Range requests, a few megabytes a step, the ETag pinned so
+  a file that changes underneath is caught, and the part file's own size is the resume point
+  — no state to keep in step. It is the media remake's Start/Continue pattern (D-048),
+  which already works without a script, and that script is generalised rather than copied.
+  Unpacking stays one step: 0.7 s, measured.
+- **A table of its own, `stats_places`** — day, country, region, city, latitude, longitude,
+  views, visitors. **The city is never combined with the path**, in any view or any export.
+  That is the specification's privacy rule and it is also what keeps the rows bounded.
+- **Region names are normalised.** DB-IP's own data puts two Zagreb addresses in "City of
+  Zagreb" and in "Zagreb" — measured, on 161.53.1.1 and 31.147.200.1. The leading
+  administrative words are stripped, so one place is one row. It merges a city-region with
+  its surrounding county where a country has both; that is the cost, and the table reads
+  better for it.
+- **A threshold, on by default at the city level:** a city under five visitors in the period
+  is shown with the others as "Other". Round 2's grouping (O-20) already does this work.
+- **Drill-down, not a filter.** Clicking a region or a city narrows the location panel —
+  world, then country, then region — while the rest of the screen keeps narrowing by country
+  alone. The path and the city must never meet, so a city cannot be a filter for the whole
+  screen.
+- **The map gets bubbles** at the cities' own coordinates. Boxlet's map is equirectangular
+  and drawn by Boxlet, so a coordinate is two multiplications; and when one country holds
+  more than 70% of the visitors, the map opens on that country, from a bounding box the map
+  build computes per country.
+- **The detail is kept for less time.** City rows collapse into their region after a few
+  months (a setting), and the region rows live out the ordinary retention.
+
+**In three rounds, each ending with something on a screen:**
+1. The database: the level setting, the city file, the resumable download, and the place a
+   lookup returns.
+2. The counting and the tables: the migration, the Tracker, Regions and Cities on the
+   Statistics screen, the threshold, the privacy sentence, export and import. **This is the
+   round that answers the owner's complaint.**
+3. The map: bubbles, the country view, and the collapse of old detail.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

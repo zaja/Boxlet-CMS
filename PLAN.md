@@ -1547,6 +1547,15 @@ trusted proxies, grouping small numbers, an optional attribution in the footer.
 - It is labelled "a starting point, not legal advice".
 - **Round 1 is complete.** Round 2 stays O-20.
 
+**One control row (2026-09-20, the owner, on seeing it).** The period, a range of your own
+and the days that adds up to took three lines above the figures. They are one wrapping row
+now (`.stats-controls`): side by side wherever there is room, in rows of their own where
+there is not, with no breakpoint of its own to keep in step with the rail's. Their own
+bottom margins had to go with them — a margin inside a flex line adds to that line's height,
+which is why the first attempt still measured two lines on a wide screen. Scenario 38-stats
+measures the row against its tallest part, because the parts are centred on the line and
+three heights give three different tops.
+
 
 **The whole browser suite at the end of statistics round 1 (2026-09-19).** Every failure
 was traced before anything was believed. None came from statistics.

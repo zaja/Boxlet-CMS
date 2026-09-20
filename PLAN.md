@@ -1813,7 +1813,29 @@ and the city's latitude and longitude. Boxlet's own reader already decodes every
    development site: one real visit became "Hesse, 1 visitor" in the regions and
    "Other (fewer than 5)" in the cities — the floor doing exactly what it is for.
 3. The map: bubbles at the cities' coordinates, the country view when one country holds the
-   traffic, and the collapse of old city detail into its region. **Left.**
+   traffic, and the collapse of old city detail into its region. **Done 2026-09-20.**
+   - The map build writes each country's own box into the file (`data-box`) and the
+     projection onto the `<svg>`, so the two figures that decide where a dot goes live in
+     one place rather than in two that have to agree.
+   - The map opens cut to one country when the screen is narrowed to it, or when one
+     country holds more than 70% of the visitors — the owner's case exactly. The address
+     can always ask for the world back, and the legend carries the way there.
+   - A dot's size follows the visitors, and shrinks with the zoom, so a dot on a country is
+     the same size on the screen as a dot on the world.
+   - **Three things were measured and then changed**, each of them after looking at the
+     picture: the map goes no closer in than eight times, because cut to Croatia alone the
+     1:110m shapes Boxlet ships are a six-line cartoon; every line is a non-scaling hairline,
+     because a border 0.4 wide became a twenty-pixel black band at that magnification; and a
+     dot is drawn in the ink rather than the accent, because the busiest country is drawn in
+     the accent and an accent dot on it is a dot you cannot see.
+   - **The dots are only in the country view.** On the whole world, five Croatian cities are
+     five circles inside each other — a spill of milk over the Balkans. Each view answers the
+     question it can: the shading says which countries, the cut view says where inside one.
+   - The city is forgotten before the rest of a place: after three months by default (a
+     setting, and "as long as the counts" is one of its answers) a row keeps its country and
+     region and loses its city, in one transaction so the counts cannot be lost or doubled.
+   - Tracker passed 300 lines, so what happens once a day — the salt, the pruning, this
+     collapse — moved into NewDay, which is a seam the module already had.
 
 **Two things the tables do not do, and why.** A region and a city cannot narrow the screen:
 they are counted in a table the path never enters, so there is nothing for the rest of the

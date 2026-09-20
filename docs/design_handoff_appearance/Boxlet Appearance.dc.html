@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/nocturne-89f6df72-8aca-49f2-b484-8b3678f0ea01/styles.css">
+<script src="_ds/nocturne-89f6df72-8aca-49f2-b484-8b3678f0ea01/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>
+  html, body { height: 100%; }
+  a { color: var(--color-accent); }
+  a:hover { color: var(--color-accent-300); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #3f424d; border-radius: 8px; border: 3px solid transparent; background-clip: padding-box; }
+  input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 3px; border-radius: 2px; background: #2e3242; outline: none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: #9184d9; cursor: grab; }
+  input[type="range"]:focus-visible { outline: 2px solid #9184d9; outline-offset: 4px; }
+  input[type="color"] { -webkit-appearance: none; appearance: none; border: 0; padding: 0; background: transparent; cursor: pointer; }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"]::-webkit-color-swatch { border: 1px solid #3f424d; border-radius: 4px; }
+  [data-seg] { color: #9397ab; }
+  [data-seg]:hover { color: #e9e9ed; background: color-mix(in srgb, #e9e9ed 7%, transparent); }
+  [data-seg][aria-pressed="true"] { color: #e7e5fe; background: color-mix(in srgb, #9184d9 26%, transparent); }
+  [data-preset]:hover { border-color: color-mix(in srgb, #9184d9 55%, transparent) !important; }
+  [data-role]:hover { background: color-mix(in srgb, #e9e9ed 5%, transparent); }
+</style>
+</helmet>
+<div style="display:flex;flex-direction:column;height:100vh;min-height:720px;overflow:hidden;background:#161826;color:#e9e9ed;font-family:var(--font-body);font-size:13px">
+
+  <header style="flex:none;display:flex;align-items:center;gap:10px;height:46px;padding:0 12px;min-width:0;background:#131522;box-shadow:inset 0 -1px 0 color-mix(in srgb, #e9e9ed 8%, transparent)">
+    <span style="display:flex;align-items:center;gap:8px;flex:none">
+      <i class="ph ph-palette" style="font-size:16px;color:#9184d9"></i>
+      <span style="font-family:var(--font-heading);font-weight:500;font-size:13.5px">Appearance</span>
+    </span>
+    <span style="font-size:12px;color:#75798c;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Design, header and footer — one screen</span>
+
+    <span style="display:flex;align-items:center;border:1px solid color-mix(in srgb, #e9e9ed 11%, transparent);border-radius:6px;overflow:hidden;flex:none">
+      <sc-for list="{{ viewports }}" as="v" hint-placeholder-count="3">
+        <button onClick="{{ v.pick }}" data-seg="1" aria-pressed="{{ v.on }}" title="{{ v.title }}" style="display:grid;place-items:center;width:30px;height:24px;border:0;background:transparent;cursor:pointer;font:inherit">
+          <i class="ph {{ v.icon }}" style="font-size:14px"></i>
+        </button>
+      </sc-for>
+    </span>
+
+    <span style="display:flex;align-items:center;border:1px solid color-mix(in srgb, #e9e9ed 11%, transparent);border-radius:6px;overflow:hidden;flex:none">
+      <sc-for list="{{ zooms }}" as="z" hint-placeholder-count="4">
+        <button onClick="{{ z.pick }}" data-seg="1" aria-pressed="{{ z.on }}" style="padding:4px 7px;border:0;background:transparent;cursor:pointer;font:inherit;font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">{{ z.label }}</button>
+      </sc-for>
+    </span>
+
+    <button onClick="{{ toggleCompare }}" data-seg="1" aria-pressed="{{ comparing }}" title="See the design that is live now" style="display:grid;place-items:center;width:28px;height:26px;border:1px solid color-mix(in srgb, #e9e9ed 11%, transparent);border-radius:6px;background:transparent;cursor:pointer;font:inherit;flex:none">
+      <i class="ph ph-arrows-left-right" style="font-size:14px"></i>
+    </button>
+
+    <span style="display:flex;align-items:center;gap:9px;flex:none">
+      <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:{{ dirtyColor }}">
+        <i class="ph {{ dirtyIcon }}" style="font-size:13px"></i>
+        <span>{{ dirtyLabel }}</span>
+      </span>
+      <button class="btn btn-secondary" onClick="{{ revert }}" style="font-size:12.5px;padding:4px 10px">Revert</button>
+      <button class="btn btn-primary" onClick="{{ publish }}" style="font-size:12.5px;padding:4px 12px">Publish</button>
+    </span>
+  </header>
+
+  <div style="flex:1;display:grid;grid-template-columns:196px minmax(0,1fr) 312px;min-height:0">
+
+    <aside style="display:flex;flex-direction:column;min-height:0;background:#131522;box-shadow:inset -1px 0 0 color-mix(in srgb, #e9e9ed 8%, transparent)">
+      <div style="flex:1;overflow-y:auto;padding:12px 10px 14px;display:flex;flex-direction:column;gap:16px">
+
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;align-items:baseline;gap:7px;padding:0 4px">
+            <span style="font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;color:#565a69">Characters</span>
+            <span style="font-size:10px;color:#4b4f5e">starting points</span>
+          </div>
+          <sc-for list="{{ builtIn }}" as="p" hint-placeholder-count="5">
+            <div onClick="{{ p.load }}" data-preset="1" style="display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:7px;cursor:pointer;border:1px solid {{ p.border }};background:{{ p.bg }}">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="display:flex;gap:2px;flex:none">
+                  <span style="width:11px;height:11px;border-radius:2px;background:{{ p.c1 }}"></span>
+                  <span style="width:11px;height:11px;border-radius:2px;background:{{ p.c2 }}"></span>
+                  <span style="width:11px;height:11px;border-radius:2px;background:{{ p.c3 }}"></span>
+                </span>
+                <span style="flex:1;font-size:12.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+                <sc-if value="{{ p.live }}"><i class="ph ph-broadcast" title="Live on the site" style="font-size:12px;color:#7fb98a"></i></sc-if>
+              </div>
+              <span style="font-size:10.5px;color:#75798c;line-height:1.35">{{ p.summary }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;align-items:baseline;gap:7px;padding:0 4px">
+            <span style="font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;color:#565a69">Your designs</span>
+            <span style="font-size:10px;color:#4b4f5e">{{ mineCount }}</span>
+          </div>
+          <sc-for list="{{ mine }}" as="p" hint-placeholder-count="2">
+            <div onClick="{{ p.load }}" data-preset="1" style="display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:7px;cursor:pointer;border:1px solid {{ p.border }};background:{{ p.bg }}">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="display:flex;gap:2px;flex:none">
+                  <span style="width:11px;height:11px;border-radius:2px;background:{{ p.c1 }}"></span>
+                  <span style="width:11px;height:11px;border-radius:2px;background:{{ p.c2 }}"></span>
+                  <span style="width:11px;height:11px;border-radius:2px;background:{{ p.c3 }}"></span>
+                </span>
+                <span style="flex:1;font-size:12.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+                <button onClick="{{ p.overwrite }}" title="Save what is on screen into this design" style="display:grid;place-items:center;width:18px;height:18px;border:0;border-radius:4px;background:transparent;color:#595d6c;cursor:pointer;padding:0;flex:none">
+                  <i class="ph ph-floppy-disk" style="font-size:12px"></i>
+                </button>
+                <button onClick="{{ p.remove }}" title="Delete" style="display:grid;place-items:center;width:18px;height:18px;border:0;border-radius:4px;background:transparent;color:#595d6c;cursor:pointer;padding:0;flex:none">
+                  <i class="ph ph-trash" style="font-size:12px"></i>
+                </button>
+              </div>
+              <span style="font-size:10.5px;color:#75798c;line-height:1.35">{{ p.summary }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noneMine }}">
+            <p style="font-size:11px;color:#595d6c;line-height:1.45;margin:0;padding:0 4px">Nothing saved yet. Tune anything, then keep it here under your own name.</p>
+          </sc-if>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:6px;padding-top:2px">
+          <input class="input" value="{{ newName }}" onInput="{{ setName }}" placeholder="Name this design" style="min-height:30px;font-size:12px">
+          <button class="btn btn-secondary" onClick="{{ savePreset }}" style="font-size:12px;padding:4px 10px;justify-content:center">Save as a new design</button>
+        </div>
+      </div>
+    </aside>
+
+    <main style="display:flex;flex-direction:column;min-width:0;min-height:0;background:#1b1d2b">
+      <div style="flex:none;display:flex;align-items:center;gap:10px;height:34px;padding:0 14px;box-shadow:inset 0 -1px 0 color-mix(in srgb, #e9e9ed 7%, transparent);font-size:11px;color:#75798c">
+        <i class="ph ph-globe-simple" style="font-size:13px"></i>
+        <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">northwind.studio</span>
+        <span style="color:#4b4f5e">·</span>
+        <span>Home</span>
+        <span style="flex:1"></span>
+        <sc-if value="{{ comparing }}">
+          <span style="display:flex;align-items:center;gap:6px;color:#d9a85c">
+            <i class="ph ph-eye" style="font-size:13px"></i>
+            <span>Showing what is live now</span>
+          </span>
+        </sc-if>
+        <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">{{ vwLabel }}</span>
+        <span style="color:#4b4f5e">·</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">{{ zoomLabel }}</span>
+      </div>
+
+      <div data-stage="1" style="flex:1;overflow:auto;padding:18px 16px 30px;display:flex;justify-content:safe center">
+        <div style="{{ stageStyle }}">
+          <div style="{{ pageStyle }}">
+
+            <sc-if value="{{ headerFull }}">
+              <header style="{{ headerStyle }}">
+                <div style="{{ headerInnerStyle }}">
+                  <span style="{{ logoStyle }}">Northwind</span>
+                  <sc-if value="{{ wideNav }}">
+                    <nav style="{{ navStyle }}"><span>Work</span><span>Studio</span><span>Journal</span><span>Contact</span></nav>
+                  </sc-if>
+                  <sc-if value="{{ mobileNav }}">
+                    <span style="{{ burgerStyle }}"><i class="ph ph-list" style="font-size:inherit"></i></span>
+                  </sc-if>
+                  <sc-if value="{{ showCta }}"><span style="{{ ctaStyle }}">Get in touch</span></sc-if>
+                </div>
+              </header>
+            </sc-if>
+
+            <div style="{{ sheetWrapStyle }}">
+              <div style="{{ sheetStyle }}">
+
+                <sc-if value="{{ headerInSheet }}">
+                  <header style="{{ headerStyle }}">
+                    <div style="{{ headerInnerStyle }}">
+                      <span style="{{ logoStyle }}">Northwind</span>
+                      <nav style="{{ navStyle }}"><span>Work</span><span>Studio</span><span>Journal</span><span>Contact</span></nav>
+                      <sc-if value="{{ showCta }}"><span style="{{ ctaStyle }}">Get in touch</span></sc-if>
+                    </div>
+                  </header>
+                </sc-if>
+
+                <section style="{{ heroStyle }}">
+                  <div style="{{ heroInnerStyle }}">
+                    <div style="{{ heroTextStyle }}">
+                      <span style="{{ kickerStyle }}">Design studio · Zagreb</span>
+                      <h1 style="{{ h1Style }}">A workshop for things that last</h1>
+                      <p style="{{ leadStyle }}">We build identities, sites and printed matter for people who make something real.</p>
+                      <span style="{{ buttonStyle }}">See the work</span>
+                    </div>
+                    <sc-if value="{{ heroHasImage }}"><div style="{{ heroImageStyle }}"></div></sc-if>
+                  </div>
+                </section>
+
+                <section style="{{ textSectionStyle }}">
+                  <div style="{{ measureStyle }}">
+                    <h2 style="{{ h2Style }}">What we do</h2>
+                    <p style="{{ bodyStyle }}">Every project starts the same way: a long conversation, a short list of what matters, and a first sketch by the end of the week. We work in small numbers and finish what we begin.</p>
+                    <p style="{{ bodyStyle }}">Most of our work is for makers — a bakery, a bindery, two breweries and a furniture workshop that has outlasted three of our websites.</p>
+                  </div>
+                </section>
+
+                <section style="{{ splitSectionStyle }}">
+                  <div style="{{ splitInnerStyle }}">
+                    <div style="{{ splitImageStyle }}"></div>
+                    <div style="{{ splitTextStyle }}">
+                      <h2 style="{{ h3Style }}">The bindery</h2>
+                      <p style="{{ bodyStyle }}">Identity, signage and a shop that sells more paper than we expected.</p>
+                      <span style="{{ linkStyle }}">Read the case →</span>
+                    </div>
+                  </div>
+                </section>
+
+                <sc-if value="{{ footerInSheet }}">
+                  <footer style="{{ footerStyle }}">
+                    <div style="{{ footerInnerStyle }}">
+                      <sc-if value="{{ footerColumns }}">
+                        <div style="{{ footerColsStyle }}">
+                          <sc-for list="{{ footerCols }}" as="c" hint-placeholder-count="3">
+                            <div style="{{ footerColStyle }}">
+                              <span style="{{ footerHeadStyle }}">{{ c.head }}</span>
+                              <sc-for list="{{ c.lines }}" as="l" hint-placeholder-count="3"><span>{{ l.text }}</span></sc-for>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ footerSimple }}">
+                        <div style="{{ footerSimpleStyle }}">
+                          <span>Northwind Studio</span>
+                          <span style="{{ footerNavStyle }}"><span>Work</span><span>About</span><span>Contact</span></span>
+                        </div>
+                      </sc-if>
+                      <span style="{{ smallPrintStyle }}">© 2026 Northwind Studio. Made in Zagreb.</span>
+                    </div>
+                  </footer>
+                </sc-if>
+
+              </div>
+            </div>
+
+            <sc-if value="{{ footerFull }}">
+              <footer style="{{ footerStyle }}">
+                <div style="{{ footerInnerStyle }}">
+                  <sc-if value="{{ footerColumns }}">
+                    <div style="{{ footerColsStyle }}">
+                      <sc-for list="{{ footerCols }}" as="c" hint-placeholder-count="3">
+                        <div style="{{ footerColStyle }}">
+                          <span style="{{ footerHeadStyle }}">{{ c.head }}</span>
+                          <sc-for list="{{ c.lines }}" as="l" hint-placeholder-count="3"><span>{{ l.text }}</span></sc-for>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ footerSimple }}">
+                    <div style="{{ footerSimpleStyle }}">
+                      <span>Northwind Studio</span>
+                      <span style="{{ footerNavStyle }}"><span>Work</span><span>About</span><span>Contact</span></span>
+                    </div>
+                  </sc-if>
+                  <span style="{{ smallPrintStyle }}">© 2026 Northwind Studio. Made in Zagreb.</span>
+                </div>
+              </footer>
+            </sc-if>
+
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside style="display:flex;flex-direction:column;min-height:0;background:#1a1d2a;box-shadow:inset 1px 0 0 color-mix(in srgb, #e9e9ed 8%, transparent)">
+      <div style="flex:none;display:flex;align-items:center;gap:2px;padding:8px 8px 0">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+          <button onClick="{{ t.pick }}" data-seg="1" aria-pressed="{{ t.on }}" style="flex:1;padding:5px 3px;border:0;border-radius:6px;background:transparent;cursor:pointer;font:inherit;font-size:11.5px">{{ t.label }}</button>
+        </sc-for>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:12px 14px 26px;display:flex;flex-direction:column;gap:18px">
+
+        <sc-if value="{{ isColour }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:17px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase;color:#75798c">Start from one colour</span>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input type="color" value="{{ seed }}" onInput="{{ setSeed }}" style="width:36px;height:30px" aria-label="Main colour">
+              <span style="flex:1;display:flex;flex-direction:column;gap:1px">
+                <span style="font-size:12.5px">Main colour</span>
+                <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#75798c">{{ seed }}</span>
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input type="color" value="{{ secondary }}" onInput="{{ setSecondary }}" style="width:36px;height:30px" aria-label="Second colour">
+              <span style="flex:1;display:flex;flex-direction:column;gap:1px">
+                <span style="font-size:12.5px">Second colour</span>
+                <span style="font-size:11px;color:#75798c">The loud sections</span>
+              </span>
+              <button onClick="{{ toggleSecondary }}" data-seg="1" aria-pressed="{{ useSecondary }}" style="padding:3px 8px;border:1px solid color-mix(in srgb, #e9e9ed 11%, transparent);border-radius:5px;background:transparent;cursor:pointer;font:inherit;font-size:11px">{{ secondaryLabel }}</button>
+            </div>
+            <div style="display:flex;gap:4px">
+              <sc-for list="{{ contrastOpts }}" as="o" hint-placeholder-count="3">
+                <button onClick="{{ o.pick }}" data-seg="1" aria-pressed="{{ o.on }}" style="flex:1;padding:5px 0;border:1px solid color-mix(in srgb, #e9e9ed 11%, transparent);border-radius:5px;background:transparent;cursor:pointer;font:inherit;font-size:11.5px">{{ o.label }}</button>
+              </sc-for>
+            </div>
+            <span style="font-size:11px;color:#75798c;line-height:1.4">How far the surfaces separate from the page.</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase;color:#75798c;flex:1">Every colour, yours to change</span>
+              <sc-if value="{{ anyOverride }}">
+                <button onClick="{{ resetColours }}" style="border:0;background:transparent;color:#75798c;cursor:pointer;font:inherit;font-size:10.5px;padding:0;text-decoration:underline">reset all</button>
+              </sc-if>
+            </div>
+            <sc-for list="{{ roles }}" as="r" hint-placeholder-count="8">
+              <div data-role="1" style="display:flex;align-items:center;gap:9px;padding:3px 4px;border-radius:5px">
+                <input type="color" value="{{ r.hex }}" onInput="{{ r.set }}" style="width:26px;height:22px;flex:none" aria-label="{{ r.label }}">
+                <span style="flex:1;font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.label }}</span>
+                <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;color:{{ r.hexColor }}">{{ r.hex }}</span>
+                <sc-if value="{{ r.overridden }}">
+                  <button onClick="{{ r.reset }}" title="Back to the derived colour" style="display:grid;place-items:center;width:16px;height:16px;border:0;border-radius:3px;background:transparent;color:#75798c;cursor:pointer;padding:0;flex:none">
+                    <i class="ph ph-arrow-counter-clockwise" style="font-size:11px"></i>
+                  </button>
+                </sc-if>
+                <sc-if value="{{ r.derived }}">
+                  <span style="width:16px;flex:none"></span>
+                </sc-if>
+              </div>
+            </sc-for>
+            <span style="font-size:11px;color:#75798c;line-height:1.45">Changed colours are kept as yours; the rest keep following the main colour.</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase;color:#75798c;padding-bottom:2px">Readable?</span>
+            <sc-for list="{{ checks }}" as="c" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:8px;font-size:11.5px">
+                <i class="ph {{ c.icon }}" style="font-size:13px;color:{{ c.color }};flex:none"></i>
+                <span style="flex:1;color:#b2b6ca">{{ c.label }}</span>
+                <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:{{ c.color }}">{{ c.ratio }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isType }}">
+        <div style="display:flex;flex-direction:column;gap:17px">
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <span style="font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase;color:#75798c">Typefaces</span>
+            <sc-for list="{{ typeOpts }}" as="o" hint-placeholder-count="5">
+              <button onClick="{{ o.pick }}" data-preset="1" style="display:flex;align-items:center;gap:10px;padding:7px 9px;border:1px solid {{ o.border }};border-radius:6px;background:{{ o.bg }};cursor:pointer;font:inherit;text-align:left;color:inherit">
+                <span style="font-family:{{ o.font }};font-size:17px;line-height:1;flex:none;width:26px;text-align:center">Aa</span>
+                <span style="display:flex;flex-direction:column;gap:1px;min-width:0;flex:1">
+                  <span style="font-size:12.5px">{{ o.label }}</span>
+                  <span style="font-size:10.5px;color:#75798c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.names }}</span>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+
+          <sc-for list="{{ typeSliders }}" as="s" hint-placeholder-count="5">
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-size:11.5px;color:#b2b6ca;flex:1">{{ s.label }}</span>
+                <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#9397ab">{{ s.readout }}</span>
+              </div>
+              <input type="range" min="{{ s.min }}" max="{{ s.max }}" step="{{ s.step }}" value="{{ s.value }}" onInput="{{ s.set }}" aria-label="{{ s.label }}">
+            </div>
+          </sc-for>
+
+          <sc-for list="{{ typeGroups }}" as="g" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-size:11.5px;color:#b2b6ca;flex:1">{{ g.label }}</span>
+                <sc-if value="{{ g.overridden }}">
+                  <button onClick="{{ g.clear }}" style="border:0;background:transparent;color:#75798c;cursor:pointer;font:inherit;font-size:10.5px;padding:0;text-decoration:underline">follow typeface</button>
+                </sc-if>
+              </div>
+              <div style="display:flex;gap:4px">
+                <sc-for list="{{ g.options }}" as="o" hint-placeholder-count="4">
+                  <button onClick="{{ o.pick }}" data-seg="1" aria-pressed="{{ o.on }}" style="flex:1;padding:5px 3px;border:1px solid color-mix(in srgb, #e9e9ed 11%, transparent);border-radius:5px;background:transparent;cursor:pointer;font:inherit;font-size:11px">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+
+          <div style="display:flex;flex-direction:column;gap:3px;padding:9px 10px;border-radius:6px;background:#161826;overflow:hidden">
+            <sc-for list="{{ specimen }}" as="s" hint-placeholder-count="4">
+              <div style="display:flex;align-items:baseline;gap:8px;min-width:0">
+                <span style="font-family:{{ s.font }};font-size:{{ s.px }};font-weight:{{ s.weight }};letter-spacing:{{ s.tracking }};text-transform:{{ s.transform }};line-height:1.1;color:#e9e9ed;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">{{ s.text }}</span>
+                <span style="font-size:9.5px;color:#565a69;flex:none">{{ s.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isShape }}">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <sc-for list="{{ shapeGroups }}" as="g" hint-placeholder-count="4">
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase;color:#75798c;flex:1">{{ g.label }}</span>
+                <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#9397ab">{{ g.readout }}</span>
+              </div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <sc-for list="{{ g.options }}" as="o" hint-placeholder-count="4">
+                  <button onClick="{{ o.pick }}" data-seg="1" aria-pressed="{{ o.on }}" style="flex:1;min-width:52px;padding:5px 6px;border:1px solid color-mix(in srgb, #e9e9ed 11%, transparent);border-radius:5px;background:transparent;cursor:pointer;font:inherit;font-size:11.5px">{{ o.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ g.hasHint }}">
+                <span style="font-size:11px;color:#75798c;line-height:1.4">{{ g.hint }}</span>
+              </sc-if>
+            </div>
+          </sc-for>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="font-size:11.5px;color:#b2b6ca;flex:1">Content width</span>
+              <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#9397ab">{{ measureLabel }}</span>
+            </div>
+            <input type="range" min="36" max="88" step="2" value="{{ measureRem }}" onInput="{{ setMeasure }}" aria-label="Content width">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase;color:#75798c">Space between things</span>
+            <div style="display:flex;align-items:flex-end;gap:3px;height:20px">
+              <sc-for list="{{ spaceBars }}" as="b" hint-placeholder-count="6">
+                <span title="{{ b.title }}" style="width:{{ b.w }};height:9px;border-radius:2px;background:#4a4278"></span>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isPage }}">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <sc-for list="{{ pageGroups }}" as="g" hint-placeholder-count="7">
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase;color:#75798c;flex:1">{{ g.label }}</span>
+                <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#9397ab">{{ g.readout }}</span>
+              </div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <sc-for list="{{ g.options }}" as="o" hint-placeholder-count="3">
+                  <button onClick="{{ o.pick }}" data-seg="1" aria-pressed="{{ o.on }}" style="flex:1;min-width:52px;padding:5px 6px;border:1px solid color-mix(in srgb, #e9e9ed 11%, transparent);border-radius:5px;background:transparent;cursor:pointer;font:inherit;font-size:11.5px">{{ o.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ g.hasColour }}">
+                <div style="display:flex;align-items:center;gap:9px;padding:2px 0">
+                  <input type="color" value="{{ g.colour }}" onInput="{{ g.setColour }}" style="width:26px;height:22px;flex:none" aria-label="Own colour">
+                  <span style="flex:1;font-size:11.5px;color:#b2b6ca">Or pick your own</span>
+                  <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;color:{{ g.colourInk }}">{{ g.colour }}</span>
+                  <sc-if value="{{ g.colourSet }}">
+                    <button onClick="{{ g.clearColour }}" title="Back to a palette shade" style="display:grid;place-items:center;width:16px;height:16px;border:0;border-radius:3px;background:transparent;color:#75798c;cursor:pointer;padding:0;flex:none">
+                      <i class="ph ph-arrow-counter-clockwise" style="font-size:11px"></i>
+                    </button>
+                  </sc-if>
+                </div>
+              </sc-if>
+              <sc-if value="{{ g.hasHint }}">
+                <span style="font-size:11px;color:#75798c;line-height:1.4">{{ g.hint }}</span>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isChrome }}">
+        <div style="display:flex;flex-direction:column;gap:17px">
+          <p style="margin:0;font-size:11.5px;color:#9397ab;line-height:1.5">Everything here shows in the frame on the left. Anything left <span style="color:#b5abfc">following</span> changes when you load a different character.</p>
+          <sc-for list="{{ chromeGroups }}" as="g" hint-placeholder-count="10">
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase;color:#75798c;flex:1">{{ g.label }}</span>
+                <sc-if value="{{ g.overridden }}">
+                  <button onClick="{{ g.clear }}" style="border:0;background:transparent;color:#75798c;cursor:pointer;font:inherit;font-size:10.5px;padding:0;text-decoration:underline">follow character</button>
+                </sc-if>
+                <sc-if value="{{ g.following }}">
+                  <span style="font-size:10.5px;color:#b5abfc">following</span>
+                </sc-if>
+              </div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <sc-for list="{{ g.options }}" as="o" hint-placeholder-count="4">
+                  <button onClick="{{ o.pick }}" data-seg="1" aria-pressed="{{ o.on }}" style="flex:1;min-width:52px;padding:5px 6px;border:1px solid color-mix(in srgb, #e9e9ed 11%, transparent);border-radius:5px;background:transparent;cursor:pointer;font:inherit;font-size:11.5px">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+
+      </div>
+    </aside>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+/* Stacks that resolve without a webfont request: the repo self-hosts its faces and
+   forbids a CDN, so the prototype stands in with the nearest local equivalent. The
+   real screen reads Typography::PAIRINGS. */
+const FAMILIES = {
+  editorial: { label: "Editorial", names: "stands in for Playfair Display", h: "Georgia, 'Times New Roman', serif", b: "Inter, system-ui, sans-serif", hw: 700, tr: "-0.02em", tf: "none" },
+  modern: { label: "Modern", names: "Inter", h: "Inter, system-ui, sans-serif", b: "Inter, system-ui, sans-serif", hw: 600, tr: "-0.025em", tf: "none" },
+  grotesk: { label: "Grotesk", names: "Space Grotesk", h: "'Space Grotesk', system-ui, sans-serif", b: "'Space Grotesk', system-ui, sans-serif", hw: 700, tr: "-0.03em", tf: "none" },
+  rounded: { label: "Rounded", names: "stands in for Nunito", h: "'Trebuchet MS', 'Segoe UI', system-ui, sans-serif", b: "'Trebuchet MS', 'Segoe UI', system-ui, sans-serif", hw: 700, tr: "-0.01em", tf: "none" },
+  mono: { label: "Mono", names: "stands in for IBM Plex Mono", h: "ui-monospace, 'SF Mono', Menlo, monospace", b: "ui-monospace, 'SF Mono', Menlo, monospace", hw: 600, tr: "0.01em", tf: "uppercase" },
+};
+const SPACING = { compact: 0.875, normal: 1, roomy: 1.25, generous: 1.5 };
+const RADII = { none: 0, subtle: 4, round: 12, pill: 16 };
+const BTN_RADIUS = { none: 0, subtle: 4, round: 12, pill: 999 };
+const TRACKING = { tight: "-0.03em", normal: "0", wide: "0.06em" };
+
+const DEFAULTS = {
+  colours: {}, pageArea: "", base: 16, adjH1: 0, adjH2: 0, adjBody: 0, adjSm: 0,
+  heading_weight: "", tracking: "", caps: "",
+  measure: 56, header_bleed: "sheet", footer_bleed: "sheet",
+  frame: 3, sheet_radius: "none", sheet_shadow: "none", hero_layout: "left",
+};
+
+const CHARACTERS = {
+  editorial: { seed: "#8a1c2b", secondary: "#1f1a17", useSecondary: true, typography: "editorial", scale: 1.333, spacing: "roomy", radius: "subtle", shadow: "none", measure: 42, surface_contrast: "low", header_width: "content", boxed: "no", page_background: "surface", hero_layout: "left",
+    chrome: { header_layout: "left", footer_layout: "simple", footer_columns: "3", header_surface: "plain", footer_surface: "tinted", density: "roomy", header_rule: "on", logo_size: "medium", nav_align: "right", header_cta: "off" } },
+  minimal: { seed: "#3a4250", secondary: "", useSecondary: false, typography: "modern", scale: 1.2, spacing: "normal", radius: "subtle", shadow: "none", measure: 56, surface_contrast: "low", header_width: "content", boxed: "no", page_background: "surface", hero_layout: "center",
+    chrome: { header_layout: "centred", footer_layout: "simple", footer_columns: "3", header_surface: "plain", footer_surface: "plain", density: "normal", header_rule: "off", logo_size: "small", nav_align: "center", header_cta: "off" } },
+  bold: { seed: "#6d28d9", secondary: "#1e1045", useSecondary: true, typography: "grotesk", scale: 1.5, spacing: "normal", radius: "round", shadow: "layered", measure: 68, surface_contrast: "high", header_width: "full", boxed: "no", page_background: "contrast", hero_layout: "center",
+    chrome: { header_layout: "transparent", footer_layout: "columns", footer_columns: "4", header_surface: "plain", footer_surface: "contrast", density: "normal", header_rule: "off", logo_size: "large", nav_align: "right", header_cta: "on" } },
+  soft: { seed: "#3b6b4f", secondary: "#f5ecdc", useSecondary: true, typography: "rounded", scale: 1.25, spacing: "generous", radius: "pill", shadow: "soft", measure: 56, surface_contrast: "medium", header_width: "content", boxed: "yes", page_background: "surface", sheet_radius: "round", sheet_shadow: "soft", hero_layout: "split",
+    chrome: { header_layout: "sticky", footer_layout: "columns", footer_columns: "3", header_surface: "tinted", footer_surface: "tinted", density: "roomy", header_rule: "off", logo_size: "medium", nav_align: "right", header_cta: "on" } },
+  brutalist: { seed: "#1f1fd1", secondary: "#ffe600", useSecondary: true, typography: "mono", scale: 1.414, spacing: "compact", radius: "none", shadow: "hard", measure: 80, surface_contrast: "high", header_width: "full", boxed: "no", page_background: "border", hero_layout: "split",
+    chrome: { header_layout: "left", footer_layout: "columns", footer_columns: "2", header_surface: "contrast", footer_surface: "contrast", density: "compact", header_rule: "on", logo_size: "large", nav_align: "right", header_cta: "on" } },
+};
+
+const CHROME_OPTS = {
+  header_layout: ["left", "centred", "transparent", "sticky"],
+  nav_align: ["left", "center", "right"],
+  header_cta: ["off", "on"],
+  header_surface: ["plain", "tinted", "contrast"],
+  header_rule: ["on", "off"],
+  logo_size: ["small", "medium", "large"],
+  density: ["compact", "normal", "roomy"],
+  footer_layout: ["simple", "columns"],
+  footer_columns: ["2", "3", "4"],
+  footer_surface: ["plain", "tinted", "contrast"],
+};
+const CHROME_LABELS = {
+  header_layout: "Header arrangement", nav_align: "Menu sits", header_cta: "Button in the header",
+  header_surface: "Header background", header_rule: "Line under the header", logo_size: "Logo size",
+  density: "Header and footer height", footer_layout: "Footer arrangement",
+  footer_columns: "How many footer columns", footer_surface: "Footer background",
+};
+
+const ROLE_LABELS = {
+  background: "Page", surface: "Cards and panels", tint: "Tinted sections", border: "Lines and edges",
+  accent: "Buttons and links", contrast: "Loud sections", text: "Text", muted: "Quiet text",
+};
+
+const FOOTER_CONTENT = [
+  { head: "Studio", lines: ["Work", "About", "Journal"] },
+  { head: "Contact", lines: ["hello@northwind.studio", "+385 1 234 567"] },
+  { head: "Find us", lines: ["Ilica 1, Zagreb", "Mon–Fri, 9–17"] },
+  { head: "Follow", lines: ["Instagram", "Are.na"] },
+];
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const live = { character: "minimal", ...DEFAULTS, ...CHARACTERS.minimal };
+    this.state = {
+      d: JSON.parse(JSON.stringify(live)),
+      live: JSON.parse(JSON.stringify(live)),
+      chromeOverrides: {},
+      liveOverrides: {},
+      mine: [
+        { name: "Bakery warm", d: { ...DEFAULTS, ...CHARACTERS.soft, character: "soft", seed: "#a8571f", secondary: "#f6ead6", typography: "editorial", scale: 1.25, base: 17, boxed: "yes", sheet_radius: "round", sheet_shadow: "soft", colours: { tint: "#f7ecdc" } }, chrome: { footer_columns: "2" } },
+      ],
+      tab: "colour", viewport: "desktop", zoom: "fit", comparing: false, newName: "", stageW: 0, measured: false,
+    };
+  }
+
+  componentDidMount() { this._attach(0); }
+
+  /* The template is still streaming at mount, so the scroll container may not exist
+     yet. Retry on animation frames until the ref lands, then measure from it — never
+     from the constructor default, which is what silently clipped the preview. */
+  _attach(tries) {
+    const node = document.querySelector("[data-stage]");
+    if (!node || node.clientWidth <= 0) {
+      if (tries < 60) this._raf = requestAnimationFrame(() => this._attach(tries + 1));
+      return;
+    }
+    this._ro = new ResizeObserver((entries) => {
+      const w = entries[0].contentRect.width;
+      if (w > 0 && Math.abs(w - this.state.stageW) > 2) this.setState({ stageW: w });
+    });
+    this._ro.observe(node);
+    const w = node.clientWidth;
+    if (w > 0) {
+      const patch = { stageW: w, measured: true };
+      // Desktop in a column this narrow would sit under the zoom floor; open narrower.
+      if (w - 32 < 1280 * 0.5) patch.viewport = w - 32 < 834 * 0.5 ? "phone" : "tablet";
+      this.setState(patch);
+    }
+  }
+  componentWillUnmount() {
+    if (this._ro) this._ro.disconnect();
+    if (this._raf) cancelAnimationFrame(this._raf);
+  }
+
+  put(patch) { this.setState((s) => ({ d: { ...s.d, ...patch }, comparing: false })); }
+  set(key, num) { return (e) => this.put({ [key]: num ? Number(e.target.value) : e.target.value }); }
+  pick(key, value) { return () => this.put({ [key]: value }); }
+  setRole(role) { return (e) => this.setState((s) => ({ d: { ...s.d, colours: { ...s.d.colours, [role]: e.target.value } }, comparing: false })); }
+  resetRole(role) {
+    return (e) => {
+      e.stopPropagation();
+      this.setState((s) => { const c = { ...s.d.colours }; delete c[role]; return { d: { ...s.d, colours: c }, comparing: false }; });
+    };
+  }
+  pickChrome(key, value) { return () => this.setState((s) => ({ chromeOverrides: { ...s.chromeOverrides, [key]: value }, comparing: false })); }
+  clearChrome(key) {
+    return (e) => {
+      e.stopPropagation();
+      this.setState((s) => { const o = { ...s.chromeOverrides }; delete o[key]; return { chromeOverrides: o, comparing: false }; });
+    };
+  }
+  loadPreset(d, name, chrome) {
+    return () => this.setState({
+      d: { ...DEFAULTS, ...JSON.parse(JSON.stringify(d)), character: name },
+      chromeOverrides: chrome ? { ...chrome } : {},
+      comparing: false,
+    });
+  }
+
+  _hsl(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
+    let h = 0, s = 0;
+    if (mx !== mn) {
+      const dd = mx - mn;
+      s = l > 0.5 ? dd / (2 - mx - mn) : dd / (mx + mn);
+      h = mx === r ? ((g - b) / dd + (g < b ? 6 : 0)) : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4;
+      h *= 60;
+    }
+    return [h, s * 100, l * 100];
+  }
+  _hex(h, s, l) {
+    s /= 100; l /= 100;
+    const k = (n) => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = (n) => l - a * Math.max(-1, Math.min(Math.min(k(n) - 3, 9 - k(n)), 1));
+    const to = (v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0");
+    return "#" + to(f(0)) + to(f(8)) + to(f(4));
+  }
+  _lum(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  _ratio(a, b) {
+    const l1 = this._lum(a), l2 = this._lum(b);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
+  _derived(d) {
+    const [h, s] = this._hsl(d.seed);
+    const sep = { low: 0, medium: 3, high: 7 }[d.surface_contrast] || 0;
+    return {
+      accent: d.seed,
+      contrast: d.useSecondary && d.secondary ? d.secondary : this._hex(h, Math.min(s, 46), 20),
+      background: this._hex(h, Math.min(s * 0.12, 8), 98.5),
+      surface: this._hex(h, Math.min(s * 0.16, 12), 97 - sep),
+      tint: this._hex(h, Math.min(s * 0.3, 22), 92 - sep),
+      border: this._hex(h, Math.min(s * 0.2, 14), 85 - sep * 0.6),
+      text: this._hex(h, Math.min(s * 0.2, 14), 13),
+      muted: this._hex(h, Math.min(s * 0.16, 11), 42),
+    };
+  }
+  _palette(d) { return { ...this._derived(d), ...(d.colours || {}) }; }
+
+  renderVals() {
+    const showLive = this.state.comparing;
+    const d = { ...DEFAULTS, ...(showLive ? this.state.live : this.state.d) };
+    const overrides = showLive ? this.state.liveOverrides : this.state.chromeOverrides;
+    const charChrome = (CHARACTERS[d.character] || CHARACTERS.minimal).chrome;
+    const look = { ...charChrome, ...overrides };
+    const derived = this._derived(d);
+    const p = { ...derived, ...(d.colours || {}) };
+
+    const r = Number(d.scale);
+    const base = Number(d.base);
+    const size = { sm: base / r + d.adjSm, body: base + d.adjBody, h3: base * Math.pow(r, 2), h2: base * Math.pow(r, 3) + d.adjH2, h1: base * Math.pow(r, 5) + d.adjH1 };
+    const unit = SPACING[d.spacing] * 16;
+    const sp = (f) => Math.round(unit * f);
+    const measure = d.measure * 16;
+    const rad = RADII[d.radius];
+    const dense = { compact: 0.62, normal: 1, roomy: 1.5 }[look.density] || 1;
+    const shadow = { none: "none", soft: "0 6px 18px rgba(0,0,0,0.10)", hard: "6px 6px 0 " + p.text, layered: "0 1px 2px rgba(0,0,0,0.06), 0 4px 8px rgba(0,0,0,0.06), 0 12px 24px rgba(0,0,0,0.08)" }[d.shadow];
+    const fam = FAMILIES[d.typography];
+    const hw = d.heading_weight || fam.hw;
+    const tr = d.tracking ? TRACKING[d.tracking] : fam.tr;
+    const tf = d.caps || fam.tf;
+
+    const vw = { desktop: 1280, tablet: 834, phone: 390 }[this.state.viewport];
+    // clientWidth already excludes the scrollbar; subtract only the stage's own padding.
+    const avail = Math.max(240, this.state.stageW - 32);
+    const fit = Math.max(0.5, Math.min(1, avail / vw));
+    const zoom = !this.state.measured ? 0.5 : this.state.zoom === "fit" ? fit : this.state.zoom;
+
+    const surfaceOf = (n) => n === "contrast" ? p.contrast : n === "tinted" ? p.tint : p.background;
+    const inkOn = (bg) => this._ratio(p.text, bg) >= 4.5 ? p.text : p.background;
+    const onAccent = this._ratio("#ffffff", p.accent) >= 4.5 ? "#ffffff" : p.background;
+
+    const boxed = d.boxed === "yes";
+    const frame = boxed ? sp(d.frame) : 0;
+    const headerFull = boxed && d.header_bleed === "full";
+    const footerFull = boxed && d.footer_bleed === "full";
+    const headerBg = look.header_layout === "transparent" ? "transparent" : surfaceOf(look.header_surface);
+    const headerInk = look.header_layout === "transparent" ? inkOn(p.background) : inkOn(surfaceOf(look.header_surface));
+    const footerBg = surfaceOf(look.footer_surface);
+    const headerW = d.header_width === "full" ? "100%" : `min(${measure}px, 100%)`;
+    const logoPx = { small: size.body, medium: size.h3, large: size.h2 }[look.logo_size];
+    const centredHeader = look.header_layout === "centred";
+    const heroSplit = d.hero_layout === "split";
+    const heroCenter = d.hero_layout === "center";
+    const cols = Number(look.footer_columns || "3");
+    // The site's own small-screen behaviour, so a phone header can actually be judged.
+    const narrow = vw <= 480;
+    const heroStacks = heroSplit && !narrow;
+
+    const S = {
+      stageStyle: `width:${vw}px;flex:none;zoom:${zoom}`,
+      pageStyle: `background:${d.pageArea || p[d.page_background] || p.surface};min-height:900px`,
+      sheetWrapStyle: `padding:${frame}px`,
+      sheetStyle: `background:${p.background};color:${p.text};font-family:${fam.b};overflow:hidden;border-radius:${boxed ? RADII[d.sheet_radius] : 0}px;box-shadow:${boxed && d.sheet_shadow !== "none" ? (d.sheet_shadow === "soft" ? "0 10px 40px rgba(0,0,0,0.14)" : "0 0 0 1px " + p.border) : "none"}`,
+      headerStyle: `background:${headerBg};color:${headerInk};${look.header_rule === "on" ? `box-shadow:inset 0 -1px 0 ${p.border};` : ""}padding:0 ${sp(1.5)}px`,
+      headerInnerStyle: `max-width:${headerW};margin:0 auto;display:flex;align-items:center;${centredHeader ? "flex-direction:column;gap:" + sp(0.5) + "px;text-align:center;" : "gap:" + sp(1.5) + "px;"}padding:${Math.round(sp(1) * dense)}px 0`,
+      logoStyle: `font-family:${fam.h};font-weight:${hw};font-size:${logoPx}px;letter-spacing:${tr};text-transform:${tf};line-height:1.1;flex:none`,
+      navStyle: `display:flex;gap:${sp(1)}px;font-size:${size.sm * 1.05}px;flex:1;justify-content:${centredHeader ? "center" : look.nav_align === "left" ? "flex-start" : look.nav_align === "center" ? "center" : "flex-end"};flex-wrap:wrap`,
+      burgerStyle: `margin-left:auto;display:grid;place-items:center;width:${Math.round(size.body * 1.9)}px;height:${Math.round(size.body * 1.9)}px;border-radius:${BTN_RADIUS[d.radius]}px;font-size:${Math.round(size.body * 1.15)}px;box-shadow:inset 0 0 0 1px currentColor;flex:none`,
+      ctaStyle: `flex:none;padding:${sp(0.4)}px ${sp(0.9)}px;border-radius:${BTN_RADIUS[d.radius]}px;background:${p.accent};color:${onAccent};font-size:${size.sm}px;font-weight:600`,
+
+      heroStyle: `background:${p.background};padding:${sp(4)}px ${sp(1.5)}px ${sp(3)}px`,
+      heroInnerStyle: `max-width:min(${measure}px, 100%);margin:0 auto;display:${heroStacks ? "grid" : "block"};${heroStacks ? `grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:${sp(2)}px;align-items:center;` : ""}${heroCenter ? "text-align:center;" : ""}`,
+      heroTextStyle: `display:flex;flex-direction:column;gap:${sp(0.75)}px;${heroCenter && !heroSplit ? "align-items:center;" : "align-items:flex-start;"}`,
+      kickerStyle: `font-size:${size.sm * 0.92}px;letter-spacing:0.12em;text-transform:uppercase;color:${p.muted}`,
+      h1Style: `font-family:${fam.h};font-weight:${hw};font-size:${size.h1}px;letter-spacing:${tr};text-transform:${tf};line-height:1.05;margin:0;max-width:22ch;text-wrap:pretty`,
+      leadStyle: `font-size:${size.h3 * 0.72}px;line-height:1.55;color:${p.muted};margin:0;max-width:44ch`,
+      buttonStyle: `display:inline-block;margin-top:${sp(0.5)}px;padding:${sp(0.6)}px ${sp(1.2)}px;border-radius:${BTN_RADIUS[d.radius]}px;background:${p.accent};color:${onAccent};font-size:${size.body}px;font-weight:600;box-shadow:${d.shadow === "hard" ? "4px 4px 0 " + p.text : "none"}`,
+      heroImageStyle: `aspect-ratio:4/3;border-radius:${rad}px;background:linear-gradient(135deg, ${p.tint}, ${p.border});box-shadow:${shadow}`,
+
+      textSectionStyle: `background:${p.tint};padding:${sp(3)}px ${sp(1.5)}px`,
+      measureStyle: `max-width:min(${measure}px, 100%);margin:0 auto;display:flex;flex-direction:column;gap:${sp(0.75)}px;color:${inkOn(p.tint)}`,
+      h2Style: `font-family:${fam.h};font-weight:${hw};font-size:${size.h2}px;letter-spacing:${tr};text-transform:${tf};line-height:1.15;margin:0`,
+      h3Style: `font-family:${fam.h};font-weight:${hw};font-size:${size.h3}px;letter-spacing:${tr};text-transform:${tf};line-height:1.2;margin:0`,
+      bodyStyle: `font-size:${size.body}px;line-height:1.65;margin:0;max-width:64ch`,
+
+      splitSectionStyle: `background:${p.background};padding:${sp(3)}px ${sp(1.5)}px`,
+      splitInnerStyle: `max-width:min(${measure}px, 100%);margin:0 auto;display:grid;grid-template-columns:${narrow ? "minmax(0,1fr)" : "minmax(0,1fr) minmax(0,1fr)"};gap:${sp(2)}px;align-items:center`,
+      splitImageStyle: `aspect-ratio:1/1;border-radius:${rad}px;background:linear-gradient(135deg, ${p.border}, ${p.tint});box-shadow:${shadow}`,
+      splitTextStyle: `display:flex;flex-direction:column;gap:${sp(0.6)}px`,
+      linkStyle: `font-size:${size.body}px;color:${this._ratio(p.accent, p.background) >= 4.5 ? p.accent : p.text};font-weight:600`,
+
+      footerStyle: `background:${footerBg};color:${inkOn(footerBg)};padding:${Math.round(sp(2.2) * dense)}px ${sp(1.5)}px ${Math.round(sp(1.4) * dense)}px`,
+      footerInnerStyle: `max-width:min(${measure}px, 100%);margin:0 auto;display:flex;flex-direction:column;gap:${sp(1.2)}px;font-size:${size.sm * 1.05}px`,
+      footerColsStyle: `display:grid;grid-template-columns:repeat(${narrow ? 1 : cols},minmax(0,1fr));gap:${sp(1.5)}px`,
+      footerColStyle: `display:flex;flex-direction:column;gap:${sp(0.3)}px`,
+      footerHeadStyle: `font-family:${fam.h};font-weight:${hw};font-size:${size.body}px;text-transform:${tf};margin-bottom:${sp(0.2)}px`,
+      footerSimpleStyle: `display:flex;align-items:center;justify-content:space-between;gap:${sp(1)}px;flex-wrap:wrap`,
+      footerNavStyle: `display:flex;gap:${sp(1)}px`,
+      smallPrintStyle: `font-size:${size.sm * 0.92}px;opacity:0.72;padding-top:${sp(0.6)}px`,
+    };
+
+    const seg = (key, values, labels) => values.map((v) => ({ label: (labels && labels[v]) || v, on: d[key] === v, pick: this.pick(key, v) }));
+
+    const checkPairs = [
+      ["Text on the page", p.text, p.background, 4.5],
+      ["Text on a tinted section", inkOn(p.tint), p.tint, 4.5],
+      ["Quiet text", p.muted, p.background, 4.5],
+      ["Button label", onAccent, p.accent, 4.5],
+      ["Header text", headerInk, look.header_layout === "transparent" ? p.background : surfaceOf(look.header_surface), 4.5],
+      ["Footer text", inkOn(footerBg), footerBg, 4.5],
+    ];
+    const checks = checkPairs.map(([label, a, b, need]) => {
+      const ratio = this._ratio(a, b);
+      const ok = ratio >= need;
+      return { label, ratio: ratio.toFixed(2) + ":1", icon: ok ? "ph-check-circle" : "ph-warning-circle", color: ok ? "#7fb98a" : "#e0a084" };
+    });
+    const failing = checks.some((c) => c.color !== "#7fb98a");
+
+    const card = (name, def, chrome, isMine, idx) => {
+      const merged = { ...DEFAULTS, ...def };
+      const pal = this._palette(merged);
+      const on = isMine ? false : d.character === name;
+      const out = {
+        name: isMine ? name : name.charAt(0).toUpperCase() + name.slice(1),
+        c1: pal.accent, c2: pal.contrast, c3: pal.tint,
+        summary: [FAMILIES[merged.typography].label.toLowerCase(), merged.measure + "rem", merged.spacing, merged.boxed === "yes" ? "boxed" : "full bleed"].join(" · "),
+        live: !isMine && this.state.live.character === name && this.state.mine.every(() => true),
+        border: on ? "color-mix(in srgb, #9184d9 60%, transparent)" : "color-mix(in srgb, #e9e9ed 10%, transparent)",
+        bg: on ? "color-mix(in srgb, #9184d9 14%, transparent)" : "transparent",
+        load: this.loadPreset(def, isMine ? merged.character : name, chrome),
+      };
+      if (isMine) {
+        out.remove = (e) => { e.stopPropagation(); this.setState((s) => ({ mine: s.mine.filter((_, i) => i !== idx) })); };
+        out.overwrite = (e) => {
+          e.stopPropagation();
+          this.setState((s) => ({ mine: s.mine.map((m, i) => i === idx ? { ...m, d: JSON.parse(JSON.stringify(s.d)), chrome: { ...s.chromeOverrides } } : m) }));
+        };
+      }
+      return out;
+    };
+
+    const dirty = JSON.stringify([this.state.d, this.state.chromeOverrides]) !== JSON.stringify([this.state.live, this.state.liveOverrides]);
+    const slider = (label, key, min, max, step, readout) => ({
+      label, min: String(min), max: String(max), step: String(step),
+      value: String(d[key]), readout, set: this.set(key, true),
+    });
+    const sign = (v) => (v > 0 ? "+" : "") + v + "px";
+
+    return {
+      ...S,
+      showCta: look.header_cta === "on" && !centredHeader && !narrow,
+      heroHasImage: heroStacks,
+      wideNav: !narrow,
+      mobileNav: narrow,
+      footerColumns: look.footer_layout === "columns",
+      footerSimple: look.footer_layout === "simple",
+      footerCols: FOOTER_CONTENT.slice(0, cols).map((c) => ({ head: c.head, lines: c.lines.map((text) => ({ text })) })),
+      headerFull, footerFull,
+      headerInSheet: !headerFull, footerInSheet: !footerFull,
+
+      vwLabel: vw + "px",
+      zoomLabel: Math.round(zoom * 100) + "%",
+      comparing: this.state.comparing,
+      toggleCompare: () => this.setState((s) => ({ comparing: !s.comparing })),
+      dirtyLabel: failing ? "Check contrast" : dirty ? "Not published" : "Published",
+      dirtyIcon: failing ? "ph-warning-circle" : dirty ? "ph-dot-outline" : "ph-check-circle",
+      dirtyColor: failing ? "#e0a084" : dirty ? "#d9a85c" : "#7fb98a",
+      revert: () => this.setState((s) => ({ d: JSON.parse(JSON.stringify(s.live)), chromeOverrides: { ...s.liveOverrides }, comparing: false })),
+      publish: () => this.setState((s) => ({ live: JSON.parse(JSON.stringify(s.d)), liveOverrides: { ...s.chromeOverrides }, comparing: false })),
+
+      zooms: [
+        { label: "Fit", on: this.state.zoom === "fit", pick: () => this.setState({ zoom: "fit" }) },
+        { label: "50%", on: this.state.zoom === 0.5, pick: () => this.setState({ zoom: 0.5 }) },
+        { label: "75%", on: this.state.zoom === 0.75, pick: () => this.setState({ zoom: 0.75 }) },
+        { label: "100%", on: this.state.zoom === 1, pick: () => this.setState({ zoom: 1 }) },
+      ],
+      viewports: [
+        { label: "Desktop", icon: "ph-monitor", title: "Desktop · 1280px", on: this.state.viewport === "desktop", pick: () => this.setState({ viewport: "desktop", zoom: "fit" }) },
+        { label: "Tablet", icon: "ph-device-tablet", title: "Tablet · 834px", on: this.state.viewport === "tablet", pick: () => this.setState({ viewport: "tablet", zoom: "fit" }) },
+        { label: "Phone", icon: "ph-device-mobile", title: "Phone · 390px", on: this.state.viewport === "phone", pick: () => this.setState({ viewport: "phone", zoom: "fit" }) },
+      ],
+
+      builtIn: Object.keys(CHARACTERS).map((n) => card(n, CHARACTERS[n], CHARACTERS[n].chrome, false)),
+      mine: this.state.mine.map((m, i) => card(m.name, m.d, m.chrome, true, i)),
+      mineCount: this.state.mine.length + " saved",
+      noneMine: this.state.mine.length === 0,
+      newName: this.state.newName,
+      setName: (e) => this.setState({ newName: e.target.value }),
+      savePreset: () => this.setState((s) => ({
+        mine: [...s.mine, { name: s.newName.trim() || "Design " + (s.mine.length + 1), d: JSON.parse(JSON.stringify(s.d)), chrome: { ...s.chromeOverrides } }],
+        newName: "",
+      })),
+
+      tabs: ["colour", "type", "shape", "page", "chrome"].map((k) => ({
+        label: k === "chrome" ? "Header" : k.charAt(0).toUpperCase() + k.slice(1),
+        on: this.state.tab === k, pick: () => this.setState({ tab: k }),
+      })),
+      isColour: this.state.tab === "colour", isType: this.state.tab === "type",
+      isShape: this.state.tab === "shape", isPage: this.state.tab === "page",
+      isChrome: this.state.tab === "chrome",
+
+      seed: d.seed,
+      secondary: d.secondary || derived.contrast,
+      setSeed: this.set("seed"),
+      setSecondary: this.set("secondary"),
+      useSecondary: d.useSecondary,
+      secondaryLabel: d.useSecondary ? "On" : "Off",
+      toggleSecondary: () => this.put({ useSecondary: !d.useSecondary }),
+      contrastOpts: seg("surface_contrast", ["low", "medium", "high"], { low: "Barely", medium: "Clearly", high: "Strongly" }),
+      roles: Object.keys(ROLE_LABELS).map((k) => {
+        const own = (d.colours || {})[k] !== undefined;
+        return {
+          label: ROLE_LABELS[k], hex: p[k], overridden: own, derived: !own,
+          hexColor: own ? "#b5abfc" : "#75798c",
+          set: this.setRole(k), reset: this.resetRole(k),
+        };
+      }),
+      anyOverride: Object.keys(d.colours || {}).length > 0,
+      resetColours: () => this.put({ colours: {} }),
+      checks,
+
+      typeOpts: Object.keys(FAMILIES).map((k) => ({
+        label: FAMILIES[k].label, names: FAMILIES[k].names, font: FAMILIES[k].h,
+        border: d.typography === k ? "color-mix(in srgb, #9184d9 60%, transparent)" : "color-mix(in srgb, #e9e9ed 10%, transparent)",
+        bg: d.typography === k ? "color-mix(in srgb, #9184d9 14%, transparent)" : "transparent",
+        pick: this.pick("typography", k),
+      })),
+      typeSliders: [
+        slider("Body size", "base", 13, 21, 0.5, Math.round(size.body) + "px"),
+        slider("Steps between sizes", "scale", 1.1, 1.6, 0.017, Number(d.scale).toFixed(3) + "×"),
+        slider("Headline, nudged", "adjH1", -30, 40, 2, sign(d.adjH1) + " → " + Math.round(size.h1) + "px"),
+        slider("Subhead, nudged", "adjH2", -12, 20, 1, sign(d.adjH2) + " → " + Math.round(size.h2) + "px"),
+        slider("Small print, nudged", "adjSm", -3, 5, 0.5, sign(d.adjSm) + " → " + Math.round(size.sm) + "px"),
+      ],
+      typeGroups: [
+        { label: "Heading weight", overridden: d.heading_weight !== "", clear: () => this.put({ heading_weight: "" }),
+          options: ["400", "500", "600", "700", "800"].map((v) => ({ label: v, on: String(hw) === v, pick: this.pick("heading_weight", v) })) },
+        { label: "Heading letter spacing", overridden: d.tracking !== "", clear: () => this.put({ tracking: "" }),
+          options: ["tight", "normal", "wide"].map((v) => ({ label: v.charAt(0).toUpperCase() + v.slice(1), on: d.tracking === v, pick: this.pick("tracking", v) })) },
+        { label: "Headings in capitals", overridden: d.caps !== "", clear: () => this.put({ caps: "" }),
+          options: [{ label: "No", value: "none" }, { label: "Yes", value: "uppercase" }].map((o) => ({ label: o.label, on: tf === o.value, pick: this.pick("caps", o.value) })) },
+      ],
+      specimen: [
+        { text: "A workshop for things that last", px: Math.min(size.h1, 32) + "px", font: fam.h, weight: hw, tracking: tr, transform: tf, label: Math.round(size.h1) + "px" },
+        { text: "What we do", px: Math.min(size.h2, 24) + "px", font: fam.h, weight: hw, tracking: tr, transform: tf, label: Math.round(size.h2) + "px" },
+        { text: "Every project starts the same way.", px: size.body + "px", font: fam.b, weight: 400, tracking: "0", transform: "none", label: Math.round(size.body) + "px" },
+        { text: "Small print and captions", px: size.sm + "px", font: fam.b, weight: 400, tracking: "0", transform: "none", label: Math.round(size.sm) + "px" },
+      ],
+
+      shapeGroups: [
+        { label: "Corners", readout: rad + "px", options: seg("radius", ["none", "subtle", "round", "pill"], { none: "Square", subtle: "Soft", round: "Round", pill: "Pill" }), hasHint: false },
+        { label: "Depth", readout: d.shadow, options: seg("shadow", ["none", "soft", "hard", "layered"], { none: "Flat", soft: "Soft", hard: "Offset", layered: "Layered" }), hasHint: true, hint: "Offset draws a hard shadow and thick rules — it changes borders too." },
+        { label: "Air", readout: Math.round(unit) + "px", options: seg("spacing", ["compact", "normal", "roomy", "generous"], { compact: "Tight", normal: "Normal", roomy: "Roomy", generous: "Open" }), hasHint: false },
+      ],
+      measureRem: String(d.measure),
+      measureLabel: d.measure + "rem · " + measure + "px",
+      setMeasure: this.set("measure", true),
+      spaceBars: [0.25, 0.5, 1, 2, 4, 6, 8].map((f) => ({ w: Math.min(sp(f), 120) + "px", title: sp(f) + "px" })),
+
+      pageGroups: [
+        { label: "Page as a sheet", readout: boxed ? "boxed" : "edge to edge", options: seg("boxed", ["no", "yes"], { no: "Edge to edge", yes: "Boxed sheet" }), hasHint: true, hint: "A boxed page floats on a background, with room around it." },
+        { label: "Header breaks out", readout: headerFull ? "full width" : "inside the sheet", options: seg("header_bleed", ["sheet", "full"], { sheet: "In the sheet", full: "Full width" }), hasHint: true, hint: "Lets the header run edge to edge while the content stays boxed. Only does something on a boxed page." },
+        { label: "Footer breaks out", readout: footerFull ? "full width" : "inside the sheet", options: seg("footer_bleed", ["sheet", "full"], { sheet: "In the sheet", full: "Full width" }), hasHint: false },
+        { label: "Space around the sheet", readout: frame + "px", options: [1, 2, 3, 5].map((v) => ({ label: v === 1 ? "Thin" : v === 2 ? "Narrow" : v === 3 ? "Normal" : "Wide", on: d.frame === v, pick: this.pick("frame", v) })), hasHint: false },
+        { label: "Sheet corners", readout: RADII[d.sheet_radius] + "px", options: seg("sheet_radius", ["none", "subtle", "round"], { none: "Square", subtle: "Soft", round: "Round" }), hasHint: false },
+        { label: "Sheet lifts off the page", readout: d.sheet_shadow, options: seg("sheet_shadow", ["none", "soft", "hard"], { none: "No", soft: "Shadow", hard: "Hairline" }), hasHint: false },
+        { label: "Behind the sheet", readout: d.pageArea ? "your colour" : d.page_background,
+          options: seg("page_background", ["surface", "border", "contrast"], { surface: "Pale", border: "Mid", contrast: "Dark" }),
+          hasColour: true, colour: d.pageArea || p[d.page_background] || p.surface,
+          colourSet: d.pageArea !== "", colourInk: d.pageArea ? "#b5abfc" : "#75798c",
+          setColour: this.set("pageArea"), clearColour: () => this.put({ pageArea: "" }),
+          hasHint: true, hint: "No text ever sits here, so this one may be any colour without risking a contrast pair." },
+        { label: "Header contents run", readout: d.header_width === "full" ? "full width" : "content width", options: seg("header_width", ["content", "full"], { content: "Content width", full: "Full width" }), hasHint: true, hint: "Where the logo and menu sit inside the header band." },
+        { label: "Hero arrangement", readout: d.hero_layout, options: seg("hero_layout", ["left", "center", "split"], { left: "Left", center: "Centred", split: "Split" }), hasHint: false },
+      ],
+
+      chromeGroups: Object.keys(CHROME_OPTS)
+        .filter((key) => key !== "footer_columns" || look.footer_layout === "columns")
+        .map((key) => ({
+          label: CHROME_LABELS[key],
+          overridden: overrides[key] !== undefined,
+          following: overrides[key] === undefined,
+          clear: this.clearChrome(key),
+          options: CHROME_OPTS[key].map((v) => ({
+            label: v === "on" ? "Show" : v === "off" ? "Hide" : v.charAt(0).toUpperCase() + v.slice(1),
+            on: look[key] === v, pick: this.pickChrome(key, v),
+          })),
+        })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

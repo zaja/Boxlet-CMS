@@ -296,6 +296,13 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    narrowing by clicking with the state in the address and a range of your own, counting the
    addresses that are not there, the world map, the visitor's address behind a proxy,
    gathering small rows, export, and the footer credit (O-20).
+8d. **Appearance: one screen for the design, the header and the footer** (D-057). Begun
+   2026-09-20 at the owner's request, against `docs/design_handoff_appearance/`. Three rounds
+   were approved, then a reassessment: (1) the preview draws the real header and footer;
+   (2) the feedback loop closes — no Update button, Save beside the picture, specimens
+   instead of `clamp()`, a contrast gauge; (3) Design and Header & footer become one
+   `/admin/appearance` with a five-tab inspector, and `/admin/chrome` is renamed for the
+   words it keeps.
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
    variants (O-13, D-048) and two-step login (O-4, D-050).
@@ -1883,6 +1890,66 @@ is named by date and commit, which is enough to tell two test builds apart and n
 be a release. Boxlet has no version number yet, and the ZIP update will need one.
 
 
+### D-057: One source for the site layout's variables, and a preview that draws the chrome
+
+**Status:** round 1 of the Appearance rebuild, built 2026-09-20.
+
+**The debt it pays.** There have always been two renderers of `Pages/views/layout.php`: a
+visitor's page, and the admin's design preview. The second answered *"what does that layout
+need?"* from a literal array somebody had to remember to update, and it was caught out three
+times — by `description`, then by `icon`, then by the chrome of slice 5c. Each time the
+comment above it got louder, and the comment itself said the real fix was one source for
+those variables. The suite could not catch any of the three: it fails on any notice, but only
+along the branch some test happens to render, and `$icon` sits behind an `if`.
+
+`app/Modules/Pages/PageLayoutData.php` is that source. `forPage()` is what
+`PageController::render()` used to assemble, chrome included; `forPreview()` is the same for
+the admin. **Two locks, not a louder warning:**
+
+- the declared `@phpstan-type LayoutData` return of both factories: a factory that DROPS a
+  key fails `phpstan analyse` before any test runs;
+- `tests/page_layout_test.php` reads the template with `token_get_all`, works out which
+  variables it actually READS — a foreach's own value and anything it assigns are its own
+  business — and compares that with `PageLayoutData::KEYS`. A variable the template GROWS
+  fails there, by name. Measured: a `$bodyClass` added to the template and nowhere else fails
+  the test and is named in the failure.
+
+`locales` went the other way and is no longer handed to the layout at all: no front-end
+template reads it, because the language switcher gets it as an argument to `Blocks::render`.
+
+**The preview now draws the header and the footer.** This is a DELIBERATE REVERSAL, not a
+forgotten case. The old comment gave a reason: the header and footer are decisions about the
+whole site, while that preview existed to judge the tokens and section styles of one
+character, so chrome around the specimen was furniture competing with what was being looked
+at. On the screen this is being rebuilt into, the header and footer are among the things
+being judged, so the reason goes with the old screen.
+
+**Three things the implementation had to get right, each of which would have been a quiet
+wrong answer:**
+
+1. **Precedence is three levels: request → saved → character.** `ChromeLook::fromRequest()`
+   returns only the choices the request actually named (`array_key_exists`). Returning all
+   seven as `''` would make the Design preview — which sends no `look_*` at all — stop
+   honouring what the owner saved, and draw chrome the site does not have.
+2. **The preview was hard-coded to `'en'`.** The chrome's words and its menu are per locale,
+   so a site whose main language is Croatian would have judged its design under an empty
+   English footer. It takes the home page's language.
+3. **The chrome follows the character being PREVIEWED**, not the active one, or Bold's
+   sections would stand under Minimal's header.
+
+`fromRequest()` reads a request and writes nothing; saving stays `ChromeLook::save()`, behind
+a POST with a CSRF token. A value outside its closed set is not drawn.
+
+**The demo site now has a menu.** A fresh install had none, and an empty header is
+deliberately not drawn (D-032) — so a new owner's site had no navigation at all, and the
+preview would have had no header to show them. `DemoSite::seed()` builds "Main" over the demo
+pages and points the chrome at it. The browser suite already knew about this and worked
+around it in `harness.mjs`.
+
+**Left for round 3:** `fromRequest()` has one caller today; the second arrives with the
+merged screen. `DesignController` is at its size limit and splits when the routes are renamed.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -1912,6 +1979,14 @@ be a release. Boxlet has no version number yet, and the ZIP update will need one
 ## 5. Open items
 
 *O-1 and O-2 resolved by D-019 and D-020.*
+
+**O-21. Live links inside the design preview** (D-057). Now that the preview draws the real
+header, the iframe contains a menu whose links WORK: clicking one navigates the frame to that
+page, out of the preview and into the site. Block links could already do this; a menu makes it
+likely. The CSP is not the lever — `form-action 'none'` covers forms, not navigation — so this
+needs either a `<base target="_blank">`, intercepting clicks in the frame, or accepting it and
+giving the frame a way back. Decided when the merged Appearance screen is built, not patched
+now.
 
 **O-20. Statistics, round 2** (D-051): done 2026-09-20.
 Built: narrowing by clicking with the state in the address and a range of your own, counting

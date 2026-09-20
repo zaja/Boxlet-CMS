@@ -299,8 +299,7 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 8d. **Appearance: one screen for the design, the header and the footer** (D-057). Begun
    2026-09-20 at the owner's request, against `docs/design_handoff_appearance/`. Three rounds
    were approved, then a reassessment: (1) the preview draws the real header and footer;
-   (2) the feedback loop closes — no Update button, Save beside the picture, specimens
-   instead of `clamp()`, a contrast gauge; (3) Design and Header & footer become one
+   (2) the feedback loop closes (D-058); (3) Design and Header & footer become one
    `/admin/appearance` with a five-tab inspector, and `/admin/chrome` is renamed for the
    words it keeps.
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
@@ -1948,6 +1947,55 @@ around it in `harness.mjs`.
 
 **Left for round 3:** `fromRequest()` has one caller today; the second arrives with the
 merged screen. `DesignController` is at its size limit and splits when the routes are renamed.
+
+
+### D-058: The loop closes — a gauge, numbers, and Save beside the picture
+
+**Status:** round 2 of the Appearance rebuild, built 2026-09-20.
+
+Four changes, none of them a new decision about the design model. They are about the
+distance between making a choice and seeing what it did.
+
+**A contrast gauge, because a refusal is not a measurement.** The screen could say a pair
+FAILED and nothing else, so a palette passing at 4.51:1 looked exactly like one passing at
+17:1, and a person cannot aim at a number they are never shown. `Palette::pairs()` now
+returns all eleven pairs with their ratios and their verdicts, and `failures()` is a filter
+over that one list — two lists would drift. `/admin/design/check` carries `pairs` beside
+`errors` and `colors`. **Nothing was removed from the server:** Save refuses exactly what it
+refused before.
+
+Six pairs stand open and the rest fold away, **except a pair that fails, which is never
+folded** — hiding the one thing the owner has to act on would be the whole feature
+backwards. Measured, not assumed: a grey seed fails the tenth pair of eleven, which is
+inside the fold, and the test asserts that row is lifted out of it.
+
+**Numbers a person reads, instead of CSS.** The screen printed
+`clamp(2.038rem, 1.508rem + 1.759vw, 2.827rem)` and a row of rem values. That is the
+compiler's language on the owner's screen. `Tokens::readable()` gives the same decisions as
+pixels: body text, the heading sizes, what the largest becomes on a phone, one step of
+space, the distance between sections, the corner radius, the content width. There is no live
+SPECIMEN in the admin and there cannot be one — the admin's own type is fixed by the `--ui-*`
+set and may never follow the site's (SPEC §5.4). The specimen is the preview beside it.
+
+**Save moved to the preview's bar.** It used to sit at the foot of the left column, which is
+3604px tall: change a colour, watch the preview, then scroll back past every control to keep
+it. **In the BAR rather than under the frame, and that was measured rather than preferred:**
+the column is sticky, so anything below a frame 78vh tall sits past the bottom of the window
+and stays there however far the page is scrolled. The browser suite caught the second button
+as "not clickable" — which is the same failure an owner would have met as "I cannot press
+it". The bar is the one part of a sticky column always in view. The buttons submit the form
+through `form="design-form"`, so they work while standing outside it, and a test asserts both
+halves: that they are not inside the form element, and that saving still works.
+
+**Two speeds, because one was wrong for both.** A select or a checkbox refreshes the preview
+AT ONCE: the person has already chosen, and a quarter-second of nothing reads as a screen
+that did not hear them. A colour input, which fires continuously while dragged, still waits
+250ms. And the "Update preview" button is REMOVED by the script that makes it pointless — a
+control that repeats what already happened makes the person doubt whether it did. Without
+JavaScript the button is there and everything still works.
+
+**What this cost elsewhere:** three browser selectors said `form.design-form button[…]` and
+now say `button[form="design-form"][…]`. That is the price of the move, paid once.
 
 
 ### Lessons from the browser checks (2026-09-16)

@@ -292,8 +292,13 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    6. Media: a table with "Used on" and its filters.
    7. Settings as a ledger with its own sub-navigation.
    8. The ⌘K palette, with a `/admin/search` page behind it.
-9. **Slice 8, operations:** page cache, backup, update by ZIP upload, revisions,
-   sitemap, regenerating media variants (O-13), and 2FA (O-4).
+8c. **Statistics, round 2** (O-20). ← *current*, started 2026-09-20, at the owner's choice
+   over Slice 8: filtering by clicking with the state in the address and a chosen range,
+   404 counting, the world map, trusted proxies, grouping small numbers, export and import,
+   and the optional attribution.
+9. **Slice 8, operations:** the page cache (D-053, decided and not yet built), backup,
+   update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
+   variants (O-13, D-048) and two-step login (O-4, D-050).
 10. **Slice 9, release:** replace the development photographs (D-022); six more blocks (gallery, features, CTA, accordion,
     testimonials, logo strip), three templates, demo site, release ZIP, and the original
     admin look (D-007).
@@ -1637,6 +1642,33 @@ chose three things, and everything else follows the handoff.
 - **Sizes:** admin-ui.css was split (admin-parts.css), admin-shell.css split three ways,
   and admin-media-table.css, admin-activity.css, admin-settings.css and admin-palette.css
   are new. Every admin stylesheet is under the 300-line rule.
+
+
+### D-053: The page cache
+
+**Status:** approved 2026-09-20, building on D-020 and SPEC §5.7
+
+A visitor's page is written to disk as it is sent, and the next visitor gets the file.
+
+- **Checked in the first lines of `public/index.php`**, before the autoloader, the container
+  or the database: `require`d directly, since there is no autoloader yet. It therefore works
+  on every host with no server configuration, which a rewrite rule does not (D-020).
+- **Where:** `public/cache/pages/`, one file per address, named by a hash of the host and the
+  path. The directory is where index.php can find it without configuration.
+- **What is cached:** a GET with no query string, answered 200 with HTML, outside `/admin`,
+  `/form` and the installer, from someone with no `boxlet_session` cookie. Never while
+  maintenance is on or a migration is pending: the gate answers those before this runs.
+- **What a hit costs:** one `is_file()` and one `readfile()`. The visitor is then released
+  (`fastcgi_finish_request`) and the application boots only to count the view — SPEC §5.7
+  promises a cached page is still counted, and that is where the promise is kept.
+- **Emptied by any change.** `Activity::record()` already runs on every change the admin
+  makes (D-052), so the cache is emptied there, in one place, rather than from thirty
+  controllers. A "Clear now" button in Settings does it by hand.
+- **On by default**, with a switch in Settings. A site whose pages are cached and never
+  cleared is worse than no cache; the emptying rule above is what makes the default safe.
+- **A form on a cached page still works.** Its token carries the time the page was drawn and
+  has no upper limit (FormToken), so the three-second delay counts from when the page was
+  cached; the honeypot and the rate limit stand beside it, as that file already says.
 
 
 ### Lessons from the browser checks (2026-09-16)

@@ -2046,8 +2046,47 @@ site as it WOULD be.
 `AppearancePreview` (the three endpoints, which answer a machine), `ChromeWords` (the words,
 which are free text that needs checking, beside `ChromeLook`, which is closed sets).
 
-**Still to come in this round:** the toolbar over the picture — viewport widths, zoom, and
-Compare against what is published.
+### D-060: The picture gets a toolbar
+
+**Status:** the rest of round 3, built 2026-09-20.
+
+Three widths (1280 · 834 · 390), a zoom (Fit · 100 · 75 · 50), **Compare**, and one word
+saying what the screen is.
+
+**The zoom scales the STAGE, never the frame's width.** A page judged at 1280 has to lay
+itself out at 1280; a frame simply made narrower hands the page a smaller window and it
+answers with its phone layout, which is a different question. So the frame is laid out at the
+chosen width, its height divided by the factor, and the whole thing scaled — at half zoom you
+see twice as much page, which is what zooming out means. Measured on the copy: `1280px` wide
+in the layout, `scale(0.573)` on screen, filling a stage 734 across.
+
+**Nothing goes below half.** Under that the text stops being text and the picture stops
+answering anything.
+
+**Compare is HELD, not toggled.** A comparison you can walk away from is one you can mistake
+for the site. Holding the button points the frame at the preview address with no query at
+all — which draws exactly what is stored — and releasing it gives back the unsaved work. The
+keyboard holds it too, on Space or Enter.
+
+**The screen says what it is:** *Published*, *Not published yet*, or *Fix the contrast to
+publish* — the third when the check endpoint reports what Publish would refuse, so a palette
+that cannot be published is never dressed as work merely unsaved. Discard changes appears
+beside it, and is an ordinary link back to the screen.
+
+**Two things this had to be measured against rather than assumed:**
+
+- **The admin's Content Security Policy.** `setAttribute('style', …)` is REFUSED — measured
+  in this very screen, with the console complaint to prove it — while setting one property at
+  a time through the CSSOM is allowed. The toolbar sets width, height and transform that way
+  and invents no rule the stylesheet does not own.
+- **The bar's own layout.** Eight controls across a column this narrow wrapped into a
+  different arrangement at every width, with the label stranded below the widths. The rows
+  are now declared rather than left to wrap: what this is and what to do with it, then the
+  tools for looking at it.
+
+**The tools are hidden until the script runs.** Without JavaScript there is no way to scale a
+frame, and a row of controls that did nothing would be worse than none: the frame is then the
+column's width at full size, exactly as before.
 
 
 ### Lessons from the browser checks (2026-09-16)

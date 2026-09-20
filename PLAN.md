@@ -1844,6 +1844,45 @@ browser or system, the two tables are left off with a line saying why, rather th
 a question nobody asked.
 
 
+### D-056: The release package
+
+**Status:** built 2026-09-20, at the owner's request, after he tried to install Boxlet from
+a GitHub download on a second account and got one line of plain text.
+
+The line was Boxlet's own: *"Dependencies are missing. Upload the release ZIP, which
+includes vendor/."* The product told him the right thing; the thing it named did not exist.
+
+**The requirement was never in danger, but it was never honoured either.** SPEC's server row
+says *no shell, no Composer*, and that is about the person installing. Composer belongs to
+the person PACKAGING, once per release. What GitHub hands out is the source, and the source
+has no `vendor/` on purpose: committing 53 MB of libraries makes a version bump a diff
+nobody can read. Between the two there has to be a step, and until now there was none — so
+nobody without SSH could install Boxlet at all.
+
+`tools/release/build.php` is that step, beside the icon sprite and the map:
+
+- It packs the **last commit** (`git archive HEAD`), not the working tree, and says so
+  loudly when the tree is dirty. A release has to be a thing that can be pointed at.
+- `composer install --no-dev` runs in the staging directory, never in the checkout, so the
+  maintainer's own PHPStan is not swept away by making a release.
+- Out: tests, tools, docs, .github, phpstan.neon, CLAUDE.md, PLAN.md — and
+  **composer.json and composer.lock**, because with them present a `composer install` on a
+  live site would pull the development tools back onto it.
+- It **checks the file it wrote** rather than trusting itself: opens the ZIP again, insists
+  on the installer, the front controller, both .htaccess files, the autoloader, the icons
+  and the map, and refuses anything that looks like tests, tools or PHPStan.
+
+**Measured, not estimated:** 1061 files, **2.1 MB**, against SPEC's 8 MB limit. Then
+unpacked into a directory of its own and installed through a browser, with scenario
+01-install pointed at it: eighteen requirement checks, SQLite, the demo site rendering at
+`/`, `install.php` deleting itself, login and logout — eleven verdicts, all green. That is
+the first time anything has proved the claim on SPEC's own acceptance line for Slice 9.
+
+**Left for the real release** (Slice 9, and Slice 8's update by ZIP): a version. The package
+is named by date and commit, which is enough to tell two test builds apart and not enough to
+be a release. Boxlet has no version number yet, and the ZIP update will need one.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

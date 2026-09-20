@@ -1805,11 +1805,21 @@ and the city's latitude and longitude. Boxlet's own reader already decodes every
 
 **In three rounds, each ending with something on a screen:**
 1. The database: the level setting, the city file, the resumable download, and the place a
-   lookup returns.
+   lookup returns. **Done 2026-09-20.** The download works: eight pieces, 2.3 s on this
+   server, and the file installed itself.
 2. The counting and the tables: the migration, the Tracker, Regions and Cities on the
-   Statistics screen, the threshold, the privacy sentence, export and import. **This is the
-   round that answers the owner's complaint.**
-3. The map: bubbles, the country view, and the collapse of old detail.
+   Statistics screen, the threshold, the privacy sentence, export and import. **Done
+   2026-09-20**, and this is the round that answers the owner's complaint. Seen live on the
+   development site: one real visit became "Hesse, 1 visitor" in the regions and
+   "Other (fewer than 5)" in the cities — the floor doing exactly what it is for.
+3. The map: bubbles at the cities' coordinates, the country view when one country holds the
+   traffic, and the collapse of old city detail into its region. **Left.**
+
+**Two things the tables do not do, and why.** A region and a city cannot narrow the screen:
+they are counted in a table the path never enters, so there is nothing for the rest of the
+screen to be narrowed by. And while the screen IS narrowed to a page, source, device,
+browser or system, the two tables are left off with a line saying why, rather than answering
+a question nobody asked.
 
 
 ### Lessons from the browser checks (2026-09-16)

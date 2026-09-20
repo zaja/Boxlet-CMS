@@ -1671,6 +1671,19 @@ A visitor's page is written to disk as it is sent, and the next visitor gets the
   cached; the honeypot and the rate limit stand beside it, as that file already says.
 
 
+**A deprecation the local suite could not see (2026-09-20).** `StatsFilter::where(string
+$fromDay = null)` is implicitly nullable, which PHP 8.4 deprecates. The suite fails a test on
+any notice, warning or deprecation — but only where one is raised while that test runs, and
+this one is raised as the class is first LOADED, where a `catch (Throwable)` somewhere up the
+stack swallowed it. Three commits went out with CI red on PHP 8.4 and green on 8.1–8.3 while
+every local run passed.
+
+Fixed with `?string`, and `tests/deprecations_test.php` now loads every class file in app/ in
+a process of its own, with nothing catching anything, and fails on whatever PHP says. It was
+run against the old signature first, where it fails, and against the new one, where it is
+silent. `php -l` does not see this class of problem at all.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

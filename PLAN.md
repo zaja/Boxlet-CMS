@@ -295,7 +295,7 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 8c. **Statistics, round 2** (O-20). Done 2026-09-20, at the owner's choice over Slice 8:
    narrowing by clicking with the state in the address and a range of your own, counting the
    addresses that are not there, the world map, the visitor's address behind a proxy,
-   gathering small rows, and export. The footer attribution is left (O-20).
+   gathering small rows, export, and the footer credit (O-20).
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
    variants (O-13, D-048) and two-step login (O-4, D-050).
@@ -1874,18 +1874,34 @@ a question nobody asked.
 
 *O-1 and O-2 resolved by D-019 and D-020.*
 
-**O-20. Statistics, round 2** (D-051): done 2026-09-20, except the footer attribution.
+**O-20. Statistics, round 2** (D-051): done 2026-09-20.
 Built: narrowing by clicking with the state in the address and a range of your own, counting
 the addresses that are not there, the world map, the visitor's own address behind a proxy,
 gathering the rows of one or two visitors, and export.
 
 *Left, and why* — and both reasons were corrected on 2026-09-20, when the owner asked:
 
-**An attribution line in the site's footer** is not waiting on anything technical. It is
-twenty lines: a setting, and a line in the footer template. What it waits on is an address
-for it to point at. The line exists to be a link — a credit in somebody's client's footer
-that leads nowhere is a word, and the first thing that site's owner turns off. The moment
-Boxlet has a public page, the address is one constant and the feature is an afternoon.
+**The footer credit is built** (2026-09-20). Two different things were hiding behind one
+phrase, and the owner's question separated them:
+
+- *What the specification meant* by "atribucija u footeru" was **DB-IP's** credit, optionally
+  on the public site. **Not built, and not needed.** CC BY 4.0 asks for attribution where
+  the material is used, and DB-IP's data never reaches a visitor — only the admin is ever
+  shown a country or a city. It is credited where it is seen: at the foot of the Statistics
+  screen. Crediting a database in a client's public footer for something their visitors
+  never see is noise.
+- *What the owner wanted*, once the two were separated: a line saying what made the site.
+  Built as `site_credit`, a switch in Settings → General, **off unless asked for**. It draws
+  one quiet line in the site's own small print — "Made with Boxlet", in the page's language,
+  linking to **boxlet.org**, which the owner named as the project's address. A site whose
+  footer holds nothing else still draws one for it, or the switch would be on and the line
+  nowhere.
+
+The address lives in `BOXLET_SITE` in app/Support/helpers.php, beside ADMIN_LANG, rather
+than in config/: every install credits the same project, a credit a site could point
+anywhere is not a credit, and config/ is the part of a Boxlet its owner may have edited —
+so it is the part an update cannot safely replace. The browser copy proved that the hard
+way within the hour: it does not sync config/, and the line silently did not appear.
 
 **Putting counts in is gone, and Plausible's format will not be built** (the owner,
 2026-09-20, asked which was needed and answered his own question: neither). The import that

@@ -295,7 +295,7 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 8c. **Statistics, round 2** (O-20). Done 2026-09-20, at the owner's choice over Slice 8:
    narrowing by clicking with the state in the address and a range of your own, counting the
    addresses that are not there, the world map, the visitor's address behind a proxy,
-   gathering small rows, export and import. The footer attribution is left (O-20).
+   gathering small rows, and export. The footer attribution is left (O-20).
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
    variants (O-13, D-048) and two-step login (O-4, D-050).
@@ -1461,7 +1461,7 @@ database, delete everything, a suggested privacy-policy text in English and Croa
 
 **Round 2**, open as O-20: the world map (one SVG map, Natural Earth, public domain — the
 owner approved adding it when it comes), filtering by clicking with the state in the address
-and a chosen date range, export (CSV and Plausible's import format) and import, counting 404s,
+and a chosen date range, export as CSV, counting 404s,
 trusted proxies, grouping small numbers, an optional attribution in the footer.
 
 **Counting, as built (2026-09-19):**
@@ -1808,7 +1808,7 @@ and the city's latitude and longitude. Boxlet's own reader already decodes every
    lookup returns. **Done 2026-09-20.** The download works: eight pieces, 2.3 s on this
    server, and the file installed itself.
 2. The counting and the tables: the migration, the Tracker, Regions and Cities on the
-   Statistics screen, the threshold, the privacy sentence, export and import. **Done
+   Statistics screen, the threshold, the privacy sentence, and export. **Done
    2026-09-20**, and this is the round that answers the owner's complaint. Seen live on the
    development site: one real visit became "Hesse, 1 visitor" in the regions and
    "Other (fewer than 5)" in the cities — the floor doing exactly what it is for.
@@ -1877,7 +1877,7 @@ a question nobody asked.
 **O-20. Statistics, round 2** (D-051): done 2026-09-20, except the footer attribution.
 Built: narrowing by clicking with the state in the address and a range of your own, counting
 the addresses that are not there, the world map, the visitor's own address behind a proxy,
-gathering the rows of one or two visitors, and export and import.
+gathering the rows of one or two visitors, and export.
 
 *Left, and why* — and both reasons were corrected on 2026-09-20, when the owner asked:
 
@@ -1887,15 +1887,21 @@ for it to point at. The line exists to be a link — a credit in somebody's clie
 that leads nowhere is a word, and the first thing that site's owner turns off. The moment
 Boxlet has a public page, the address is one constant and the feature is an afternoon.
 
-**Plausible's CSV format** does NOT need PHP's zip extension, which is what this said
-before. Measured: zip is on this server, and it is on most shared hosting, but it is
-genuinely optional in PHP — and it does not matter, because a ZIP is a local header, the
-data, a central directory and an end record, and `crc32()` and `gzdeflate()` are zlib,
-which is everywhere. Reading and writing one is about 150 lines, the same call that was
-made for the MaxMind reader. What it really waits on is whether anybody wants it: it is
-their schema, their file names, their date ranges, and their meaning for metrics Boxlet
-does not keep (bounce rate, time on page, entry and exit pages), all of which would be
-written as zeros.
+**Putting counts in is gone, and Plausible's format will not be built** (the owner,
+2026-09-20, asked which was needed and answered his own question: neither). The import that
+round 2 built has been taken out — the route, the action, the model, the screen's field and
+its words.
+
+The reason is better than the one it replaces. A file of numbers that ADDS to what a site
+has counted is a way to make a site's statistics say something that never happened, and
+nobody had asked for it. What is left is a promise worth more: **nothing but a visit ever
+writes a count.** Taking counts OUT stays — a CSV of the table on screen, and one JSON file
+of everything, for keeping a copy or reading in a spreadsheet.
+
+For the record, since it was recorded wrongly before: Plausible's format never needed PHP's
+zip extension. Measured — zip is on this server and on most shared hosting, it is optional
+in PHP, and it does not matter: a ZIP is a local header, the data, a central directory and
+an end record, and `crc32()` and `gzdeflate()` are zlib, which is everywhere.
 
 **O-17. Downloads: documents and archives in Media.** The owner wants to offer visitors
 files to download (PDF, ZIP, TAR and similar) from the same library, which is why it is

@@ -550,14 +550,15 @@ as D-011 sets out for blocks.
 ```
 Layer 0  Character    one preset: Editorial / Minimal / Bold / Soft / Brutalist
                       sets everything below to a coherent starting point
-Layer 1  Tokens       eight decisions, not forty values:
+Layer 1  Tokens       a handful of decisions, not forty values:
                         1-2 seed colours → full palette generated with WCAG checks
-                        typography pairing (curated list) + scale ratio
+                        typography pairing (curated list), text size + scale ratio
                         spacing base unit
                         radius character (none / subtle / round / pill)
                         shadow character (none / soft / hard / layered)
-                        container width
+                        content width, as a number of rem
                         surface contrast (low / medium / high)
+                        the page as a sheet: header width, boxed, what surrounds it
 Layer 2  Section      per block instance, stored in page_blocks.style_json —
                       five enumerated keys and one media reference:
                         surface:  plain | tinted | contrast | image | gradient
@@ -588,19 +589,25 @@ linked with a hash of their content in the query string instead, which busts the
 caches and is still served from disk (`Url::versioned()`).
 
 **Layer 1 storage.** `design_tokens` holds the decisions, one row per key: `seed`,
-`secondary` ('' when unused), `typography`, `scale`, `spacing`, `radius`, `shadow`,
-`container`, `surface_contrast`, `header_width`, `boxed`, `page_background`. Derived values
-are never stored. A site saved before a decision existed loads with that decision at the
-default character's value, so an older `design_tokens` set is never an error.
+`secondary` ('' when unused), `typography`, `text_size`, `scale`, `spacing`, `radius`,
+`shadow`, `container`, `surface_contrast`, `header_width`, `boxed`, `page_background`.
+Derived values are never stored. A site saved before a decision existed loads with that
+decision at the default character's value, so an older `design_tokens` set is never an error.
+
+**Every decision but two is one of a closed set.** The exceptions are the two colours, which
+are `#rrggbb`, and `container`, which is a NUMBER of rem (PLAN.md D-062). It was one of four
+names until 2026-09-21; the four names are still read and mean the widths they meant, so no
+stored design had to be migrated or re-chosen.
 
 ```
 typography        editorial | classic | modern | grotesk | rounded | mono
                   heading and body family, weights, tracking, case, line heights
-scale             1.125 | 1.2 | 1.25 | 1.333 | 1.414 | 1.5    --text-sm … --text-4xl
+text_size         small | normal | large | larger             the base of --text-sm … --text-4xl
+scale             1.125 | 1.2 | 1.25 | 1.333 | 1.414 | 1.5    the step between them
 spacing           compact | normal | roomy | generous         --space-xs … --space-3xl
 radius            none | subtle | round | pill                --radius-s/m/l/button
 shadow            none | soft | hard | layered                --shadow-s/m/l, --border-width/card
-container         narrow | normal | wide | full               --container-width/narrow/wide
+container         36–88, in rem, in steps of 2                --container-width/narrow/wide
 surface_contrast  low | medium | high                         lightness of --color-surface
 header_width      content | full                              --page-header-width
 boxed             no | yes                                    --page-frame (0 when no)

@@ -2131,6 +2131,53 @@ showed there; the library uses `auto-fill`, and a kept design is a card the widt
 character.
 
 
+### D-062: Two controls that were coarser than the question
+
+**Status:** round 5 of the Appearance rebuild, built 2026-09-21. **This changes the layer-1
+decision list, which SPEC §5.4 freezes at v0.1 and not before** — so it is done deliberately,
+SPEC is updated, and it is written here.
+
+**Content width is a NUMBER of rem, 36 to 88, in steps of two.** It was four names, and four
+names cannot answer "a little narrower than this". The measure — how many characters fit on a
+line — is the single decision that most changes whether a page is comfortable to read, and it
+was the one the owner could only move in jumps of fourteen rem. The control is a slider with
+the number beside it, and the line under the controls gives it in pixels too.
+
+**The four names are still read.** `narrow`, `normal`, `wide` and `full` load as 42, 56, 68
+and 80, so no stored design needed migrating or re-choosing, and the five characters kept
+exactly the widths they had. Outside the bounds is REFUSED and named rather than quietly
+clamped: the owner asked for something the design layer does not do, and saying so is what a
+refusal is for.
+
+**Text size is its own decision** — small, normal, large, larger — because size and scale are
+different questions that were one control. The scale is how much bigger each heading is than
+the one under it; this is how big the text is. A site for people who are not twenty-five
+needed the second, and the only way to get it was to pick a scale that made the headings
+wrong. It moves the TYPE AND NOTHING ELSE — not the spacing, not the corners, not the
+measure — because a person asking for larger text is asking for larger text. Editorial ships
+at `large`: a control no character demonstrates is a control nobody finds (the same reasoning
+that made Soft the boxed one).
+
+**Three things this turned up, each worth more than the feature:**
+
+- **A loop's order became the stored order.** `container` left the closed-set loop and
+  arrived at the end of the decisions array, which nothing intended. `validate()` now puts
+  the decisions in one declared order, with `+ $decisions` so a decision the list forgets is
+  mis-ordered rather than lost.
+- **A test bound to the wrong source.** `install_test` counted "the closed choices plus the
+  two colours", which stopped being the whole set the moment a decision was neither. It now
+  counts a CHARACTER, which is the complete set by definition.
+- **The browser check measured the border box.** It read 784px for a 704px measure, because a
+  container carries side padding. It now reads the content box AND the compiled
+  `--container-width` inside the frame: what the control says, what the page is built with,
+  and what it actually measures, all three.
+
+**`Tokens` was 355 lines and is now two files.** `Tokens` answers "is this a decision Boxlet
+accepts, and what does it mean to a person"; `Derived` answers "what CSS does it come to".
+They were never one concern, and nothing there validates — everything it is handed has been
+through `validate()` already.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

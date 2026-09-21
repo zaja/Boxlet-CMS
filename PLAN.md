@@ -2315,6 +2315,41 @@ the choice back over. **Choosing a colour now takes the role over**, and the swi
 the one press that gives it back, which is the direction that deserves a deliberate gesture.
 
 
+### D-066: Type in detail — five of the twelve remaining decisions
+
+**Status:** built 2026-09-21. SPEC §5.4 updated: this adds six keys to layer 1 and changes
+`scale` from a closed set to a number.
+
+- **The step between sizes is a number**, 1.1 to 1.6. Six named ratios were six answers to a
+  question with a continuum behind it, and the gap between two of them was a decision nobody
+  could make. A number is CLAMPED, never rounded to the control's step, so the five
+  characters keep the exact ratios they were written with — 1.333 is still 1.333.
+- **Three nudges**, in pixels, each bounded and asymmetric: the largest heading −30…+40, the
+  subhead −12…+20, small print −3…+5. A ratio cannot say "that headline, two pixels smaller",
+  and the nudge lands AFTER the scale so the scale stays the relationship it is and the nudge
+  stays the exception it is.
+- **Heading weight, letter spacing and capitals** may be taken over from the pairing, with
+  `''` meaning "as the typeface has it" — the same convention the chrome's choices use. A
+  weight chosen by hand survives changing the typeface; one never chosen follows it.
+
+**Two duplications this turned up, both of which had already caused a wrong answer:**
+
+- **A size was worked out in two places.** The compiler needed it as CSS and the screen as a
+  number a person reads, so each did the arithmetic — and the screen's copy did not know
+  about the nudges, which made every readout in the Type tab wrong the moment one was used.
+  Caught by a test within a minute of the nudges existing. `Derived::sizeOf()` is the one
+  formula now, and `Tokens::readable()` asks it.
+- **Readouts were rendered once and went stale.** A number beside a control that stopped
+  being true when the control moved is worse than no number, because it is the thing being
+  read. `AppearanceForm::readouts()` builds them all in one place, the screen renders them,
+  and `/check` returns them so they follow a control that is being dragged.
+
+**And a type PHPStan was right about:** the heading weights are their own labels, and PHP
+turns the key `'600'` into `600`. The helper's parameter is `array<array-key, string>`
+because that is what it really takes; narrowing it to `string` would have been a type that
+reads better and is false.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

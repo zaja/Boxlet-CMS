@@ -597,13 +597,27 @@ decision at the default character's value, so an older `design_tokens` set is ne
 **Every decision but two is one of a closed set.** The exceptions are the two colours, which
 are `#rrggbb`, and `container`, which is a NUMBER of rem (PLAN.md D-062). It was one of four
 names until 2026-09-21; the four names are still read and mean the widths they meant, so no
-stored design had to be migrated or re-chosen.
+stored design had to be migrated or re-chosen. `scale` and the three nudges are numbers too
+(D-066), each clamped to its own bounds and never rounded to the control's step, so the five
+characters keep the exact ratios they were written with.
+
+**Six roles are the owner's to set, and three heading treatments are the owner's to take
+over.** `color_*` (§ below), and `heading_weight`, `tracking` and `caps`, where `''` means
+"as the typeface pairing has it" — the same convention the chrome's seven choices use, and
+for the same reason: a weight chosen by hand should survive changing the typeface, and one
+never chosen should follow it.
 
 ```
 typography        editorial | classic | modern | grotesk | rounded | mono
                   heading and body family, weights, tracking, case, line heights
 text_size         small | normal | large | larger             the base of --text-sm … --text-4xl
-scale             1.125 | 1.2 | 1.25 | 1.333 | 1.414 | 1.5    the step between them
+scale             1.1–1.6                                     the step between them
+nudge_h1          -30…+40 px, added to --text-4xl             after the scale has run
+nudge_h2          -12…+20 px, added to --text-2xl             after the scale has run
+nudge_sm          -3…+5 px, added to --text-sm                after the scale has run
+heading_weight    '' | 400 | 500 | 600 | 700 | 800            '' follows the pairing
+tracking          '' | tight | normal | wide                  '' follows the pairing
+caps              '' | no | yes                               '' follows the pairing
 spacing           compact | normal | roomy | generous         --space-xs … --space-3xl
 radius            none | subtle | round | pill                --radius-s/m/l/button
 shadow            none | soft | hard | layered                --shadow-s/m/l, --border-width/card

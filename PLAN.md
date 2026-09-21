@@ -2089,6 +2089,48 @@ frame, and a row of controls that did nothing would be worse than none: the fram
 column's width at full size, exactly as before.
 
 
+### D-061: The designs the owner keeps
+
+**Status:** round 4 of the Appearance rebuild, built 2026-09-21. Migration
+`0024_design_library.sql`.
+
+**This is the thing the design layer was missing.** Five characters could be LOADED and
+nothing could be SAVED. An afternoon spent on colour and type had nowhere to go, and loading
+any character threw it away. That is the real source of "too few options" — not the number of
+controls, but that nothing done with them could be kept.
+
+**One row is one whole look:** the ten decisions and the seven header-and-footer choices, as
+they were on the screen. **Not** the menu and **not** the owner's words — those are the
+site's content, and a design carrying them would put an English footer on a Croatian site the
+moment it was used there.
+
+**Decisions, never derived values** (SPEC §5.4), in JSON in one column rather than seventeen
+columns: the shape of layer 1 belongs to SPEC, not to this table, so a new decision there
+never needs a migration here. A row is validated on the way OUT as well as in, so one written
+by an older version — or edited by hand — is filled in with the default preset's values
+instead of reaching the screen as something the design layer does not accept. Tested by
+damaging a row on purpose.
+
+**Three actions and no more: keep, write over, delete.** The name is unique, and saving under
+a name that exists WRITES OVER IT rather than making a second — that is what "save" means
+everywhere else, and two designs called "Autumn" would make the library ask a question it
+should never ask. The screen says which of the two happened.
+
+**None of the three touches the site, and each answers with the SCREEN rather than a
+redirect.** A redirect would hand back the published design, so the owner would press "keep
+this design" and watch the work they had just kept vanish from the screen. Bringing one back
+fills the form with it; Publish is still the confirmation, exactly as it is for a character.
+
+**What the browser check proves, rather than the unit tests:** keep a design, load a
+character over it, bring the kept one back, and the seed that comes back is the one that went
+in — then delete it and find the library empty again.
+
+**One thing the strip got wrong first:** `auto-fit` stretched two kept designs across the
+whole screen. The character strip above happens to hold exactly five, so the difference never
+showed there; the library uses `auto-fill`, and a kept design is a card the width of a
+character.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

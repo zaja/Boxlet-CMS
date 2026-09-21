@@ -2387,7 +2387,8 @@ ordinary header. The CSS says this by matching `.page-sheet`, and needs no code 
 (there are eight now) and a label convention I had sidestepped by sharing one key between two
 decisions. Both now read the source they are about.
 
-**Left of the twelve: the hero arrangement**, and it is not an oversight — see O-23.
+**Left of the twelve: the hero arrangement**, and it is not an oversight — it was refused,
+see D-069.
 
 
 ### D-068: Publish asks once, instead of three buttons in the bar
@@ -2407,6 +2408,37 @@ question rather than against zero, because the publish before it had written one
 
 It works without JavaScript, because it is a form post answered by a form post. The browser
 suite's `applyCharacter()` presses Publish and then answers, which is what a person does.
+
+
+### D-069: The hero arrangement stays the block's — the handoff's last row is refused
+
+**Status:** decided by the owner 2026-09-21, and it closes what was O-23.
+
+The handoff's §3 table asks for `hero_layout` — left / centred / split — as a layer-1
+decision, set "directly" rather than through the character's composition. **It will not be
+built.** The owner's question is the whole argument: *why would this be global at all when it
+is already a setting on the block?*
+
+**It already is where it belongs.** Every hero carries its own layout in
+`page_blocks.layout`, chosen in the editor for that page, and SPEC freezes that: what a block
+looks like belongs to the block. A design decision that re-arranged every hero on the site
+would overrule choices the owner made page by page — and the one tool that legitimately does
+that, "save design and reset section styles", asks first and says what it will do.
+
+**Where the idea came from, so nobody re-invents it:** a character already decides how a hero
+stands — Editorial centres it, Bold splits it, Brutalist pushes it left — and today the only
+way to change that is to load a whole different character, which takes the colour, the type
+and the spacing with it. The real want behind the handoff's row is narrow: *"I like this
+design, but new heroes should be split."*
+
+**If that want ever becomes real**, the answer is not a design decision that looks live and
+is not. It is a control that says what it does — **"new sections start like this"** — beside
+the characters, where composition already lives, and it would have no reason to stop at the
+hero: a character sets width, rhythm, alignment and edges for every block type the same way.
+
+Until somebody actually asks for it, this is a feature refused rather than deferred, which is
+the rule about not building an abstraction before a second real caller — applied to a
+feature.
 
 
 ### Lessons from the browser checks (2026-09-16)
@@ -2438,17 +2470,6 @@ suite's `applyCharacter()` presses Publish and then answers, which is what a per
 ## 5. Open items
 
 *O-1 and O-2 resolved by D-019 and D-020.*
-
-**O-23. The hero arrangement as a design decision** (handoff §3, last row). The handoff asks
-for `hero_layout` — left / centred / split — as a layer-1 decision, "directly" rather than
-through the character's composition. **Not built, deliberately**, because it collides with a
-rule SPEC freezes: a block's layout is the BLOCK's (layer 3, `page_blocks.layout`), and a
-design decision that silently re-arranged every hero on the site would overrule choices the
-owner made page by page. The honest options are (a) it sets what a NEW hero starts from,
-which is what `Composition` already does and shows nothing in the preview, (b) it rewrites
-every hero when published, which is what the existing "save and reset section styles" button
-already offers and warns about, or (c) heroes stop storing their own layout, which changes a
-frozen contract. This one is the owner's to pick, and none of the three is obviously right.
 
 **O-22. The old Appearance addresses** (D-059). `/admin/design` and `/admin/chrome` are
 redirects to `/admin/appearance`, kept while bookmarks and habits catch up. The owner asked

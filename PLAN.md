@@ -2495,6 +2495,60 @@ controls look denser. All three were right, and the first two were the same clas
 only show when the content is taller than the window. It checks a short window now.
 
 
+### D-072: The screen measures itself, not the window
+
+**Status:** 2026-09-21. From `docs/ispravci.md` §A, which is a reading of this screen against
+the handoff's prototype. The owner's own words were that "extra sidebars open"; §A found six
+faults behind it, and five of them were one mistake made five ways: **the screen was reasoning
+about a width nobody had measured.**
+
+- **The admin rail could be opened as a fourth column.** `bare` screens ship with the rail
+  folded, but `admin-nav.js` still showed the button that unfolds it — one click laid a 216px
+  rail over three columns that were already full, and because nothing is remembered on a
+  `bare` screen the next load undid it again. The button is not drawn on those screens now.
+- **Every threshold here is a `@container`, not a `@media`.** How much room this screen has
+  depends on the admin rail beside it — 3.25rem folded, 13.5rem open — which a media query
+  cannot see: the same 1100px window gave the screen 1048px once and 884px the next time and
+  the CSS behaved identically both times. That is also what created a band between 1000 and
+  1024px with a wide rail and stacked columns: two thresholds measuring different things.
+- **Three columns, then two, then one — never three to one.** 12.25 + 30 + 19.5rem is 988px
+  of content, so three stopped fitting long before the old 64rem let go of them. What gives
+  way first is the LIBRARY OF CHARACTERS, which is a place to start from, not the inspector,
+  which is what the screen is used with: under 74rem the rail folds into a panel opened from
+  the bar (`appearance-rail.js`), under 56rem everything stacks with the picture first.
+  Without a script there is no panel to open, so the screen stacks at 74rem instead — one
+  column earlier is a fair price for not drawing a button the browser cannot press.
+- **The picture no longer changes width under the owner's hand.** `fitsTheColumn()` ran from
+  every `ResizeObserver` tick, so dragging the window walked the preview from desktop to
+  tablet to phone and back, and nothing said why. It chooses once, at the first real
+  measurement; when the room runs out afterwards the strip SAYS so and the width stands.
+- **The frame owns the height.** It was `calc(100dvh - var(--ui-bar-height))`, true only
+  while the strip is exactly that tall — and on Croatian labels it wraps to two rows. The
+  window is handed down instead: frame, column, main, screen. Only above the phone width,
+  where the frame really is two columns; under it a clipped frame would put the whole screen
+  out of reach for anyone without a script.
+- **The stage scrolled 404px onto nothing.** Found while checking §A3's "exactly one vertical
+  scroll": the frame is laid out at full size and scaled down, and the scrollable overflow
+  the stage reports is the frame BEFORE the transform — 1280×1176 of it while 840×772 is what
+  is drawn. Sideways only now, which is the one direction that ever has anything to reach.
+
+The strip over the picture also says what size it is — `1280×950 · 81%` — into a slot that
+had been in the markup since the first day with nothing ever writing to it.
+
+**Checked by dragging, not by reasoning:** the suite now sweeps ten widths from 1600 to 820
+and asserts the relations, because every one of these faults is a relation between two widths
+and none of them shows at a single one.
+
+**And the stylesheet was split, because it was twice the limit.** `admin-appearance.css` had
+reached 1050 lines — past the point where a file is searched rather than read, and CLAUDE.md's
+hard limit is 500. It is five now, along the seam the screen already has: the screen itself,
+then one per column (`-rail`, `-picture`, `-inspector`), and `-widths.css` holding every
+threshold, loaded last so its overrides win. Twelve dead rules went with it — the old wide
+layout's `.library*`, `.preview-bar*` and `.slider*`, none of them in any template. **Proved
+pure rather than asserted:** every computed property of all 13,965 elements on the screen, at
+three widths × five tabs, before and after — zero differences.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

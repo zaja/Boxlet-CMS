@@ -2231,6 +2231,49 @@ once on the very check whose subject is whether the dependents were worked out a
 waits for the server's answer about the second change and for the frame to have loaded it.
 
 
+### D-064: The Appearance screen becomes a workshop
+
+**Status:** built 2026-09-21, after the owner compared what was built with the handoff's own
+screenshots and found the screen a different shape. He is right, and §2 of the handoff
+describes the shape it should be; this is that.
+
+**Three columns under one bar, filling the window.** The owner's designs on the left, the
+site in the middle, the controls on the right. Each column scrolls on its own and the bar
+never scrolls at all. The admin's rail folds to its icons beside it, exactly as it does in
+the page editor — the owner asked for that in the same breath, and `bare` already did it.
+
+**Why it matters, rather than being a rearrangement:** read as a document, this screen put
+the picture BELOW the controls and the library above both, so the owner scrolled between the
+thing they were changing and the thing they were judging. A workshop puts them side by side.
+
+**The character and the saved designs become a rail of cards**, each with three swatches, a
+name, an "in use" badge where it applies, and a line **built from its own decisions** —
+`modern · 56rem · normal · full bleed`. Not a sentence somebody wrote about it: a sentence
+that cannot go out of date. A saved design's card carries its own two tools, so **writing
+over it needs no name typed** and cannot be mistyped into a second design nobody meant.
+
+**One form around all three columns.** The cards, the library and every control post the
+same screen — that is what stopped a character load from clearing the header (D-059) — so
+the form IS the layout.
+
+**Two things measured rather than assumed:**
+
+- **A 13px scrollbar on a screen that fits the window.** The no-script preview form is
+  `.visually-hidden`, which is an absolutely positioned 1em box; sitting after a full-height
+  screen it lengthened the page by exactly its own height. It is `display: none` now — a form
+  with no content of its own, which exists to be submitted, and submits fine unrendered.
+- **The contrast rule caught the hover I wrote.** The card's cover button faded a sheet over
+  it at `opacity: 0.35`, and `tests/contrast_test.php` refused it within a minute: opacity is
+  the one thing that must not be what makes a control quiet (D-012). The card's border
+  lights up instead.
+
+**Still not what the handoff draws, and named here so it is not mistaken for done:** the
+controls are selects, where §2.4 asks for segmented buttons with a monospace readout; the
+"follow the character" state is the first option of a select rather than a visible
+`following` badge; the Type tab has no specimen; and twelve of the fifteen decisions in the
+handoff's §3 table are not built. Those are the next rounds.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

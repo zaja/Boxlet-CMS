@@ -2178,6 +2178,59 @@ They were never one concern, and nothing there validates — everything it is ha
 through `validate()` already.
 
 
+### D-063: Colours by hand, and the check that makes them safe
+
+**Status:** round 6 — the last of the Appearance rebuild — built 2026-09-21. Approved by the
+owner at the start, and deliberately left until last: it needed the gauge from D-058 and the
+tests from the handoff's §7.
+
+**Six roles may be set by hand:** the page background, the tinted surface, borders, text,
+muted text and links. `''` means the palette works it out, which is the default and what
+every character ships — this adds a way to DISAGREE with the palette, not a new thing to
+fill in.
+
+**Nine are not on offer, and that is the whole safety story.** The accent and the contrast
+surface are the two seeds already. `on-accent`, `on-contrast`, `muted-on-contrast`,
+`contrast-raised` and `on-gradient` are the palette choosing which of two inks can be READ on
+a colour; handing those over would hand over the one decision that keeps text legible,
+dressed as a choice.
+
+**The guarantee moves from derivation to checking** (SPEC §5.4, updated). Until now the
+palette could not produce an unreadable pair. Now it can, so the contrast check is no longer
+a formality about the seed — it is the only thing between the owner and a site nobody can
+read. It refuses exactly as before, and **a hand-set colour owns its own failure**: "text on
+the background is 2.1:1" now names `color_text`, not surface contrast, which is a control
+that cannot fix it.
+
+**The bug this round was built around, killed by construction:** the owner's colours go into
+the palette BEFORE anything is derived from them. Applied afterwards, `on-accent`,
+`on-contrast` and `on-gradient` would still be answers about the colour that had gone —
+legible against a background nobody has any more. A test sets a near-black page and asserts
+all three moved.
+
+**Two things the work turned up that were wrong before it:**
+
+- **The neutrals assumed a light page.** They were fixed lightnesses — 0.99 for the
+  background, 0.2 for text — which was true of every palette a seed could produce and false
+  the moment a background could be set. Measured: a dark page gave muted text at 2.6:1. They
+  now follow the page's own lightness, so ONE hand-set colour gives a coherent dark palette
+  rather than a list of refusals. Every character leaves the background alone, so all five
+  are untouched.
+- **A proxy standing in for a measurement.** `$lightText` asked whether the chosen ink WAS
+  the background colour and took that to mean "light text" — true while every background was
+  near-white. On a dark page the background is the dark ink, and the muted text beside it was
+  pushed the wrong way, to 1.40:1. It measures the ink's lightness now.
+
+**And one on the screen itself:** the five colours left to the palette kept showing the
+values they were rendered with while the preview beside them went dark. The same
+stale-dependent bug, in the browser; they follow the palette now, and a role the owner has
+taken over is never touched.
+
+**The browser check is waited for, not slept through.** A fixed delay passed once and failed
+once on the very check whose subject is whether the dependents were worked out again. It now
+waits for the server's answer about the second change and for the frame to have loaded it.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

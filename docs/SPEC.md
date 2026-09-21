@@ -636,6 +636,26 @@ muted text on the contrast surface; text on both ends of the gradient. A failure
 the save and names the pair, its ratio and the decision responsible. Every surface can
 hold body text, so no pair qualifies for the 3:1 large-text threshold.
 
+**Six roles may be set BY HAND** (PLAN.md D-063), stored as `color_background`,
+`color_surface`, `color_border`, `color_text`, `color_muted` and `color_link`; '' means the
+palette works the role out, which is the default and what every character ships. The other
+nine are not on offer: the accent and the contrast surface are the two seeds already, and
+`on-accent`, `on-contrast`, `muted-on-contrast`, `contrast-raised` and `on-gradient` are the
+palette choosing which of two inks can be READ on a colour — handing those over would hand
+over the one decision that keeps text legible.
+
+**This moves the guarantee from derivation to checking, deliberately.** Until a colour could
+be set by hand the palette could not produce an unreadable pair; now it can, and the check
+above is the only thing standing in the way. So it is no longer a formality about the seed:
+it runs on the palette AFTER the owner's colours are in it, a hand-set colour owns its own
+failure in the message, and Publish refuses exactly as before.
+
+**A hand-set colour goes in before anything is derived from it.** The inks are worked out
+from the background and the text, so applying an override afterwards would leave them
+answering a question about a colour that had gone. The neutrals follow the page's own
+lightness for the same reason: a dark background gives light text, a lighter tinted surface
+and a readable muted tone, rather than the near-white assumptions the fixed values carried.
+
 **Fonts.** Self-hosted from `public/assets/fonts`, never a third-party service: Inter,
 Playfair Display, Source Serif 4, Space Grotesk and Nunito as variable fonts, IBM Plex
 Mono at 400 and 700, each in latin and latin-ext subsets with its SIL OFL licence. The

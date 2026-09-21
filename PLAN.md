@@ -2629,6 +2629,40 @@ every role in it, no folded panel and no read-only list beside it, and a taken c
 offering to go back, with the site untouched until Publish.
 
 
+### D-075: The specimen is the sizes, drawn
+
+**Status:** 2026-09-21. From `docs/ispravci.md` §C2 and §C5, with §D5.
+
+**The specimen was fixed at 1.6rem.** Dragging the scale moved the number beside each line
+and the lines themselves did not move at all — which took away the only thing a specimen is
+for, the RELATION between the sizes. It is drawn at the page's own sizes now, all four
+shrunk by the SAME factor so the largest fits the column, and set in the pairing being
+chosen: the cards above already take the site's faces, because they are what is being
+chosen, and a specimen of a pairing has to show both halves of it.
+
+- **The arithmetic is not redone in JavaScript.** The pixels in each readout are the
+  server's, from the one formula that owns them (`Derived::sizeOf`, D-066); the script only
+  multiplies all four by one factor. A second copy of that formula is two answers waiting to
+  differ, which is the bug D-066 exists to prevent.
+- **The numbers stay real.** The pixels beside each line are what the site gets, not the
+  shrunken ones.
+- **Two judgements, and both were corrected by looking.** The handoff suggested capping the
+  largest line at 34px: at the default character that put the body and the small print at 8
+  and 6, a pair of smudges. 40px keeps them legible at the sizes people actually choose. And
+  a 9px floor — my own — made 17px and 13px land on the SAME size, which is the one thing
+  this must never do: two steps drawn identically say the design has no step at all.
+- **Without a script the four fixed sizes remain** as the fallback, so the specimen is still
+  four different sizes rather than four identical lines.
+
+**The tab strip is five equal columns**, not a wrapping row. Five tabs share about 280px,
+which fits in English and does not in Croatian — "Boja · Tipografija · Oblik · Stranica ·
+Zaglavlje" broke into two ragged rows, and a strip that wraps unevenly reads as two strips.
+A name too long for its column gives way at the end, with the whole of it in the `title`.
+
+**The gauge's sample is 28×18** rather than 40×24: twelve of them share a 312px column, and
+the sample only has to show a pair of colours against each other.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

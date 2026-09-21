@@ -2350,6 +2350,46 @@ because that is what it really takes; narrowing it to `string` would have been a
 reads better and is false.
 
 
+### D-067: The sheet, its edges, and what breaks out of it
+
+**Status:** built 2026-09-21. Seven more of the twelve; SPEC §5.4 updated again.
+
+**The frame wraps the SHEET, not the page.** It used to wrap everything, so the header and
+footer were inset with the content and could not reach the edge of the window. The page is
+now three boxes — `.page` (what surrounds), `.page-frame` (the room between), `.page-sheet`
+(the page itself) — and `header_bleed` / `footer_bleed` say which side of the frame the
+chrome renders on. **They are read by the LAYOUT, not compiled into a token**, which is what
+keeps every rule in the stylesheet free of "is this boxed"; that property is what the frame's
+own docblock has always been proud of.
+
+**Four more decisions about the sheet:** how much room is around it (thin/narrow/normal/wide,
+1/2/3/5 spacing units — it was hard-coded at three), its corners, whether it lifts off the
+page, and the two bleeds. Every one is ZERO when the page is not boxed, for the same reason
+the frame is: a rounded corner on something with no visible edge is a rule that does nothing
+and still has to be read by everyone who comes after.
+
+**Cards and panels are a colour of their own** — the seventh role the owner may set. They
+used to take the tinted surface's colour on a plain section, so a card and a tinted band were
+the same tone and a card INSIDE a tinted section had nothing to be distinct from. It sits
+half a step from the page, between the two, and its pair — text on a card — is measured like
+every other surface text can land on. All five characters still pass at twelve pairs.
+
+**The footer menu's columns**, which is the one place more columns actually help. The handoff
+asks for the footer's own grid to take the number; measured against what a footer holds — the
+owner's words, the menu, the switcher, the small print — three and four columns would leave
+two of them empty. A long menu is the thing that needs the room, and the control says so.
+
+**An interaction worth naming rather than hiding:** a header laid over the first section can
+only do that INSIDE the sheet. Outside it there is nothing to overlay, so it draws as an
+ordinary header. The CSS says this by matching `.page-sheet`, and needs no code to enforce it.
+
+**Two tests bound to a literal, both caught in the same run:** a count of seven chrome choices
+(there are eight now) and a label convention I had sidestepped by sharing one key between two
+decisions. Both now read the source they are about.
+
+**Left of the twelve: the hero arrangement**, and it is not an oversight — see O-23.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -2379,6 +2419,17 @@ reads better and is false.
 ## 5. Open items
 
 *O-1 and O-2 resolved by D-019 and D-020.*
+
+**O-23. The hero arrangement as a design decision** (handoff §3, last row). The handoff asks
+for `hero_layout` — left / centred / split — as a layer-1 decision, "directly" rather than
+through the character's composition. **Not built, deliberately**, because it collides with a
+rule SPEC freezes: a block's layout is the BLOCK's (layer 3, `page_blocks.layout`), and a
+design decision that silently re-arranged every hero on the site would overrule choices the
+owner made page by page. The honest options are (a) it sets what a NEW hero starts from,
+which is what `Composition` already does and shows nothing in the preview, (b) it rewrites
+every hero when published, which is what the existing "save and reset section styles" button
+already offers and warns about, or (c) heroes stop storing their own layout, which changes a
+frozen contract. This one is the owner's to pick, and none of the three is obviously right.
 
 **O-22. The old Appearance addresses** (D-059). `/admin/design` and `/admin/chrome` are
 redirects to `/admin/appearance`, kept while bookmarks and habits catch up. The owner asked

@@ -622,16 +622,30 @@ spacing           compact | normal | roomy | generous         --space-xs … --s
 radius            none | subtle | round | pill                --radius-s/m/l/button
 shadow            none | soft | hard | layered                --shadow-s/m/l, --border-width/card
 container         36–88, in rem, in steps of 2                --container-width/narrow/wide
+frame             thin | narrow | normal | wide               --page-frame (0 when not boxed)
+sheet_radius      square | soft | round                       --page-sheet-radius (0 when not boxed)
+sheet_shadow      none | shadow | hairline                    --page-sheet-shadow (none when not boxed)
+header_bleed      sheet | full                                read by the LAYOUT, not a token
+footer_bleed      sheet | full                                read by the LAYOUT, not a token
 surface_contrast  low | medium | high                         lightness of --color-surface
 header_width      content | full                              --page-header-width
 boxed             no | yes                                    --page-frame (0 when no)
 page_background   surface | border | contrast                 --page-bg, from the palette
 ```
 
-**The page as a sheet** (PLAN.md D-031). `boxed` insets the page by `--page-frame`, and
-`--page-bg` paints what that inset reveals; `--page-sheet` is the page itself and stays
-`--color-background`. The header takes its own width rather than the content's, so a
+**The page as a sheet** (PLAN.md D-031, D-067). `.page` is what surrounds the sheet and
+paints `--page-bg`; `.page-frame` is the room between them and carries `--page-frame`;
+`.page-sheet` is the page itself, painting `--page-sheet` with `--page-sheet-radius` and
+`--page-sheet-shadow`. The header takes its own width rather than the content's, so a
 full-width bar over a narrow column is one decision, not a second container.
+
+**The frame wraps the SHEET, not the page**, which is what lets the chrome choose a side:
+`header_bleed` and `footer_bleed` decide whether the header and footer render inside the
+sheet or outside the frame, where they reach the window's edge. They are read by the layout
+rather than compiled into a token, so no rule in the stylesheet asks whether the page is
+boxed — the property the frame's own docblock has always been proud of. A header laid over
+the first section (`header_layout: transparent`) can only do that inside the sheet; outside
+it there is nothing to overlay, and it draws as an ordinary header.
 
 The background is a shade **from the palette**, never a free colour — the reasoning this
 section already uses to refuse a free colour per section. It gains no contrast pair, and
@@ -643,15 +657,16 @@ rather than leaving it as a claim.
 **Palette.** Derived in OKLCH from the seed: background, tinted surface, border, text and
 muted text carry a trace of its hue; the seed itself is the accent and link colour; the
 contrast surface is the second colour, or a deep shade of the seed, with its own text
-colours; the gradient runs from the seed to a neighbouring hue. Seeds are never adjusted
+colours; cards sit half a step from the page, between it and the tinted surface; the gradient
+runs from the seed to a neighbouring hue. Seeds are never adjusted
 to pass. Every text/background pair is checked at WCAG AA 4.5:1: text, muted text and
 links on the background and the tinted surface; button text on the accent; text and
 muted text on the contrast surface; text on both ends of the gradient. A failure refuses
 the save and names the pair, its ratio and the decision responsible. Every surface can
 hold body text, so no pair qualifies for the 3:1 large-text threshold.
 
-**Six roles may be set BY HAND** (PLAN.md D-063), stored as `color_background`,
-`color_surface`, `color_border`, `color_text`, `color_muted` and `color_link`; '' means the
+**Seven roles may be set BY HAND** (PLAN.md D-063, D-067), stored as `color_background`,
+`color_card`, `color_surface`, `color_border`, `color_text`, `color_muted` and `color_link`; '' means the
 palette works the role out, which is the default and what every character ships. The other
 nine are not on offer: the accent and the contrast surface are the two seeds already, and
 `on-accent`, `on-contrast`, `muted-on-contrast`, `contrast-raised` and `on-gradient` are the

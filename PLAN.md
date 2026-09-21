@@ -2588,6 +2588,47 @@ Both read the colour and the spacing the page is actually painted in now.
 gauge, readouts — and knows nothing about the preview, the debounce or the reload list.
 
 
+### D-074: The palette is one list
+
+**Status:** 2026-09-21. From `docs/ispravci.md` §C1. The colour tab held the same palette
+twice: a list of fifteen colours that could not be touched, and, folded away under it, a
+panel with the seven that could. **The half that can be changed was the half that was
+closed**, and the two could not be read against each other at all.
+
+It is one list of sixteen roles now, in the order the palette works them out. A role the
+owner may take over carries a colour input — **the swatch IS the picker**, because a colour
+square beside a button that opens a colour picker is two things where there is one — and the
+nine that are chosen against whatever they sit on say `computed` beside their hex.
+
+- **Giving a colour back is an ACTION, not a box to untick.** Each hand-set colour still
+  needs its switch in the form, because a colour input always carries some colour and "is
+  this mine" cannot be read off its value (D-065) — but that is mechanism. The row shows one
+  button that says what it does; the switch is clipped to a pixel beside it, never faded,
+  because opacity is what D-012 forbids for making a control quiet. `Reset all` is the same
+  action over every role, and the server **re-validates** after clearing: the palette's own
+  colour can fail a pair the owner's passed, and a screen that stopped saying so would give
+  up the guarantee D-063 moved from derivation to checking.
+- **Both buttons appear and go by CSS, not by a render.** The switches flip under the
+  owner's hand as colours are picked, so `:has(input:checked)` is what shows the revert and
+  `Reset all` — a button the server decided about would always be one round trip behind.
+- **Measured:** sixteen rows, seven with a colour input, nine saying `computed`, no old list
+  anywhere on the screen, every swatch square. That last one was a real fault, not a
+  formality: every field's input carries a 2.5rem floor so a text box is comfortable to hit,
+  a floor beats a height, and the squares came out 24 wide by 40 tall.
+
+**One browser verdict was re-aimed, not relaxed.** It used to click the two checkboxes
+directly; they are clipped now, and a check that reaches for something nobody can see stops
+being a check of the screen. It presses `Reset all`, which is what the owner presses. What it
+asserts — that a colour can be given back — is unchanged.
+
+**And one PHP test was split, not adjusted.** "the screen offers the seven colours, folded
+away until one is the owner's" asserted two things at once. The first — that the seven are
+offered with their switches — is untouched and keeps its own case. The second is the rule
+this change deliberately drops, so what replaces it is asserted as its own: one list with
+every role in it, no folded panel and no read-only list beside it, and a taken colour
+offering to go back, with the site untouched until Publish.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's
@@ -2617,6 +2658,15 @@ gauge, readouts — and knows nothing about the preview, the debounce or the rel
 ## 5. Open items
 
 *O-1 and O-2 resolved by D-019 and D-020.*
+
+**O-24. `admin-design.css` is mostly the old Design screen's** (D-074). That screen is gone;
+its stylesheet is still loaded first by Appearance because four things in it are still used —
+`.derived`, `.design-form`, the gauge, and `.preview-actions`. The rest is the old character
+cards, the workspace, the preview frame and its notes, and nothing on any screen has those
+classes. Those four rules belong in the Appearance stylesheets beside everything else they
+work with, and the file should then go. It is a pure move, provable the same way D-072's split
+was — every computed property before and after — and it is a commit of its own rather than
+something to slip into a change about colour.
 
 **O-22. The old Appearance addresses** (D-059). `/admin/design` and `/admin/chrome` are
 redirects to `/admin/appearance`, kept while bookmarks and habits catch up. The owner asked

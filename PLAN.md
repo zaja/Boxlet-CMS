@@ -2549,6 +2549,45 @@ pure rather than asserted:** every computed property of all 13,965 elements on t
 three widths × five tabs, before and after — zero differences.
 
 
+### D-073: The preview changes its stylesheet, not its page
+
+**Status:** 2026-09-21. From `docs/ispravci.md` §B. Every change set `preview.src`, so the
+picture was a full document reload every 250ms while a slider was being dragged: a white
+flash, the scroll position lost, and the fonts and pictures fetched again each time. The
+prototype felt different because nothing in it was ever reloaded.
+
+The frame is same-origin, so the preview's own stylesheet link can be swapped instead —
+the old one stays in force until the new one has loaded, so there is no unstyled moment.
+**Compare became the same swap**, which matters more than it sounds: it is a button meant to
+be held down, and it was reloading the document on every press.
+
+**Which decisions need the page back was MEASURED, not reasoned.** The preview was fetched
+with each of the form's 52 controls moved in turn and the HTML compared. Nine change it: the
+two bleeds, which menu the header draws, four of the chrome's layout choices, and the
+footer's small print. `boxed` does **not** — an unboxed page is a frame of zero rather than a
+different sheet, deliberately (D-067) — and that is the one this would have got wrong by
+reasoning about it, because `docs/ispravci.md` lists it as needing a reload. Three of the
+chrome's choices measured as token-only and are on the list anyway: they are choices about a
+thing built out of markup, and a needless reload is only the old behaviour while a missed one
+is a screen showing something the site will not do.
+
+**The list is a guard, not a comment.** The browser suite reads the regex out of
+`appearance.js` itself, asks the server which controls change the markup, and fails if any of
+them is missing from it. A second check marks the frame's own `<html>` and watches whether
+the mark survives — token-only changes keep the document, a header bleed replaces it.
+
+**Two old verdicts were re-aimed, not relaxed.** "Compare shows the published site" and
+"choosing a value refreshes the preview by itself" both watched the frame's `src`, which
+stood for "the picture changed" only while every change was a reload. With the swap the
+address is deliberately identical before, during and after — and the Compare check then
+passed by comparing two identical strings, which is the worst way for a check to survive.
+Both read the colour and the spacing the page is actually painted in now.
+
+`appearance.js` passed 300 lines with this and split along the seam it already had:
+`appearance-readouts.js` writes the server's answer onto the screen — messages, palette,
+gauge, readouts — and knows nothing about the preview, the debounce or the reload list.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

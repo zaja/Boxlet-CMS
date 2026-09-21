@@ -2390,6 +2390,25 @@ decisions. Both now read the source they are about.
 **Left of the twelve: the hero arrangement**, and it is not an oversight — see O-23.
 
 
+### D-068: Publish asks once, instead of three buttons in the bar
+
+**Status:** built 2026-09-21, from the handoff's §2.1 — and from looking at the screen, where
+a loaded character turned the bar into two rows of long buttons.
+
+Applying a character to a site that already has blocks can rewrite every section's style and
+layout, so it has always needed two explicit answers (D-018). They sat in the bar
+PERMANENTLY, which is the wrong place for a choice that matters on one publish in twenty and
+is destructive on that one.
+
+The bar is **one Publish** now. Press it with a character loaded on a site that has blocks
+and the screen comes back asking which of the two it is, with what each answer does written
+beside it. Nothing is written while it asks — a test measures the stored design across the
+question rather than against zero, because the publish before it had written one.
+
+It works without JavaScript, because it is a form post answered by a form post. The browser
+suite's `applyCharacter()` presses Publish and then answers, which is what a person does.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

@@ -2465,6 +2465,36 @@ Measured on the copy: a 1600px window opens on Desktop at 0.81, an 1100px window
 stage — opens on Tablet at 0.65, and switching to Phone at 50% zoom comes back at Fit.
 
 
+### D-071: The screen really fills the window — three faults found in one screenshot
+
+**Status:** 2026-09-21. The owner put our screen beside the handoff's and said the layout
+behaves differently, that a dead band had appeared under it, and that the prototype's
+controls look denser. All three were right, and the first two were the same class of fault:
+**something escaping the box that was supposed to hold it.**
+
+- **A three-row grid on a two-row screen.** `.appearance` named rows for the bar, a message
+  and the body; the message is usually absent, so the body landed in the `auto` row and took
+  the height of its own CONTENT. The page then grew past the window, the columns stopped
+  scrolling on their own, and under them sat a band of the admin's background. It is a flex
+  column now, which does not care how many children there are. Measured before and after at
+  a 620px window: 699px of document, then 620.
+- **Absolutely positioned things escaping a scrolled column.** The radio a segment is built
+  on is clipped to a pixel and positioned absolutely; with no positioned ancestor it was
+  measured against the PAGE, from inside a column that scrolls, and stretched the document.
+  The two columns are `position: relative` now — one rule, rather than hunting each hidden
+  label down.
+- **Horizontal scrollbars under both columns.** A visually hidden label sixteen pixels wider
+  than its button, and a text input asking for its default twenty characters. Both fixed at
+  the source, and the columns are `overflow-x: clip`: their width is the layout's to give, so
+  a sideways scrollbar is never the right answer, only a report that something is too wide.
+- **Density.** The group's name is a label now — small, quiet, in capitals, as the handoff
+  draws it — the hints are at footnote size, and the paddings are tighter. The hints stay:
+  they are what teaches the screen, and hiding them is the owner's call, not mine.
+
+**Why the browser suite had not caught it:** it ran at one window height, and both faults
+only show when the content is taller than the window. It checks a short window now.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

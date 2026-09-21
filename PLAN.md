@@ -2441,6 +2441,30 @@ the rule about not building an abstraction before a second real caller — appli
 feature.
 
 
+### D-070: The picture opens on a width the column can carry
+
+**Status:** built 2026-09-21 — the two rules of the handoff's §2.3 I had left out, and said
+so when the owner asked what was left.
+
+- **A new width comes with Fit.** Zoom belongs to the width it was chosen for: 100% of a
+  desktop page in this column is a corner of it, and carrying that over to the phone shows a
+  390px page at twice its size. Fit is the only answer that means the same thing at every
+  width.
+- **The screen opens on the widest viewport this column can actually carry** above the 0.5
+  floor — and only until the owner picks one, after which their choice is theirs. Desktop
+  needs 640px of stage; below that it opens on Tablet, then Phone.
+
+**Measured when the size is KNOWN, not once at load.** A stage still being laid out reports
+zero, and a screen that picked its width from that would open on the phone every time. A
+`ResizeObserver` on the stage fires when there is something to measure and again whenever the
+column changes — the admin's rail folding, a window resized. The handoff warned about exactly
+this: its prototype went through two rounds of a silently clipped preview because it trusted
+a hardcoded width instead of measuring.
+
+Measured on the copy: a 1600px window opens on Desktop at 0.81, an 1100px window — 540px of
+stage — opens on Tablet at 0.65, and switching to Phone at 50% zoom comes back at Fit.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

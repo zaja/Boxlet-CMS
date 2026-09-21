@@ -258,3 +258,27 @@ Jedina zamjerka: `header_menu` je `<select>` na ekranu čije je vlastito pravilo
 | 11 | D5, D6 — gauge i karte | `tabs/colour.php`, `admin-appearance.css` | malo |
 
 Koraci 1–5 su pola dana i rješavaju sve što je vlasnik prijavio kao „otvaraju se dodatni sidebarovi". Korak 6 je ono što ekran čini da djeluje kao prototip. 7–9 su vjernost specifikaciji. 10 je jedina stavka koja dodaje novu odluku u `Tokens` i nosi migraciju.
+
+---
+
+## Napravljeno
+
+Svih jedanaest koraka je napravljeno, u redoslijedu iz tablice gore. Odluke su zapisane u
+PLAN.md kao D-071 (`466baa4`), D-072 (`ca6d336`), D-073 (`be6caff`), D-074 (`b2b7167`),
+D-075 (`508b992`) i D-076.
+
+**Jedna tvrdnja iz tablice gore nije točna, i to je izmjereno, a ne pretpostavljeno:** korak
+10 **ne nosi migraciju**. `design_tokens` je tablica s jednim retkom po odluci i JSON
+vrijednošću (`0010_design_tokens.sql`), pa nova odluka ne traži promjenu sheme — isto
+obrazloženje koje `0024_design_library.sql` već zapisuje za svoj `decisions_json`. Nova
+odluka dobiva praznu zadanu vrijednost u `Presets::get()` i time je gotova.
+
+Dvije stvari napravljene su drukčije nego što dokument predlaže, obje namjerno i obje
+zapisane u PLAN.md:
+
+- **§C2, granica uzorka.** Dokument predlaže da najveći redak ne prijeđe 34px. Pri zadanom
+  karakteru to je tijelo teksta spustilo na 8px i sitni tisak na 6px — dvije mrlje. Granica
+  je 40px (D-075).
+- **§C3, boja zaglavlja i podnožja.** Dokument traži provjeru kontrasta. Tinta na vlastitoj
+  boji se **izvodi** iz nje, pa jamstvo drži izvođenje; provjera ostaje kao zaštita i hvata
+  jedino boju na kojoj se nijedna od dvije tinte ne može čitati (D-076).

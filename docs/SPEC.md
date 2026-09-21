@@ -590,7 +590,9 @@ caches and is still served from disk (`Url::versioned()`).
 
 **Layer 1 storage.** `design_tokens` holds the decisions, one row per key: `seed`,
 `secondary` ('' when unused), `typography`, `text_size`, `scale`, `spacing`, `radius`,
-`shadow`, `container`, `surface_contrast`, `header_width`, `boxed`, `page_background`.
+`shadow`, `container`, `surface_contrast`, `header_width`, `boxed`, `page_background`,
+and the three optional colours of `page_background_colour`, `header_colour` and
+`footer_colour` (PLAN.md D-076).
 Derived values are never stored. A site saved before a decision existed loads with that
 decision at the default character's value, so an older `design_tokens` set is never an error.
 
@@ -631,6 +633,9 @@ surface_contrast  low | medium | high                         lightness of --col
 header_width      content | full                              --page-header-width
 boxed             no | yes                                    --page-frame (0 when no)
 page_background   surface | border | contrast                 --page-bg, from the palette
+page_background_colour  '' | #rrggbb                          --page-bg, instead of the shade
+header_colour     '' | #rrggbb                                --chrome-header-* (D-076)
+footer_colour     '' | #rrggbb                                --chrome-footer-* (D-076)
 ```
 
 **The page as a sheet** (PLAN.md D-031, D-067). `.page` is what surrounds the sheet and
@@ -647,12 +652,36 @@ boxed — the property the frame's own docblock has always been proud of. A head
 the first section (`header_layout: transparent`) can only do that inside the sheet; outside
 it there is nothing to overlay, and it draws as an ordinary header.
 
-The background is a shade **from the palette**, never a free colour — the reasoning this
-section already uses to refuse a free colour per section. It gains no contrast pair, and
-that is a consequence of the geometry rather than an exemption: when `boxed` is `no` the
-frame is zero, so the colour is never visible, and when it is `yes` the sheet covers every
-element that renders text. `tests/page_test.php` asserts that nothing escapes the sheet
-rather than leaving it as a claim.
+The background is a shade **from the palette**, or a colour of the owner's own
+(`page_background_colour`, PLAN.md D-076). It gains no contrast pair either way, and that is
+a consequence of the geometry rather than an exemption: when `boxed` is `no` the frame is
+zero, so the colour is never visible, and when it is `yes` the sheet covers every element
+that renders text. `tests/page_test.php` asserts that nothing escapes the sheet rather than
+leaving it as a claim.
+
+**THREE PLACES MAY TAKE A COLOUR OF THEIR OWN** (D-076), and no others: what surrounds a
+boxed page, the header and the footer. Empty until the owner sets one, a `#rrggbb` when they
+have, and no character ships one. This does not open the free colour per section that this
+section refuses below — a section takes its surface from the palette because a page of
+arbitrary bands is a page with no palette left. These are three decisions for the whole
+site, and each is answered rather than exempted:
+
+- The frame carries no text, as above.
+- The ink on the header and the footer is DERIVED from the colour, by the same function the
+  contrast surface uses (`Palette::inksOn`): the readable one of the palette's two inks, a
+  muted tone beside it, a raised tone for what sits on top. A colour of its own brings its
+  own readable text instead of standing under whatever the palette happened to hold.
+- And it is still CHECKED. Four more pairs when a colour is set, so a surface neither ink
+  can be read on is refused by name, exactly as a hand-set role is.
+
+The muted tone walks away from the surface until the pair reads rather than taking a fixed
+step: a fixed one is comfortable in the middle of the range and fails at both ends, which
+refused a pure black and a pure white header. A surface that already passes at the first
+step is unchanged, so no design in use moved.
+
+A header laid over the first section (`header_layout: transparent`) is excluded: that layout
+exists to paint nothing and take the colours beneath it, and the two choices contradict each
+other.
 
 **Palette.** Derived in OKLCH from the seed: background, tinted surface, border, text and
 muted text carry a trace of its hue; the seed itself is the accent and link colour; the
@@ -665,7 +694,7 @@ muted text on the contrast surface; text on both ends of the gradient. A failure
 the save and names the pair, its ratio and the decision responsible. Every surface can
 hold body text, so no pair qualifies for the 3:1 large-text threshold.
 
-**Seven roles may be set BY HAND** (PLAN.md D-063, D-067), stored as `color_background`,
+**Seven palette roles may be set BY HAND** (PLAN.md D-063, D-067), stored as `color_background`,
 `color_card`, `color_surface`, `color_border`, `color_text`, `color_muted` and `color_link`; '' means the
 palette works the role out, which is the default and what every character ships. The other
 nine are not on offer: the accent and the contrast surface are the two seeds already, and
@@ -725,6 +754,10 @@ gradient — and it stays closed. A per-block background colour field would let 
 red text on orange, and the entire contrast-checked palette becomes decoration rather
 than a guarantee. If five surfaces prove too few, a sixth is added *drawn from the
 palette*, not an open colour input.
+
+The header's and the footer's own colours (D-076) are not an exception to this: they are two
+places decided once for the whole site, not a field on every block, and the ink on them is
+derived from the colour so the guarantee travels with it. A section has neither property.
 
 **The admin's own chrome is not this system.** Its `--ui-*` tokens are a fixed set
 declared in `public/assets/admin*.css`, never derived from `design_tokens`, so the tool

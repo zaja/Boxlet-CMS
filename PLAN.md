@@ -2663,6 +2663,58 @@ A name too long for its column gives way at the end, with the whole of it in the
 the sample only has to show a pair of colours against each other.
 
 
+### D-076: Or a colour of your own
+
+**Status:** 2026-09-21. From `docs/ispravci.md` §C3, the last of the eleven corrections. No
+migration: `design_tokens` is one row per decision with a JSON value, so a new decision needs
+none — the same reasoning `0024_design_library` is built on.
+
+**Three places take a shade of the palette, or a colour the owner picked**:
+`page_background_colour`, `header_colour`, `footer_colour`. Empty until they set one, and a
+hex when they have — the convention the seven hand-set roles already use (D-063), because a
+default nobody chose is not a value.
+
+**This is not the free colour per section that §5.4 refuses,** and it does not open it. A
+section takes its surface from the palette because a page of arbitrary bands is a page with
+no palette left. These are three places, decided once for the whole site, and each is
+answered:
+
+- **The frame around a boxed page carries no text at all,** so it needs nothing but the
+  colour and the gauge gains no pair. That is the reasoning `Tokens` has always given for
+  the decision beside it.
+- **The ink on the header and the footer is DERIVED from the colour,** by the same function
+  the contrast surface has always used (`Palette::inksOn`): the readable one of the palette's
+  two inks, a muted tone beside it, a raised tone for what sits on top. So a colour of its
+  own brings its own text rather than standing under whatever the palette happened to hold.
+- **And it is still measured.** Four more pairs when a colour is set, so a surface neither
+  ink can be read on is refused by name. Measured: of 52 greys, two are.
+
+**A fixed step of 0.42 in lightness was wrong at the ends of the range.** It is a comfortable
+muted tone for a surface in the middle, which every contrast surface the five characters ship
+is — and against a colour the owner picks it broke at both ends: a pure black header put the
+muted text at 2.48:1 and a pure white one at 4.29:1, so Boxlet refused the two colours
+anybody is likeliest to choose. The derivation now walks further until the pair reads and
+stops at the first step that does. A surface already passing at 0.42 is returned at 0.42, so
+nothing that works today moves — measured: the five characters' compiled stylesheets are
+byte-for-byte what they were.
+
+**A transparent header is excluded,** because the two choices contradict each other: that
+layout exists to paint nothing and take the colours of the section beneath it. The layout
+wins, and it wins by the rule not matching.
+
+**No class, and no rule generated per site.** `chrome.css` reads each value through
+`var(--chrome-header-bg, <what the surface class gave>)`, and the tokens exist only when a
+colour was set — so with none set the whole block computes to exactly what `sections.css` put
+there. The `--section-*` properties are redefined on the CHILD, never on the element: a custom
+property whose own value appears in its fallback is a cycle, and a cycle in CSS is not a
+warning but the property silently becoming invalid.
+
+**Two files were split on the way, both forced and both along a seam they already had.**
+`admin-appearance-inspector.css` passed the 500-line hard limit, so how a COLOUR is shown and
+taken over left for `admin-appearance-colour.css`; what stays is how a DECISION is made.
+(The contrast gauge is still in `admin-design.css` with the last rules of the old screen —
+PLAN O-24 — and that file is where it belongs when it moves.)
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

@@ -2274,6 +2274,47 @@ controls are selects, where §2.4 asks for segmented buttons with a monospace re
 handoff's §3 table are not built. Those are the next rounds.
 
 
+### D-065: A closed set is a row of buttons
+
+**Status:** built 2026-09-21, the second half of matching the handoff's §2.4.
+
+**Every option visible at rest.** A select hides four of five answers behind the one already
+given, which on a screen whose whole point is "change it and look" is the wrong shape. The
+ten closed decisions and the seven chrome choices are segmented rows now, with the number the
+choice comes to on the label's own line — `20px`, `4px`, `42rem · 672px` — rather than in a
+paragraph underneath.
+
+**Radio inputs, not buttons with a hidden field:** they submit with no script, the browser
+gives arrow-key movement inside the group for free, and a screen reader already knows what a
+radio group is. The input itself is clipped, not faded — opacity is the one property the
+admin's contrast rule forbids for making a control quiet (D-012), and it would be a strange
+thing to write in a rule that means "this is the mechanism, not the control".
+
+**"Following the character" is a state you can see** (handoff §3.5): the group's readout says
+`following` in the accent colour while nothing is chosen, and the first segment — named for
+what the character actually gives, "Follow: Name left" — is how it goes back. Same data as
+the old first option of a select; no hidden default.
+
+**The typefaces are cards set in the faces themselves.** "Modern" means nothing on its own;
+"Modern · Inter", in Inter, is a choice a person can make. This is the ONE place the admin
+loads the site's fonts, and it is not the site's design leaking into the tool: those six
+faces are the thing being chosen. They are served by `/admin/appearance/typefaces`, built
+from `Typography` rather than a hand-written stylesheet, so a card can never show a face the
+site would not use.
+
+**The type specimen shows the sizes**, labelled in the pixels the site will use, set in the
+admin's own face. I had said the admin could not show a specimen at all; that was too strong,
+and wrong in a way worth recording: it cannot take the site's TYPEFACE for its own text, but
+the sizes are exactly what the two controls above decide.
+
+**A defect the browser check found, which was the product's and not the test's:** the six
+hand-set colour inputs show what the palette works out until the owner takes a role over, and
+the script rewrites the untaken ones whenever the palette moves. That put the two in a race
+the owner loses — choose a colour, and a refresh landing before the switch is flipped writes
+the choice back over. **Choosing a colour now takes the role over**, and the switch remains
+the one press that gives it back, which is the direction that deserves a deliberate gesture.
+
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

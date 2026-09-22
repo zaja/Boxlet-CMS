@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 802 on both drivers, PHPStan clean at level 8 (2026-09-19) |
+| Tests | 1,069 on both drivers, PHPStan clean at level 8 (2026-09-22) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -2867,6 +2867,123 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-097: Seven column layouts, and the section draws them
+
+**Status:** 2026-09-22. Third step of D-093, first half: a section can hold blocks in
+columns and knows how to draw them. The editor cannot yet make one — that is the second
+half, and until it lands no page on any site can reach the new shape.
+
+**The closed set, as D-093 promised:** `one`, `halves`, `thirds`, `quarters`, `wide-left`
+(2fr+1fr), `wide-right`, `sidebar` (3fr+1fr). Never a percentage, for the reason
+`SectionStyle` refuses a free colour: a column at 37% cannot promise a readable measure and
+cannot say what it does when the screen halves. One knob for narrow screens — `stack`,
+`stay`, `reverse` — and `reverse` earns its place because a picture left of text reads
+correctly side by side and wrongly stacked.
+
+**TWO SHAPES, DELIBERATELY.** A section of one column holding one block is still the same
+element as that block: `<section class="block block-hero layout-center surface-tinted …">`,
+the markup every page has had since the first commit. Anything else draws
+`.section-cols` inside the container and gives each block a `<div class="block-{type}
+layout-{layout}">` of its own.
+
+The tidier design is one shape everywhere, and it was refused on evidence rather than taste.
+`compare.mjs` can only compare elements both captures have, so a wrapper added around every
+block on every page is the one change it cannot check — and this is the step where the
+owner's site must be provably unmoved. The cost is five lines in `SectionRender::draw()`.
+The cost is *only* five lines because of what D-093's measurement found: every rule reading
+`layout-*` is a descendant selector and `block-{type}` is a selector only for chrome, so
+both classes may sit a level lower and no stylesheet has to know which shape it is looking
+at.
+
+**PROVED, NOT ASSERTED.** `node compare.mjs diff before after`: **3,848,190 property
+comparisons, 0 differing**, 7,050 elements before and after, across five characters, four
+pages and three widths. The "before" capture was taken from a stashed tree at `5c4952a`, so
+it is the released code and not my memory of it.
+
+**What the columns look like** was checked on the copy, not reasoned about: a text block and
+a form put into one section, screenshotted at 1400 and at 390, and the probe put the rows
+back by exact id in the same run (memory: probe cleanup is not optional — and the first
+restore missed `stack`, which is why the check is the reading and not the intention).
+
+The three narrow-screen behaviours were MEASURED rather than argued from specificity, which
+is what I would otherwise have done, `.stack-reverse` and `.section-cols` both weighing one
+class:
+
+| | at 1400 | at 390 |
+| --- | --- | --- |
+| `halves` + `reverse` | grid, `626px 626px`, both columns level | `flex`, `column-reverse`; the second block is drawn ABOVE the first |
+| `quarters` + `stay` | grid, `299px` × 4, the two empty columns drawn | grid, `153px` × 2 — `stay` keeps proportions only where there are any left to keep |
+
+**Two declarations of one fact, with a guard over them.** The proportions are grid tracks in
+`sections.css` and weights in `SectionLayout::LAYOUTS`, because CSS is not generated from PHP
+here. `tests/section_columns_test.php` reads the stylesheet and refuses a layout with no rule,
+a rule laying out a different number of tracks, and a `.cols-*` rule for a layout PHP does not
+know.
+
+**A block remembers a column its section no longer has.** Narrowing a section from four
+columns to two draws those blocks in the last column and leaves the stored value alone, so
+widening it again puts them back. Nothing is silently dropped and nothing is silently
+rewritten.
+
+**What migration 0027 does not do:** it moves no data. `column_index` defaults to 0, which is
+where every existing block already stands. It is named `column_index` and not `column`,
+because `column` is reserved in MySQL and a name that only works quoted is a trap.
+
+**And running the WHOLE browser suite, not the scenarios this looks like it touches, found
+four that had been broken since D-094** — when a block's key became a name (`b12`) instead
+of a position (`1`). `14-front`, `03-design` and `16-slice5-accept` each built a field name
+out of a number and had matched nothing since; `14-front`'s *"the first section is eager and
+every later one is lazy"* was not running at all, which is the check that matters most on
+that page. Fixed here by reading the key off the form instead of guessing it. **Not a test
+adjusted to match new output:** the rule changed deliberately in D-094 and these probes were
+never told. The fourth is `12-picker`, which fails identically at `5c4952a` and is recorded
+as O-27 rather than fixed in a slice it has nothing to do with.
+
+424 checks, 4 failing before; 3 fixed here, 1 recorded.
+
+**The half that is missing, and it is not small.** `Page::update()` still writes one section
+per block, so the page editor would flatten a section's columns back into a row of bands.
+Nothing can create one yet, so nothing is at risk today — but `Page::editable()`,
+`Page::update()`, `BlockForm`, the canvas, `pending_canvas` and `PageRevision` all still hold
+a flat list of blocks, and all of them have to hold sections before the editor may offer a
+layout. That is the next commit and it is the one the owner will actually see.
+
+### D-096: A character composes a section from the type its blocks agree on
+
+**Status:** decided 2026-09-22 by the owner, before step 3 of D-093 needed it. **This is the
+question D-093 left open and the review never raised**, and it is the real cost of the tree.
+
+**The collision.** `Composition::style($character, $blockType)` derives `surface` and
+`divider` from a BLOCK TYPE — "Editorial gives a hero a tinted surface, a form a plain one".
+That is exact while a section holds one block. A section holding a hero and a form has no
+single type, so the sentence has no answer.
+
+**The rule chosen.** A character composes a section from the type its blocks agree on. One
+block, or several of the same type, compose as that type does today. A section whose blocks
+disagree composes from the character's own `section` defaults, with no per-type surface or
+divider laid over them.
+
+**Why, in the owner's terms.** Every one of today's pages keeps exactly the look it has, and
+that is not an argument from taste: every existing section holds one block, so "the type they
+agree on" is that block's type and nothing is composed differently. The ritmo of tinted and
+plain bands that makes a character feel designed survives, because a band of three text
+blocks still composes as text. Only the genuinely ambiguous case — two different kinds of
+block side by side — falls back, and it falls back to something the character itself states
+rather than to a guess.
+
+**Three that were offered and refused.** *From the first block's type*: moving a block to the
+front would silently repaint the whole band, a change the author did not ask for and cannot
+see the cause of. *The character composes sections only, types give a starting value at
+creation*: the cleanest rule, and it throws away the band rhythm on every "Apply character".
+*Skip mixed sections*: nothing is lost but part of the page stays outside the character,
+which is visible and unexplained.
+
+**Where it lives.** `Composition::style()` keeps its per-type signature, and a second entry
+point takes the list of types a section holds and reduces it: one distinct type composes as
+that type, more than one composes as the character's `section`. The same reduction decides
+whether the Section panel reports the style as changed from the character's (D-086), so the
+panel and "Apply character" can never disagree about what a section should look like.
+
 ### D-095: The section is a record, and it owns the style
 
 **Status:** 2026-09-22. Second step of D-093. Nothing anybody can see changes; where the
@@ -3629,6 +3746,21 @@ the canvas that comes back is what the author had rather than what the database 
 ## 5. Open items
 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077.*
+
+**O-27. `12-picker` chooses a picture that never arrives.** After the scenario clears the
+control and reopens the panel, `pick()` clicks the first card and nothing is chosen: the
+control still reads *"No picture"*, and the next `openPicker()` then TOGGLES the still-open
+panel shut and times out. Two failures, one cause.
+
+Measured, not guessed: it fails identically at `5c4952a`, so it is not D-097's doing, and
+the same sequence driven by hand outside the scenario — open, Escape, open, click card 0 —
+works, ending with `value=7`, the name `room-light` and the panel closed. So the defect is
+in what the scenario does AROUND the choice, not in the picker. `controlsOnPanels()` is
+read-only and cleared; the remaining suspects are `report.shot()`, which is `fullPage: true`
+and resizes the page under the open panel, and the clearing click before it. Found
+2026-09-22 by running the WHOLE browser suite rather than the scenarios a change looks like
+it touches — which is also how the four D-094 breakages below came to light. Not fixed in
+D-097 because a scenario's own weakness is not the slice's (O-26 says the same).
 
 **O-26. `03-design` depends on a starting design it does not set.** Run against a copy that
 earlier runs have left on a dark character, *"a page colour set by hand carries the palette

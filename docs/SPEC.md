@@ -309,16 +309,19 @@ pages (
 
 page_sections (
   id, page_id, sort,
-  layout,                    -- how many columns and in what proportion: a closed set,
-                             -- never a percentage. 'one' until columns arrive
+  layout,                    -- how many columns and in what proportion: a CLOSED SET,
+                             -- never a percentage. one | halves | thirds | quarters |
+                             -- wide-left (2fr+1fr) | wide-right | sidebar (3fr+1fr)
+  stack,                     -- what the columns do on a narrow screen, the only knob:
+                             -- stack | stay | reverse (D-097)
   style_json,                -- layer-2 section style, see §5.4
   created_at, updated_at
 )
 -- a page is a list of sections; a section holds blocks in its columns; depth is exactly
--- two (added 2026-09-22, PLAN.md D-093/D-095, reversing D-008)
+-- two (added 2026-09-22, PLAN.md D-093/D-095, reversing D-008; columns D-097)
 
 page_blocks (
-  id, page_id, section_id, block_group_id, block_type, sort,
+  id, page_id, section_id, column_index, block_group_id, block_type, sort,
   content_json,              -- the editable content
   style_json,                -- EMPTY since migration 0026: the layer-2 style is the
                              -- section's. The column stays because a committed migration
@@ -328,7 +331,10 @@ page_blocks (
   translation_status, source_hash,
   created_at, updated_at
 )
--- sort is the block's place WITHIN its section; the page's order is the section's
+-- column_index is which of its section's columns it stands in, counted from 0; a value
+-- past the last column draws in the last one and is left stored, so widening the section
+-- puts the block back where it was (D-097)
+-- sort is the block's place DOWN that column; the page's order is the section's
 -- block_group_id links the same block across locales
 
 page_revisions (id, page_id, data_json, created_at)

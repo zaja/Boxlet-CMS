@@ -2867,6 +2867,38 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-089: The rich text paste note was already there, and I nearly wrote a third one
+
+**Status:** 2026-09-22. The last item on D-080's list, closed by looking rather than by
+building.
+
+D-080 asked for *"one line of advice beside the rich text about what is kept when you
+paste"*. I wrote it: an attribute on the field, a string, a transient note shown for eight
+seconds after a paste, and a stylesheet rule. It worked — pasted text arrived with its bold
+and without its colours, and the note appeared.
+
+**Then I looked at the field.** Under it already stood *"Ctrl+Shift+V pastes without
+formatting."* and, under that, `pages.field.richtext_hint`: *"Kept when you save: paragraphs,
+bold, italic, links, headings, quotes and lists. Anything else pasted in — colours, fonts,
+tables — is removed, so the text always wears the site's design."* The item had been done
+long before the plan asked for it. Mine would have been the **third** sentence about pasting
+under one field.
+
+Reverted, every line of it.
+
+**Why it read as missing:** `richtext_hint` is a `.hint`, and D-087 — hours earlier, the same
+day — turned hints off until asked for. So the explanation did not vanish; it moved behind a
+toggle, on the very morning the plan's list was being worked through. That is a real
+consequence of D-087 and it belongs to the decision the owner said he would make after using
+it: whether hints stay off, and whether some of them are not hints at all, as D-088's note
+about Restore is not.
+
+**The lesson, which is CLAUDE.md's in another form.** *A weak feature is fixed before
+anything is built on top of it* has a twin: a feature that already exists is found before
+anything is built beside it. Both the plan and I took "the editor does not explain pasting"
+on trust, from a review, and neither of us opened the screen to check. Measuring the subject
+would have cost one look.
+
 ### D-088: What the page was before the last few saves
 
 **Status:** 2026-09-22. Eighth and last slice of D-080. `page_revisions` has been in

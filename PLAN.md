@@ -2867,6 +2867,32 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-090: A check that writes owns what it writes
+
+**Status:** 2026-09-22. Found by looking at the development site rather than at the suite.
+
+`04-builder` adds a block and SAVES it, and it never took it away again. Run eight times in
+one session it left **seventeen text blocks on the home page where the demo has one** — on
+the site the owner opens to look at his own work. Measured by fetching the page and counting
+sections, not by reading the scenario.
+
+The scenario now removes what it added and saves once, and says so as a verdict. **It removes
+by the id of the field group, found by the exact heading it typed** — never by matching the
+words in a block, because the demo's own text block would answer a search for "text" and a
+cleanup that deletes by resemblance is how a real page goes.
+
+**This is the same rule as `probe-cleanup-is-not-optional`, one level up.** A throwaway probe
+has to restore what it changed; so does a scenario that is run hundreds of times. A suite that
+writes without owning what it writes quietly becomes the thing that ruins the site it tests.
+
+**Two things on that page I cannot account for**, and they are recorded rather than quietly
+patched: it is missing its `form` block, and its first `hero` and `columns` have swapped
+places, against what `app/Modules/Demo/pages.php` seeds. Both are probably from a scenario
+run of mine today; I cannot prove which, and the page's own history (D-088) only reaches back
+to 14:59, by which time it was already so. Putting demo content back BY HAND on the site the
+owner judges is his call, not mine — the honest choices are to reinstall the demo there, or
+to leave it, and he decides which.
+
 ### D-089: The rich text paste note was already there, and I nearly wrote a third one
 
 **Status:** 2026-09-22. The last item on D-080's list, closed by looking rather than by

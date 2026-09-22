@@ -2867,6 +2867,51 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-094: A block is named, not numbered
+
+**Status:** 2026-09-22. First step of D-093, and the one that changes nothing anybody can
+see. It is O-25, deferred in D-082 with the words *"worth doing when something else needs it
+— a tree"*.
+
+**`blocks[b42][heading]` instead of `blocks[3][heading]`,** and errors keyed `b42.heading`.
+`b{id}` for a block the database knows, `n{n}` for one added in this session. The key is
+**derived, never stored**: a saved block's key is its id, and a new block's only has to last
+until the save that gives it one.
+
+**The order still comes from the order the groups appear in the request** — which is what
+carried that meaning all along. The index never did; it only looked as if it did, because
+two editors rewrote every name on the page after every add, move and remove to keep it
+looking true.
+
+**Two of the three renumbering regexes are gone.** `builder.js` now sets one attribute —
+which group the panel shows — and `admin.js` renumbers nothing at all. The third, in
+`repeater.js`, still has real work: an item's place inside its block genuinely is positional.
+What replaces them is one function that names a group **once, when it is born**, shared by
+both editors because both have the same job when they clone a template or place a block from
+the server.
+
+**A key is minted above the highest one already on the page**, not from zero, because the
+server renders a new block as `n0` and a second `n0` would be two blocks with one name.
+
+**The no-JS actions name a block too** — `up-b42`, `item-add-b42-items` — so a form rendered
+before something moved acts on the block it meant rather than on whatever has taken that
+slot since. A key that names nothing does nothing, which is the honest answer to a stale
+button.
+
+**Found while driving it, and worth more than the slice itself:** `place()` was reading the
+key off a DocumentFragment, which throws, and the caller's `catch` reported that as *"the
+block could not be added. Check your connection."* A network message for a programming
+mistake, and it would have hidden the next one too. The catch now also says what happened,
+the way `redraw()`'s already did.
+
+**SPEC §5.3 changed deliberately**, the third time this month and the second on this day: the
+index in field names is a key. Recorded there.
+
+**Tests changed, not adjusted.** Thirteen assertions named a block by its position because
+that was the rule; the rule changed, so they name it by its key. One became stronger on the
+way: `builder_test` now reads the keys out of the rendered page and asserts they are the
+stored ids in order, which proves more than the three literals it replaced.
+
 ### D-093: A page becomes sections of columns — reversing D-008
 
 **Status:** decided 2026-09-22 by the owner, after testing the finished flat editor. Not yet

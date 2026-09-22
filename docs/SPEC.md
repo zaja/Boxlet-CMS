@@ -551,12 +551,17 @@ a page that used the old one from drawing. The editor refuses a submission carry
 because there somebody typed those items, and dropping the last one silently is how an
 owner loses work without being told. An item marked `_delete` is left out on save.
 
-The editor names one item's inputs `blocks[n][{field}][m][{itemfield}]`, so the block
-index and the item index are rewritten independently as either is reordered. Adding,
-removing and reordering items all work without JavaScript, through `action` values the
-save route understands (`item-add-{n}-{field}`, `item-up-{n}-{field}-{m}` and its `down`);
-where scripts run, `repeater.js` intercepts the same controls — one route for both paths,
-as D-011 sets out for blocks.
+The editor names one item's inputs `blocks[{key}][{field}][m][{itemfield}]`. **The block's
+part is a KEY, not a position** — `b42` for a block the database knows, `n7` for one added
+in this session — while the item's `m` is still positional within its block. The key is
+derived, never stored, and the order blocks are saved in comes from the order their groups
+appear in the request, which is what carried that meaning all along. Adding, removing and
+reordering items all work without JavaScript, through `action` values the save route
+understands (`item-add-{key}-{field}`, `item-up-{key}-{field}-{m}` and its `down`, and
+`up-{key}` / `down-{key}` for a block); where scripts run, `repeater.js` intercepts the same
+controls — one route for both paths, as D-011 sets out for blocks. Errors are keyed
+`{key}.{field}` for the same reason (changed 2026-09-22, PLAN.md D-094: a position cannot
+name a block once a page is a tree of sections, D-093).
 
 ### 5.4 Design layers
 

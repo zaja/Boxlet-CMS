@@ -2867,6 +2867,54 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-098: The editor carries a flat list of blocks and a map of sections, not a tree
+
+**Status:** 2026-09-22, while building the second half of D-093 step 3. The model half is
+done: `Page::update()` can be told a page's sections. The editor does not speak it yet.
+
+**The choice.** The obvious shape for a tree is a tree — `sections[s7][blocks][b42][field]`.
+It was refused, and the alternative is the one the FRONT END already uses: a flat list of
+blocks, each naming the section it stands in and the column it stands in, beside a separate
+map of sections. `Sections::group()` joins the two at the moment of drawing.
+
+**Why, and it is not taste.** The nested shape renames every field on the screen, and the
+names are load-bearing in five places that have nothing to do with sections:
+`admin.js:nameGroup()` rewrites four regexes all anchored at the start of the name;
+`repeater.js` pulls a block's key out of `blocks[…]` and rewrites an item index *in the
+middle* of the name, safe today only because both editors' regexes stop before it *by
+construction*; `views/admin/item.php` builds a third prefix from the same string;
+`builder-blocks.js:values()` strips `blocks[…]` to talk to the redraw endpoint; and
+`builder-save.js` derives the `_unchanged` marker's name from the id input's. A tree in the
+field names puts all five in play at once, for a fact that fits in two hidden inputs.
+
+So a block gains `blocks[<key>][section]` and `blocks[<key>][column]`, and a section's own
+five style keys plus its layout and stack are typed at `sections[<skey>][…]` — a NEW prefix
+beside the old one rather than a wrapper around it.
+
+**A section is named, like a block (D-094):** `s7` for one the database knows, `m0` for one
+made in this session. A different letter from `b`/`n` on purpose — the same JavaScript reads
+both, and `s7` meaning a section while `b7` means a block is a difference a reader can see.
+
+**Silence means "leave it", everywhere.** `Sections::save()` takes a null layout, a null
+stack and now a null style, each meaning "as it was". Three callers need it and each would
+otherwise do damage: a save from the plain page editor would flatten a section arranged in
+the builder; an older form or a hand-made request would set `one` by saying nothing; and a
+section holding a block this installation cannot draw would be repainted with the defaults,
+losing the only record of what it was. That last one replaces `Page::keepSection()`, which
+did it with a second read and a second write.
+
+**A block naming a section nobody sent is given one of its own** at the end of the page,
+rather than dropped or attached to a neighbour. Visible, obviously wrong, and nothing lost.
+
+**What `Page::update()` now writes.** Sections first, in submitted order, which is the
+page's order; then each block with its section, its clamped column, and its place counted
+DOWN that column. A block's `sort` finally means what SPEC §5.0 has said since 0026.
+
+**Still to come, and each one is named in the survey behind this decision:** `editable()`
+returning sections, both controllers parsing them, the canvas rendering through
+`SectionRender` so it cannot diverge from the page, `pending_canvas` and `PageRevision`
+carrying sections, the Section panel's controls, and the canvas's two-level selection.
+
 ### D-097: Seven column layouts, and the section draws them
 
 **Status:** 2026-09-22. Third step of D-093, first half: a section can hold blocks in

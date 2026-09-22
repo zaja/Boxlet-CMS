@@ -2746,6 +2746,58 @@ which custom properties enumerate, because one `<link>` is gone — no value mov
 mattered more than usual: the rules landed LATER in the cascade than they had been, since
 `admin-design.css` was loaded first of six.
 
+### D-078: Four things the owner saw
+
+**Status:** 2026-09-22. All four reported from the screen, all four measured before being
+touched, and none of them was where the report pointed.
+
+**The picture scrolled sideways when it fitted.** The frame is laid out at FULL size and
+then scaled, and `transform` does not shrink a layout box: at 1040px of stage the box was
+still 1280px, so the stage reported a scrollable width it could not use — a horizontal
+scrollbar under a picture that fitted, with a band of nothing to the right of it. **Measured
+at every width the screen has, not only on a resize**, which is where the owner noticed it.
+
+- **The asymmetry was there to read in `draw()`:** the height is already divided by the
+  factor so it lands back on the stage; the width never was. `admin-appearance-picture.css`
+  even claimed "the frame's own rectangle is exactly the stage's" — true of one axis.
+- **Negative end margins on both axes**, so the margin box is what is drawn. The transform
+  stays: the frame's inner viewport has to be the width the owner chose, which is what the
+  three viewport buttons are for, and only the OUTER box was ever wrong.
+- **The vertical one is not decoration.** A horizontal scrollbar takes height off the stage,
+  which changes the frame's height, which fires the ResizeObserver again. Taking the
+  scrollbar away takes the loop with it. That argument came from the owner's designer; I had
+  decided to skip the vertical margin because `overflow-y: hidden` clips it, and they were
+  right that clipping the symptom leaves the loop.
+
+**Two controls were the browser's, not the admin's.** The zoom select carried a padding and a
+font size and nothing else; the name for a design carried only a width. Both drew as the
+browser's own dark-mode controls — measured at `rgb(107, 107, 107)` on `rgb(133, 133, 133)`
+with square corners — among chips and fields that are the admin's. The name's default
+`content-box` with `width: 100%` is also how it came to touch the edge of its column: it is
+in a `.field` now, so there is ONE answer about what an input in this admin looks like.
+
+**The hints are off until they are asked for.** A line of explanation under every control is
+what teaches this screen and also what fills a 312px column — forty-four of them. The owner
+asked for the space. They are remembered in the browser and nowhere else: it is how one
+person likes to work, not a decision about the site, so it is not a setting and never
+reaches the database. **Without a script they show and the button is not there**: the state
+that explains itself is the safe one, and a toggle that cannot toggle is worse than none.
+Scoped to this screen — every other screen keeps its hints, because it is this column that
+is short of room.
+
+**And one of my own claims was wrong.** D-075 said the gauge's sample went from 40×24 to
+28×18. It shrank the SVG's `viewBox` and left the CSS box at `2.5rem × 1.5rem`, and an SVG
+scales its contents to the box it is given — so nothing on screen moved. The box moves now,
+and the twelve pixels go to the name beside it.
+
+**One new verdict was wrong about the INSTRUMENT three times running** while the screen
+measured the same every time: it compared the two controls with `.appearance`'s own
+background, which paints nothing; then read `--ui-panel` off `documentElement`, where it is
+not, because the admin's tokens are declared on `.admin`; then compared with the first
+viewport chip, which is the pressed one and carries the accent. CLAUDE.md's rule held every
+time — a verdict that fails is a claim about the instrument until the instrument is checked —
+and it is written into the scenario so the next reader does not spend the same three rounds.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

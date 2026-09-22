@@ -2867,6 +2867,61 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-085: The block's controls move off its text, and keep the keyboard
+
+**Status:** 2026-09-22. Sixth slice of D-080, and the first half of the "small costs" it
+listed. Every claim here was measured three times before it was believed, because the first
+two measurements were of the wrong thing.
+
+**Where the bar sits.** It was drawn 12px inside the block's top, over its first line. The
+review said it "sits over content on a full-bleed section and collides with the insertion
+control on the first block". Measured:
+
+- Against the block's `.container`, everything overlapped — a container spans the whole
+  block, so that measurement could only ever say yes.
+- Against the elements holding the text, most blocks overlapped — an `h2`'s box runs the
+  full width even when its words do not.
+- Against **the line boxes of the text itself**, through `Range.getClientRects()`: the bar
+  covered real words on **2 of the demo page's 7 blocks**, the ones whose heading reaches
+  the right edge. And it never touched an insertion control, on any block. So half the
+  review's claim was true and narrower than stated, and half was not true at all.
+
+The bar now straddles the block's top edge, in the gap between blocks, at the right where
+the centred insertion controls are not. The first block had no gap above it, so the canvas
+gained `padding-top` — the mirror of the `padding-bottom: 4rem` that has been there since
+the beginning for exactly the same reason, the last insertion control. Measured afterwards:
+no words covered on any of the seven, no insertion control touched, nothing clipped.
+
+**Who has the keyboard.** Pressing a control rebuilt the bar and left focus on the document
+body, so moving a block twice needed the mouse twice. Two separate causes, and fixing only
+the first changed nothing, which is how the second was found:
+
+- `drawInserts()` empties the whole overlay, so by the time `drawTools()` looked for the old
+  bar it was already gone. Reading which button had focus has to happen before the clearing,
+  which is why it is a function of its own rather than two lines inside `drawTools()`.
+- **The parent was reaching into the canvas and taking the keyboard out of it.**
+  `api.show()` focuses the first field of the selected block — right when a block is chosen
+  from the library, wrong when the selection is a consequence of something done in the
+  canvas. It is the same call that made ⌘Z after a duplicate do nothing in D-079. When focus
+  is inside the canvas the parent's `activeElement` IS the iframe, so the rule costs one
+  comparison: **the editor never takes the keyboard away from where the person is working.**
+
+**So there is no new shortcut for reordering.** The plan asked for arrow keys on the selected
+section; with focus kept, the button IS the shortcut, and pressing it twice moves a block two
+places without the mouse. A browser verdict presses Enter twice and reads the order.
+
+**A test split rather than adjusted.** `23-block-tools` asserted "four controls on its top
+right corner" — what the controls ARE and where they SIT, in one verdict. The second rule
+changed deliberately, so the case is now two: the controls, and the position — where the
+position is checked by what it is FOR, that no word of the block is underneath it.
+
+**Measured and left for the next slice:** the section style is at the bottom of the panel's
+scroll, past every content field. With the panel's first field on screen at y=287, the first
+section-style control sits at y=1308 on a Hero, 1603 on an Image and text, and **4296 on a
+Columns block** — four screens down, past twelve repeater items — in a window 1000px tall.
+The thing most often changed while looking at the page is the hardest thing in the editor to
+reach. That is the Content/Section split, with the trap named in D-080.
+
 ### D-084: The icon every block declared, and a line saying what it is for
 
 **Status:** 2026-09-22. Fifth slice of D-080.

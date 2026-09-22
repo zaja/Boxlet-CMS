@@ -2867,6 +2867,62 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-081: Only the blocks that changed send their fields
+
+**Status:** 2026-09-22. Second slice of the page-editor work (D-080).
+
+Every block of every page went into every save. One Columns block is around sixty fields,
+so ten blocks pass PHP's default `max_input_vars` of 1000. `_end` already catches that
+rather than letting PHP silently drop half the page — but the refusal arrives after an hour
+of work, and *"your page is too big to save"* is not an answer.
+
+**A block that did not change sends its id and the marker `_unchanged`, and nothing else.**
+The server restores its content, style and layout from storage, so what `BlockForm::parse()`
+returns is the same block it would have returned had every field arrived. Nothing downstream
+— the canvas, a rejected save, the write — has to know which blocks did that. The block's
+PLACE still comes from where its skeleton sits in the request, so reordering costs no fields
+at all. Measured on the demo page: seven blocks, **115 block fields whole, 14 as skeletons**;
+with one block edited, 27. A skeleton is two fields whatever the block is, so what an
+untouched page costs stops depending on how big its blocks are.
+
+**Which blocks changed is measured, not inferred from events.** The first design marked a
+group dirty on `input`, `change` and `click` inside it. That is a guess about which gestures
+mean "edited", and every gesture it fails to think of loses work silently — the rich text
+toolbar writes its hidden input directly and fires nothing, and a repeater item can be
+dragged. So each group is fingerprinted from the values it would submit, once when the page
+loads and again when it is saved. A group whose fingerprint is unchanged cannot have changed,
+because the fingerprint *is* what the submit would carry. The fingerprint counts named fields
+only: raising a TipTap editor moves the name off the textarea onto a hidden input beside it,
+and a fingerprint that counted every field would report every rich text block as edited the
+moment the editor loaded.
+
+**The error has a direction: send too much rather than too little.** A block with no id, a
+group that appeared after the baseline was taken, anything uncertain — submits whole.
+
+**The trap, found by asking what the screen means rather than by a failing test.** A save that
+fails validation re-renders the SUBMITTED blocks, valid edits included, because a save is
+refused whole. A baseline taken from that screen would call those blocks unchanged, and the
+server would restore them from storage: the author fixes the one error, saves, and their other
+block rolls back silently. So the server says whether the field groups are the stored page —
+`data-blocks-stored` on the form — and without it `builder-save.js` stands down entirely and
+the form submits as it always did. **The default is the unsafe answer's opposite:** `shell()`
+takes `$fromStorage = false`, only `edit()` passes true, and anything added later that
+re-renders submitted blocks is safe without knowing any of this exists. A test holds it open,
+and it fails when the attribute is emitted unconditionally.
+
+**The fields are disabled rather than removed.** A disabled field is not submitted, and if
+anything stops the submit the form still holds every value. The id input is kept rather than
+rebuilt, so the skeleton is addressed by the very name the rest of the group was using — the
+index `renumber()` last wrote — instead of one counted again and able to disagree with it.
+
+**A skeleton naming a block that is not this page's adds nothing**, rather than an empty
+block: without the id there is nothing to restore it from, and an empty block here would be
+content the author never wrote.
+
+`_end` and the field count stay exactly where they are. They guard the wall; this moves the
+wall further away. Without the script the form submits whole, as before, and so does the
+fallback editor.
+
 ### D-080: The page editor redesign — what is in scope, and what the tree costs
 
 **Status:** 2026-09-22. The owner's framing: *"zadnji veliki posao na cms-u"*. The ground was

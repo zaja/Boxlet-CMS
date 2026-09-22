@@ -2929,6 +2929,14 @@ rewritten.
 where every existing block already stands. It is named `column_index` and not `column`,
 because `column` is reserved in MySQL and a name that only works quoted is a trap.
 
+**A correction to this decision, made the same day.** `Composition::apply()` first returned
+the number of BLOCKS it had touched, and I wrote in the commit message that this kept the
+admin's number meaning "blocks restyled". The message it feeds says *"…:count **sections**
+were reset to the … composition"*, which I had not read. While a section held one block the
+two counts were the same number, so nothing could say which it was; the moment a section
+holds two they part, and a number that quietly means something other than the sentence
+around it is worse than no number. It counts sections.
+
 **And running the WHOLE browser suite, not the scenarios this looks like it touches, found
 four that had been broken since D-094** — when a block's key became a name (`b12`) instead
 of a position (`1`). `14-front`, `03-design` and `16-slice5-accept` each built a field name

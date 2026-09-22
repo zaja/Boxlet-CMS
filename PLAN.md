@@ -2867,6 +2867,64 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-088: What the page was before the last few saves
+
+**Status:** 2026-09-22. Eighth and last slice of D-080. `page_revisions` has been in
+`docs/SPEC.md` §5.2 since the beginning and nothing had ever built it, so this needs no
+change to a frozen contract — only the migration that was always implied.
+
+**What it is for.** Undo (D-079) covers the editing session and dies with the tab. Everything
+before that save was unrecoverable: a heading rewritten last Tuesday, a paragraph deleted and
+saved, a block removed and saved — gone, with no way back short of a database backup nobody
+on shared hosting knows how to read. It does not change what the editor can do. It changes
+what the owner dares do with it.
+
+**A revision is an editing event, not a row rewrite**, which is why recording one is the
+controller's job and not `Page::update()`'s. The demo seed calls `update()` too, and a fresh
+install does not want four pages of history nobody made.
+
+**It is read from the database, never from the request.** With D-081 a save may carry only
+the blocks that changed, and "what the page was" has to be true of the whole page whatever
+arrived.
+
+**Restoring is an ordinary save.** The revision holds the page in the shape
+`Page::editable()` returns, so putting it back runs the same validation, the same media
+resolution, the same sitemap refresh and the same activity line as any other save. A restore
+with a path of its own would be the one path nobody exercises until the day it matters. And
+it records the current page first, so **a restore can itself be undone** — pressing it by
+mistake must not be the one action in this editor with no way back.
+
+**What is on screen is discarded by a restore**, deliberately: restoring to an earlier
+version while keeping the edits that are open would be neither one page nor the other.
+
+**Five per page, pruned on write**, the same reasoning that gave undo twenty steps: enough to
+cover the mistake this exists for, and a limit at all because a site's whole history on
+hosting sold by the gigabyte is not a kindness. Pruned with two statements rather than a
+DELETE with a subquery over the same table, which MySQL refuses outright (1093) while SQLite
+allows it — SPEC §5.0's portability rule is easiest to keep by not writing the clever version.
+
+**A revision belongs to its page**, checked in `PageRevision::find()` rather than by the
+caller, because this is reached from a request and "restore revision 41 into page 3" must not
+be able to pour another page's blocks into this one. A row that is not JSON, or not a page, is
+refused rather than half-applied; a block whose type has gone since is left out rather than
+restored as a hole.
+
+**Two things the screen decided.**
+
+- **The sentence that makes Restore safe to press is not a hint.** Hints are off until asked
+  for (D-087), and behind that toggle *"restoring one is itself a save, so it can be undone"*
+  would never be read by the person deciding whether to press it. A hint describes a field;
+  this states what an action does to the page, and that belongs in front of somebody at the
+  moment they choose. It is the one line in the panel that ignores the toggle, and the reason
+  is written where it is drawn.
+- **Five saves in one working session all read "14:15".** A list that cannot tell its own rows
+  apart is not a list, so `Dates` gained `localToSecond()` beside `local()` — a second format,
+  not a changed one, because every other screen shows a date and this one shows an event.
+
+**The update gate showed itself working.** The copy answered 503 until its migration was run,
+which is D-019 refusing to serve a site whose schema is behind its code. On a real site the
+owner presses the button; here `php migrations/migrate.php` from the copy's own directory.
+
 ### D-087: Hints on demand, in the page editor too
 
 **Status:** 2026-09-22. The owner, seeing D-086's Section tab: *"Sakrij ih za sada ali kasnije

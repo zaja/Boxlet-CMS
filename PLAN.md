@@ -300,7 +300,7 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    2026-09-20 at the owner's request, against `docs/design_handoff_appearance/`. Three rounds
    were approved, then a reassessment: (1) the preview draws the real header and footer;
    (2) the feedback loop closes (D-058); (3) the two screens become one `/admin/appearance`
-   with five tabs (D-059), the old addresses redirect (O-22), and the toolbar over the
+   with five tabs (D-059), the old addresses go (D-077), and the toolbar over the
    picture — viewport, zoom, Compare — follows.
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
@@ -2712,8 +2712,39 @@ warning but the property silently becoming invalid.
 **Two files were split on the way, both forced and both along a seam they already had.**
 `admin-appearance-inspector.css` passed the 500-line hard limit, so how a COLOUR is shown and
 taken over left for `admin-appearance-colour.css`; what stays is how a DECISION is made.
-(The contrast gauge is still in `admin-design.css` with the last rules of the old screen —
-PLAN O-24 — and that file is where it belongs when it moves.)
+(The contrast gauge joined it from `admin-design.css` when that file went — D-077.)
+
+### D-077: The old Design screen is gone
+
+**Status:** 2026-09-22. Closes O-22 and O-24, which the owner asked for together. They are
+two halves of one thing: the screen that merged into Appearance (D-059) still had an address
+and still had a stylesheet.
+
+**The two addresses are removed, not redirected for ever.** `/admin/design` and
+`/admin/chrome` were redirects for one release, which is the grace a bookmark gets; a
+redirect kept for ever is a second address for one screen, the arrangement the merge exists
+to end. `AppearanceController::moved()` goes with them. **The ⌘K entry never named them** —
+it names Appearance and carries `design character colours fonts type header footer chrome`
+among its words, so searching for either still finds the screen. Measured before touching
+anything, not assumed.
+
+**`admin-design.css` is gone, and what was alive in it moved to where it belongs:** the
+contrast gauge to `admin-appearance-colour.css`, because the gauge is the palette measured;
+`.design-form` and `.derived` to `admin-appearance-inspector.css`, because the form is this
+screen's form and the derived line is one of its readouts; `.preview-actions` to
+`admin-appearance-picture.css`. Everything else in the file — the character cards, the
+workspace, the preview frame and its notes — named classes no screen has.
+
+**Which four were alive was measured, not read off the old note.** A substring grep says
+`derived` is used and it is wrong: the match is `role-derived`. Counting whole class tokens
+in the markup and in the scripts is what gives the real answer.
+
+**The move is proved, not asserted.** Every computed property of every element on the screen,
+at three widths and on all five tabs, before and after: **8,699,295 comparisons, 0 differing**
+(16,275 elements × 535 properties). The only difference in the raw capture was the order in
+which custom properties enumerate, because one `<link>` is gone — no value moved. This
+mattered more than usual: the rules landed LATER in the cascade than they had been, since
+`admin-design.css` was loaded first of six.
 
 ### Lessons from the browser checks (2026-09-16)
 
@@ -2743,21 +2774,7 @@ PLAN O-24 — and that file is where it belongs when it moves.)
 
 ## 5. Open items
 
-*O-1 and O-2 resolved by D-019 and D-020.*
-
-**O-24. `admin-design.css` is mostly the old Design screen's** (D-074). That screen is gone;
-its stylesheet is still loaded first by Appearance because four things in it are still used —
-`.derived`, `.design-form`, the gauge, and `.preview-actions`. The rest is the old character
-cards, the workspace, the preview frame and its notes, and nothing on any screen has those
-classes. Those four rules belong in the Appearance stylesheets beside everything else they
-work with, and the file should then go. It is a pure move, provable the same way D-072's split
-was — every computed property before and after — and it is a commit of its own rather than
-something to slip into a change about colour.
-
-**O-22. The old Appearance addresses** (D-059). `/admin/design` and `/admin/chrome` are
-redirects to `/admin/appearance`, kept while bookmarks and habits catch up. The owner asked
-for them to be **removed entirely** later, not redirected for ever, with the ⌘K search
-entries and any remaining links adjusted at the same time. Not urgent; one release of grace.
+*O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077.*
 
 **O-21. Live links inside the design preview** (D-057). Now that the preview draws the real
 header, the iframe contains a menu whose links WORK: clicking one navigates the frame to that

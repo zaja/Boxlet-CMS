@@ -2798,6 +2798,131 @@ viewport chip, which is the pressed one and carries the accent. CLAUDE.md's rule
 time — a verdict that fails is a claim about the instrument until the instrument is checked —
 and it is written into the scenario so the next reader does not spend the same three rounds.
 
+### D-079: Undo in the page editor
+
+**Status:** 2026-09-22. First slice of the page-editor work. The plan behind it, and what it
+deliberately does not do, is in the section on the editor redesign below.
+
+Removing a block dropped its field group out of the form, and the only way back was to leave
+without saving — which took every other change on the page with it. A Columns block with
+twelve filled items was one click from gone. That is the hole this closes.
+
+**One path for every structural change.** Insert, remove, duplicate, move and drag all call
+`api.commit()` before they act, which pushes a snapshot onto a stack of twenty. An undo that
+covered removal but not a move would be worse than none, because nobody could predict it.
+There is no redo: twenty steps back covers the mistake this exists for, and a redo stack is a
+second thing to reason about for a case nobody has asked for.
+
+**The state is already in one place,** which is what keeps this small: the field groups in the
+form and the sections in the canvas are the same page seen twice. A snapshot is the inner HTML
+of both; a restore puts both back and raises the editors inside again.
+
+**A way back in words, not only a shortcut.** After a removal a strip appears at the foot of
+the canvas — the block's name and an Undo button — for six seconds. The shortcut is not
+discoverable, and the people who most need it are the ones who do not know it is there. It
+sits over the canvas rather than in the panel because that is where the block was when it
+went. `Esc` deselects.
+
+**⌘Z belongs to a field the author has typed in, not to a field that merely has focus.** The
+first rule written was the obvious one: ignore the shortcut whenever something editable has
+focus, so TipTap and every text input keep their own undo. Driving it proved that rule useless
+for three of the five actions — `api.show()` focuses the first field of whatever block is
+selected, so after every insert, duplicate and move the cursor is already sitting in one.
+Measured: duplicate, ⌘Z, nothing happened. A field that has not been typed in has an empty
+undo stack of its own and loses nothing by letting the page have the keystroke; from its first
+keystroke it keeps it. Typing is tracked from the `input` event and forgotten on every focus
+change.
+
+**Two defects the browser found that reasoning had not.**
+
+- **A snapshot is HTML, and HTML carries a field's value in an ATTRIBUTE while typing changes
+  a PROPERTY.** So `innerHTML` serialised what the server had rendered, not what the author had
+  written: typing into one block and then undoing another block's removal restored the block
+  and threw the typing away — the precise loss this file exists to prevent. `sync()` writes
+  every live value, checked state and selected option into the markup before the snapshot is
+  read. Rich text needs nothing extra: `richtext.js` keeps its hidden input current on every
+  keystroke, and a hidden input is an input like any other.
+- **The strip was a tall empty box.** `.builder-canvas` is a grid, so a second child took a row
+  of its own and stretched to all the height the canvas was not using, with the sentence lost
+  at the bottom of it. Both children are now named `grid-area: 1 / 1` — the iframe as well,
+  because auto-placement steps *around* an explicitly placed item, and naming only the strip
+  pushed the page into a second row and put the strip above it instead of over it.
+
+**Reachable from outside for a reason.** `unsetRichText()` and `unsetPicker()` existed so a
+duplicated group's dead editors could be raised again; a restored group's are dead for exactly
+the same reason, which is the second caller that justifies `api.unsetLive()`. `api.forget()`
+bumps a counter that `redraw()` checks, so an answer still in flight cannot land on a page that
+no longer exists.
+
+**Where it lives.** `public/assets/builder-undo.js`, its own file: `builder.js` is the shell —
+selection, the panel's modes, the device width — and this is the page's history. `builder.js`
+carries a no-op `api.commit()` stub so callers say what they mean without asking whether the
+file is present.
+
+**Checked** in `tools/browser-suite/scenarios/04-builder.mjs`, five verdicts, last in the
+scenario and after the last save so a check that fails part-way cannot leave an extra block in
+a form about to be submitted.
+
+**A seam to watch:** `builder-blocks.js` is at 345 lines. Like `Blocks.php` at D-041, it is
+under the 300-line guidance but not past the hard limit, and the split when it comes is
+insert/remove/move on one side and the redraw conversation with the server on the other.
+
+### D-080: The page editor redesign — what is in scope, and what the tree costs
+
+**Status:** 2026-09-22. The owner's framing: *"zadnji veliki posao na cms-u"*. The ground was
+a review written against the real code and an interactive prototype of the editor, both
+brought by the owner. Neither is in the repository, and by his decision that is the rule for
+all such material: working documents are how a decision was reached, and what survives of them
+belongs here and in `docs/SPEC.md`, in our own words. `.gitignore` says so.
+
+**The review's §1 holds and is not touched:** the canvas is the real page in an iframe, the
+server owns what a block is and returns HTML rather than a schema, one form and one save path,
+`_end` catches `max_input_vars`, `pending_canvas` keeps a refused save.
+
+**Its §3 — a tree of sections with columns — contradicts `docs/SPEC.md` §5.3, which is a
+frozen contract** and which refuses it in as many words: *"A page stays a flat, ordered list of
+blocks: no zones, no columns, no nesting … It would also multiply every later feature
+(translation, revisions, caching) by the nesting depth."* That reasoning was checked against
+the code rather than taken on trust, and it is accurate: `Translations.php` copies blocks
+across locales by `sort`, `TranslationStatus` pairs them by `block_group_id`,
+`Composition::apply()` rewrites `style_json` across blocks in bulk, `MediaLibrary` finds a
+picture's use with `style_json LIKE '%"image":N%'`, and the `sizes` strings in templates
+(`columns/template.php`) assume a block is as wide as its container. The review mentions none
+of them.
+
+**The owner's decisions (2026-09-22):**
+
+- **Scope now is everything except the tree.** The tree is deferred, not refused, and the
+  reason is recorded above so it is argued from the joins that exist rather than from taste.
+- **When sections gain columns, the `columns` block is retired.** Recorded now, executed then.
+- **New blocks come after the structural work.** The eight the review proposes, and with them
+  the library's groups and filter — O-15 already says a category filter over five items is
+  furniture.
+
+**The slices, in order, and why that order.** Undo first (D-079), because it makes every later
+slice safe to try. Then the form wall — skeleton always submitted, content only from blocks
+that changed, erring towards over-submitting, because losing a changed block is losing work
+while re-sending an unchanged one is only waste. Then stable block keys `b{id}` / `n{n}` in
+place of positions, so a validation error after a reorder follows the block instead of the
+slot. Then the library's previews and cards, which are what is seen first. Then the small
+costs — the toolbar's position, focus surviving a redraw, keyboard reordering, splitting
+Content from Section in the panel. Revisions last; `page_revisions` is already in SPEC §5.2.
+
+**Two SPEC §5.3 changes are planned and deliberate** (CLAUDE.md permits this before v0.1, said
+out loud and recorded): the index in field names becomes a key rather than a position, and a
+block definition gains an optional per-field `sample`. Neither touches the schema or the flat
+list.
+
+**A trap for whoever splits the panel:** `builder-inspector.css:170-173` hides the block
+controls inside the panel, and that is precisely what makes the branch in
+`PageEditorController::again()` safe — without it one press of Add on an item would replace the
+canvas with the plain form. A CSS rule holding a controller upright is worth knowing about
+before the panel is rearranged.
+
+**`pending_canvas` was never written down** although it is one of the better things in the
+editor: a save that fails validation keeps the submitted blocks in the session, read once, so
+the canvas that comes back is what the author had rather than what the database still holds.
+
 ### Lessons from the browser checks (2026-09-16)
 
 - **Trix and the admin CSP.** Trix injects a stylesheet at runtime, and the admin's

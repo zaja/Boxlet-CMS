@@ -2867,6 +2867,64 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-093: A page becomes sections of columns — reversing D-008
+
+**Status:** decided 2026-09-22 by the owner, after testing the finished flat editor. Not yet
+built. **This reverses `docs/SPEC.md` §5.3 and D-008**, which say a page stays a flat,
+ordered list of blocks with no nesting, and it is written down here rather than worked
+around, as the review asked.
+
+**The shape.** A page becomes a list of SECTIONS. A section has a layout and holds blocks in
+its columns. **Depth is exactly two: section → column → block.** A section cannot hold a
+section and a block cannot hold a block.
+
+**Why this and not "let blocks nest".** The block contract is untouched: a block stays a leaf
+with fields, so every definition, every template, `BlockForm::field()`, the repeater, media
+resolution all stay as they are. That is what makes it affordable, and it is also the claim
+the whole estimate rests on.
+
+**What it buys, in one sentence each.** Section style finally belongs to a section: a tinted
+band with three text blocks in it is one setting instead of three that have to be kept in
+step. A gallery can sit in one column with a form in the next, which no arrangement of the
+present `columns` block can express. And `columns` stops being a layout pretending to be a
+block — it stays as the repeating card grid it is genuinely good at.
+
+**What the review costed, and three things it did not.** It names storage, rendering,
+identity, the canvas, the panel and an outline. Measured here: `page_blocks` is read or
+written in seven files and `style_json` in six. Not in the review:
+
+- **Translations copy blocks across locales by `sort`.** Sections have to be mirrored the
+  same way, or a Croatian page gets an English arrangement.
+- **Three block templates hard-code `sizes="… 50vw"`,** because a block has always been as
+  wide as its container. Inside a one-third column that is the wrong picture downloaded.
+- **Revisions (D-088) and `pending_canvas` both hold blocks** and will have to hold sections.
+
+**The order, which is the review's own** (the owner chose it over building the eight blocks
+first), and every step leaves the editor working:
+
+1. **Stable keys replace positional indices**, page still flat. Nothing visible changes.
+   This is O-25, deferred in D-082 with the words *"worth doing when something else needs it
+   — a tree"*. That day has come.
+2. **`page_sections` + migration + `Sections::render()`**, every section holding one column.
+   Every existing page must render byte-identically, proved the way D-077 was proved. Section
+   style moves from the block to the section here.
+3. **Column layouts**, blocks addressable by column, insertion and drag within a column.
+4. **Drag between columns, and the page outline.** The panel's section/block split is already
+   built (D-086).
+5. **The eight new blocks** from the review's §2.3, and with them the library's groups and
+   filter (O-15).
+
+**Column widths are a closed set**, never free percentages: `one`, `halves`, `thirds`,
+`quarters`, `wide-left` (2/3+1/3), `wide-right`, `sidebar` (3/4+1/4). The same argument
+`SectionStyle` makes about colour — a column at 37% takes the design system's guarantee with
+it, and a percentage cannot say how it collapses on a phone. One knob for small screens
+(stack / stay / reverse), because reversing on mobile is the one thing owners need and cannot
+otherwise express.
+
+**`embed` is the one block with a security shape:** a closed list of providers with the id
+parsed out of a pasted URL and rendered in a sandboxed iframe. A free-HTML block is refused,
+for the reason `SectionStyle` refuses a free colour.
+
 ### D-092: Undo is a control, so it is visible at rest
 
 **Status:** 2026-09-22. The owner, testing: *"Undo gumb ne vidim, on radi preko tipkovnice?"*

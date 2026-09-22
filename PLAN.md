@@ -2867,6 +2867,93 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-087: Hints on demand, in the page editor too
+
+**Status:** 2026-09-22. The owner, seeing D-086's Section tab: *"Sakrij ih za sada ali kasnije
+ćemo odlučiti kad sve testiram u praksi."* So they are hidden, with a way to ask for them, and
+the decision stays open until he has used it.
+
+Six section controls, each with a line of explanation as tall as the control itself. With the
+hints off the whole of Section fits on one screen — measured, 781px of panel down to 558px.
+
+**One implementation, two screens, which is what made it a file of its own.** D-078 built this
+for the Appearance screen; `appearance-hints.js` becomes `hints.js`, and any element carrying
+`data-hints-root` that contains a `data-hints-toggle` gets the behaviour. The attribute's value
+is the name the preference is stored under, so a preference set on one screen cannot quietly
+empty the other. A third screen needs the attribute and nothing else. **This is the second
+caller CLAUDE.md asks for before an abstraction exists** — the first version was deliberately
+tied to one screen, and the generalisation waited until there was something to generalise.
+
+The two strings moved with it: `appearance.hints_show` and `appearance.hints_hide` became
+`hints.show` and `hints.hide` in `lang/en/hints.php`, because a string named after one screen
+is wrong on the other. The button's own style and the rule that hides a hint moved from
+`admin-appearance-inspector.css` to `admin.css`, scoped by the attribute rather than by the
+screen — every other screen in the admin keeps its hints, because it is these two narrow
+columns that are short of room.
+
+**`data-hints-root` sits on the whole panel**, not on the selected-block header: the field
+groups are that header's SIBLING, and the rule that hides a hint has to reach them.
+
+**And a correctness fix the hints work uncovered.** A field group can arrive as fresh markup —
+an undo puts all of them back, an insert brings a new one from the server — and such a group's
+style `<details>` is open only when `block.php` happened to render it open, which is when its
+style differs from the character's. On the Section tab a closed one shows nothing. The first
+check said it survived an undo; it survived by that accident, on a block whose style did
+differ. The tab is now re-applied on every selection, which is the rule rather than the luck.
+
+### D-086: Content and Section, side by side
+
+**Status:** 2026-09-22. Seventh slice of D-080, and the other half of what it called the
+small costs. It is not small.
+
+**The measurement.** With the panel's first field on screen at y=287, the first
+section-style control sat at y=1308 on a Hero, y=1603 on an Image and text and **y=4296 on a
+Columns block** — four screens down, past twelve repeater items — in a window 1000px tall.
+Afterwards, on that same Columns block: **y=340.** The thing most often changed while looking
+at the page had been the hardest thing in the editor to reach.
+
+**The split is a class on the panel and two rules in the stylesheet, not a rearrangement of
+the field group.** `views/admin/block.php` is the PLAIN editor's view too, and there the
+group stays one scroll with the style folded at its foot. Moving markup around would have
+meant two shapes of one thing, and the plain editor is the fallback that has to keep working.
+The shared view gains exactly one attribute, `data-panel-part="section"`; everything else
+hangs off the panel. Without a script nothing sets `data-panel-tab`, nothing matches, and
+both halves show — which is the group as it has always been.
+
+**The trap from D-080 is intact and now has a verdict of its own.**
+`builder-inspector.css` hides the plain editor's move and remove controls inside the panel,
+and that is what makes the branch in `PageEditorController::again()` safe. The rules added
+here hang off `.block-body`, and those controls are its sibling, so they stay hidden — and a
+browser check asserts it on both tabs rather than leaving it to be noticed later.
+
+**Which tab is open is remembered for the session, not per block.** Somebody adjusting how a
+page looks moves from block to block doing the same thing, and being thrown back to Content
+on every selection would undo that.
+
+**Two things the screen found that the measurement had called fine.**
+
+- **The Section tab was EMPTY.** The style is a `<details>` because the plain editor folds
+  it; behind a tab its summary is hidden, and a closed `<details>` with no summary shows
+  nothing. The probe said otherwise — `getBoundingClientRect()` on a field inside the closed
+  `<details>` reported a box 40px tall at a plausible y, because the browser lays out what it
+  does not paint. **The screenshot was right and the measurement was wrong.** Every check
+  here now asserts the height of the `<details>` itself, and the scenario says why.
+- **The six controls had no space between them**, every hint touching the next field's label.
+  `.block-style-grid` takes its `display: grid` and `gap` from `admin-pages.css`, which the
+  builder does not load, so only `grid-template-columns` was arriving and the grid it
+  templates never existed. Exactly the same fault, and the same fix, as `.block-body` above
+  it in the same file — which did not show while the style was folded at the foot of a long
+  scroll, and did the moment it had a tab of its own.
+
+**Left deliberately, for the owner:** every section field shows its hint, and the hints are
+as tall as the controls. D-078 made hints something you ask for on the Appearance screen; the
+same could be true here. It is his to say, and it is not free — the hints are the only thing
+explaining what Rhythm or Top edge mean.
+
+**A seam to watch:** `builder.js` is at 304 lines, four past the guidance and well under the
+limit. The real seam when it comes is the device-width controls, which have nothing to do
+with selection, the panel's modes or the canvas conversation.
+
 ### D-085: The block's controls move off its text, and keep the keyboard
 
 **Status:** 2026-09-22. Sixth slice of D-080, and the first half of the "small costs" it
@@ -3209,6 +3296,15 @@ the canvas that comes back is what the author had rather than what the database 
 ## 5. Open items
 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077.*
+
+**O-26. `03-design` depends on a starting design it does not set.** Run against a copy that
+earlier runs have left on a dark character, *"a page colour set by hand carries the palette
+with it"* fails: the page is set to `#0d0d10` and the text it works out stays `#161422`,
+because it was already dark. On a freshly installed copy the same check passes with
+`#eeecff`. Nothing is wrong with the code — the scenario asserts a CHANGE without owning the
+state it changes from, so a real defect and a stale copy look identical. It should set the
+character it needs at the top, the way `applyCharacter()` already lets it. Found 2026-09-22
+while checking D-087; not fixed there because a scenario's own weakness is not the slice's.
 
 **O-25. Stable block keys in place of positions** (D-082). Nothing needs them: the defect they
 were proposed for was measured and does not exist. What remains is that `builder.js`,

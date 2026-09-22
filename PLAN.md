@@ -2867,6 +2867,51 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-092: Undo is a control, so it is visible at rest
+
+**Status:** 2026-09-22. The owner, testing: *"Undo gumb ne vidim, on radi preko tipkovnice?"*
+
+It did. Undo had a keyboard shortcut and a strip that appeared for six seconds after a
+removal — so somebody who had not removed anything never learnt that undo existed at all.
+**CLAUDE.md: no control is ever invisible at rest**, and a notification that comes and goes
+is not a resting state. D-079 reasoned carefully about the strip being discoverable for the
+people who most need it, and missed that the feature itself was not.
+
+A button in the editor's bar, left of the device sizes, with the Lucide `undo-2` icon.
+**Disabled when there is nothing to undo, never hidden**: a control that disappears teaches
+nobody that it is there, and being found is the whole point of this one. Not rendered
+without a script, because then nothing can undo anything.
+
+### D-091: A row size asks for its columns
+
+**Status:** 2026-09-22. The owner, testing: *"odabir broja kolumni na 4 ne dodaje unos
+sadržaja za četvrtu kolumnu i ne prikazuje ju u bloku, samo gurne postojeće 3 u lijevo."*
+
+Exactly so. `layout` is how many columns share a row and `items` is the content, and the two
+could disagree: three items at four in a row drew three columns and an empty cell, with no
+fourth field to type into. The label already said "Four in a row" and was honest; the
+behaviour was still not what anybody means when they choose it.
+
+**The block says what a layout asks for.** A repeater may declare `per_layout`, a map of
+layout name to how many items it wants — a deliberate addition to the frozen SPEC §5.3,
+recorded there, and the second one today after `sample`. Nothing generic has to guess that a
+layout called "four" means four: `BlockForm::parse()` reads the number the block wrote down,
+and the view writes it onto each `<option>` as `data-wants` so the editor reads it off the
+option that was chosen.
+
+**In the parser, not only in the save**, because the canvas redraws through the same parser:
+the column appears as the row size is chosen rather than after the page is saved. And in the
+panel too, by pressing the repeater's own Add — one way to add a row, the one the fallback
+editor uses, which already knows about numbering, the maximum and the empty state.
+
+**It only ever tops up.** Going back to "two in a row" keeps all four columns: a row size is
+a choice about arrangement, and throwing away what somebody wrote is not one of its
+consequences. A row already full is left alone — seven columns at four in a row is a full row
+and a short one, which is ordinary.
+
+**Checked by driving it:** three columns, choose four, the panel has four fields and the
+canvas four columns; choose two, still four.
+
 ### D-090: A check that writes owns what it writes
 
 **Status:** 2026-09-22. Found by looking at the development site rather than at the suite.

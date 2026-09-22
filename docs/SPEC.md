@@ -484,7 +484,11 @@ definition stops it with a message naming the block and key:
   `'options' => ['cover', 'contain']`. A repeater takes no `sample`: its items are sampled
   from their own fields.
 - A `repeater` declares `fields`, the fields of one item, and `max`, how many items it
-  takes, an integer of at least 1. **Both are required, and omitting `max` is refused at
+  takes, an integer of at least 1. It may also declare `per_layout`, a map of layout name
+  to how many items that layout wants: choosing "four in a row" on a block holding three
+  adds the fourth, in the editor and on the page. It only ever tops up, never trims, and
+  every name in it must be one of the block's own layouts (added 2026-09-22, PLAN.md
+  D-091). **Both are required, and omitting `max` is refused at
   boot**: a list with no stated limit is one that grows until the page editor stops being
   usable and `max_input_vars` starts dropping fields. A repeater takes no `options`, and
   no other field type takes `fields` or `max`. Its `fields` are ordinary field

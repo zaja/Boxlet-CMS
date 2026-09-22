@@ -383,7 +383,8 @@ return [
     'icon'     => 'hero',
     'version'  => 1,
     'fields'   => [
-        'heading'   => ['type' => 'text',     'required' => true, 'translatable' => true],
+        'heading'   => ['type' => 'text',     'required' => true, 'translatable' => true,
+                        'sample' => 'preview.hero.heading'],
         'subheading'=> ['type' => 'textarea', 'translatable' => true],
         'image'     => ['type' => 'media'],
         'cta'       => ['type' => 'link',     'translatable' => true],
@@ -399,6 +400,12 @@ Form block; added 2026-09-19, PLAN.md D-046).
 
 `translatable: true` marks a field the AI translator touches. Everything else is
 copied verbatim across locales.
+
+`sample` is optional and names a **language key**, not words: what this field says in the
+block's library preview. Without it the field falls back to the generic sample for its type,
+which is what a block added later gets for nothing. It exists because every text field
+sampled to the same string, so all five library cards read the same sentence and could only
+be told apart by their shape (added 2026-09-22, PLAN.md D-083).
 
 **Multi-column arrangements are layout variants of one block, never containers.** A
 "two columns of text" block is a single block with two text fields and a `two-column`
@@ -472,8 +479,10 @@ definition stops it with a message naming the block and key:
 - Exactly the keys above; a missing or unknown key is an error. `type` equals the
   directory name. Field names match `[a-z][a-z0-9_]*`; `id` and `type` are reserved
   for the page editor.
-- A field has `type`, optional boolean `required` and `translatable`, and for `select`
-  a non-empty list of option values: `'options' => ['cover', 'contain']`.
+- A field has `type`, optional boolean `required` and `translatable`, an optional `sample`
+  naming a language key, and for `select` a non-empty list of option values:
+  `'options' => ['cover', 'contain']`. A repeater takes no `sample`: its items are sampled
+  from their own fields.
 - A `repeater` declares `fields`, the fields of one item, and `max`, how many items it
   takes, an integer of at least 1. **Both are required, and omitting `max` is refused at
   boot**: a list with no stated limit is one that grows until the page editor stops being

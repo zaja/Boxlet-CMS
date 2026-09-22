@@ -2867,6 +2867,116 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-083: The library shows the block, not a grey slab
+
+**Status:** 2026-09-22. Fourth slice of D-080. Three separate lies on one panel, all fixed
+without giving up the rule that a preview is RENDERED from the block and never drawn by hand.
+
+**The card was a fixed window onto a block of any height.** `.library-frame` was
+`aspect-ratio: 16 / 9` with the iframe at 400% scaled to a quarter. Measured on the demo
+site — frame 397×223, iframe viewport 1588×893 — the blocks drew 201px (Text), 222 (Form),
+342 (Columns), 459 (Hero) and 501 (Image and text). So three quarters of the Text card was
+the empty document under the block, every card was the same size whatever it held, and the
+one thing a picture of a block can say that its name cannot — how much room it takes — was
+the one thing it could not say. **The card is now as tall as the block**, measured in the
+browser and remembered in `localStorage` by the preview's file name, which is hashed against
+the block and the stylesheet and so cannot go stale.
+
+- **`documentElement.scrollHeight` was the obvious reading and it is useless here**: the body
+  fills the viewport, so it answers 893 for every block on the list. What has a height is the
+  section the block rendered into. The plan said to use `scrollHeight`; measuring it is what
+  found otherwise.
+- **The scale is 0.4, not 0.25.** At a quarter the whole library was legible only as shapes.
+  Both were rendered and looked at.
+- **The fade at the foot is drawn only where something is cut off.** Unconditionally it
+  covered most of a short card — the Text card is 3.5rem tall and the fade was 2.5rem of it —
+  so five cards that fitted perfectly well all looked like they were dissolving.
+- **An artefact that was mine, not the product's:** changing `--library-scale` from the probe
+  after the measurement left a grey band under the taller cards, because the block reflows at
+  a different viewport width. Setting it in the stylesheet and rendering again removed it.
+  CLAUDE.md's rule held: fix the instrument before judging the subject.
+
+**Every card said the same words.** `sampleFields()` mapped every text field to
+`t('preview.heading')`. **A field may now declare `sample`, a language key** (SPEC §5.3, a
+deliberate change to a frozen contract), and without one the generic sample still stands — so
+a block added later has a preview for nothing, which was the point of generating them.
+
+**The Form card showed no form**, under a hint that promises "the block as this site renders
+it". A form block draws nothing when its form is missing, and a preview has no database to
+take one from. A `form` field now samples to an id that `BlockPreview` resolves to a form of
+three sample questions, shaped exactly as `FormBlocks` resolves a real one. **The special case
+belongs to the field type, not to the block** — the `media` field above it already has one —
+so any block that takes a form gets this. The card went from 87px to 224px and is the first
+one that has ever shown what a Form block is.
+
+**A flat rectangle reads as damage; a rectangle with a picture in it reads as a picture
+area.** `.media-placeholder` gains a glyph drawn as a MASK filled from
+`--section-placeholder-edge`, so it takes the colour of whatever surface it lands on and no
+literal colour enters a front-end stylesheet. One declaration serves the page, the canvas and
+the preview, because all three render the same block through the same class. **This is visible
+to visitors** on a published page whose picture area is empty — it replaces a grey slab, and
+the owner should say if he would rather have nothing there at all.
+
+**The contrast guard was widened, deliberately, and measured afterwards.** The card's fade is
+`linear-gradient(to bottom, transparent, var(--ui-panel))` — every colour in it an admin token
+— and `tests/contrast_test.php` refused it, because the rule had been written for a bare token
+or a `color-mix()` and had never met a gradient. It now applies the same arithmetic to any
+value: it must name at least one `--ui-` token, and every colour reference in it must be one.
+Requiring a token is what stops the widening letting through a value that names no colour at
+all. Checked by breaking it four ways rather than by reading it — a bare literal, a literal
+inside a gradient, a SITE token inside a gradient, and a bare `url()` — all four still fail.
+
+**And a literal colour I had written into a front-end stylesheet.** The placeholder glyph was
+a stroked SVG, which meant `stroke='%23000'` in `sections.css`. In a mask the colour cannot
+reach the screen, which is exactly the kind of reasoning the rule exists to make unnecessary,
+so the glyph is drawn with filled shapes that name no colour and let SVG fill them black by
+itself. No test caught it; CLAUDE.md did.
+
+**Two tests changed deliberately** rather than being adjusted to new output: `blocks_test`
+asserted the exact normalised field shape, which gained `sample`; `columns_test` asserted
+three sample columns through the generic string. What each test is for is unchanged, and the
+second gained a companion that asserts the new rule — that two blocks do not say the same
+thing, and that a field declaring nothing still gets a sample.
+
+### D-082: Stable block keys are deferred, because the defect they were for does not exist
+
+**Status:** 2026-09-22. Third slice of D-080, stopped before it was written.
+
+The slice was to replace the positional index in field names with a stable key, `b{id}` for
+a saved block and `n{n}` for a new one, and it carried a deliberate change to the frozen
+`docs/SPEC.md` §5.3. The reason given was: *reorder the blocks, let the save fail validation,
+and the errors follow positions rather than blocks.*
+
+**That was reasoned, not measured, and it is wrong.** Driven through the real save path —
+three blocks named ALPHA, BETA and GAMMA, submitted in the order GAMMA, ALPHA, BETA with
+ALPHA's required body emptied — the 422 comes back with the message on ALPHA:
+
+```
+  group 0: GAMMA
+  group 1: ALPHA  ERROR
+  group 2: BETA
+```
+
+It is right because both halves speak the same language: `BlockForm::parse()` keys an error by
+the position in the SUBMITTED order, and the rejected save re-renders the SUBMITTED blocks in
+that same order. A position is only ambiguous when one side means the stored order and the
+other means the submitted one, and nothing here does.
+
+**So the contract is not changed.** CLAUDE.md permits changing SPEC §5 before v0.1 when it is
+deliberate and recorded; it does not make it free. Renaming the index touches SPEC §5.3, four
+`action` regexes in `PageEditorController`, the renumbering in `builder.js`, `admin.js` and
+`repeater.js`, three views and every test that asserts `blocks[0][body]` — a large change
+against a defect that turned out to be imaginary.
+
+**What survives as a real, smaller argument, recorded as O-25 rather than acted on:** with
+stable keys nothing would ever need renumbering, and the three mutually load-bearing renumber
+regexes would go. That is a simplification, not a fix, and it is worth doing the day something
+else needs it — a tree, or a second editor — and not before.
+
+**The lesson is CLAUDE.md's own, and it cost a slice's worth of plan:** a claim is measured,
+not reasoned. Writing the plan I checked the *cost* of the change against the code carefully
+and took the *reason* for it on trust from the review.
+
 ### D-081: Only the blocks that changed send their fields
 
 **Status:** 2026-09-22. Second slice of the page-editor work (D-080).
@@ -3008,6 +3118,12 @@ the canvas that comes back is what the author had rather than what the database 
 ## 5. Open items
 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077.*
+
+**O-25. Stable block keys in place of positions** (D-082). Nothing needs them: the defect they
+were proposed for was measured and does not exist. What remains is that `builder.js`,
+`admin.js` and `repeater.js` each renumber `blocks[n]` names with their own regex, and that
+those three must agree. Stable keys would delete all three. Worth doing when something else
+needs it — a section tree, or a second editor — and not for its own sake.
 
 **O-21. Live links inside the design preview** (D-057). Now that the preview draws the real
 header, the iframe contains a menu whose links WORK: clicking one navigates the frame to that

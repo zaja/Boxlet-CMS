@@ -307,15 +307,28 @@ pages (
 )
 -- unique (locale, slug), index (content_group_id)
 
-page_blocks (
-  id, page_id, block_group_id, block_type, sort,
-  content_json,              -- the editable content
+page_sections (
+  id, page_id, sort,
+  layout,                    -- how many columns and in what proportion: a closed set,
+                             -- never a percentage. 'one' until columns arrive
   style_json,                -- layer-2 section style, see §5.4
+  created_at, updated_at
+)
+-- a page is a list of sections; a section holds blocks in its columns; depth is exactly
+-- two (added 2026-09-22, PLAN.md D-093/D-095, reversing D-008)
+
+page_blocks (
+  id, page_id, section_id, block_group_id, block_type, sort,
+  content_json,              -- the editable content
+  style_json,                -- EMPTY since migration 0026: the layer-2 style is the
+                             -- section's. The column stays because a committed migration
+                             -- is not edited and dropping one is not portable
   layout,                    -- layer-3 layout: one of the block's declared layouts,
                              -- validated on save; '' or a removed one renders the default
   translation_status, source_hash,
   created_at, updated_at
 )
+-- sort is the block's place WITHIN its section; the page's order is the section's
 -- block_group_id links the same block across locales
 
 page_revisions (id, page_id, data_json, created_at)
@@ -416,6 +429,13 @@ A generic column grid is out of scope deliberately, not for want of time. It wou
 the user enough freedom to build something ugly, which is the opposite of what this
 project is for — blocks that already know how to look good is the premise. It would also
 multiply every later feature (translation, revisions, caching) by the nesting depth.
+
+**This was reversed on 2026-09-22 (PLAN.md D-093).** A page is now a list of SECTIONS, and a
+section holds blocks in its columns, at a depth of exactly two. The reasoning above was not
+wrong — translation, revisions and media usage each had to be followed and changed — but the
+cost was paid deliberately, and it is bounded by the cap: a block is still a leaf with
+fields, so the block contract, every definition, every template and the repeater are
+untouched.
 
 **Editing a richtext field.** The field is edited with TipTap (§3), and stored as HTML
 conforming to the whitelist above. The editor is a convenience; the server-side whitelist
@@ -577,7 +597,8 @@ Layer 1  Tokens       a handful of decisions, not forty values:
                         content width, as a number of rem
                         surface contrast (low / medium / high)
                         the page as a sheet: header width, boxed, what surrounds it
-Layer 2  Section      per block instance, stored in page_blocks.style_json —
+Layer 2  Section      per SECTION, stored in page_sections.style_json (D-095;
+                      it was per block instance until 2026-09-22) —
                       five enumerated keys and one media reference:
                         surface:  plain | tinted | contrast | image | gradient
                         rhythm:   tight | normal | airy
@@ -795,8 +816,10 @@ machine. Which one is drawn comes from the `boxlet_theme` cookie, written into
 wrong palette first. The contrast rule above is measured over **both** palettes, and nothing
 in it is loosened for either (PLAN.md D-054).
 
-**Layer 2.** `page_blocks.style_json` holds all five enumerated keys, plus `image`: a
-media id or null (PLAN.md D-024). Values outside the closed sets fall back to the defaults
+**Layer 2.** `page_sections.style_json` holds all five enumerated keys, plus `image`: a
+media id or null (PLAN.md D-024). It belongs to the section, not to the block: a tinted band
+of three text blocks is one setting rather than three that have to be kept in step
+(D-095). Values outside the closed sets fall back to the defaults
 (plain, normal, normal, left, none) on save and on render. The only CSS for these classes
 is `public/assets/sections.css`: each surface sets `--section-*` colour properties that
 block CSS uses, so every block works on every surface.

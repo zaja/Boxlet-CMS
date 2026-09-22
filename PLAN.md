@@ -2867,6 +2867,75 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-095: The section is a record, and it owns the style
+
+**Status:** 2026-09-22. Second step of D-093. Nothing anybody can see changes; where the
+layer-2 style lives does.
+
+**`page_sections (id, page_id, sort, layout, style_json, …)`** and `page_blocks.section_id`,
+migration 0026. Every existing block becomes its own one-column section carrying that block's
+style, so every page renders exactly as it did.
+
+**The migration gives a section the id of the block it was made from:**
+
+```sql
+INSERT INTO page_sections (id, page_id, sort, layout, style_json, created_at, updated_at)
+SELECT id, page_id, sort, 'one', style_json, created_at, updated_at FROM page_blocks;
+UPDATE page_blocks SET section_id = id;
+```
+
+Both databases take an explicit value in an auto-increment column and continue above it, so
+the pairing is exact without a temporary column and without trusting the order rows come
+back in.
+
+**The old copy is emptied.** `page_blocks.style_json` stays — a committed migration is not
+edited and dropping a column is not portable — but it is set to `'{}'`, because a second,
+plausible, silently stale copy is worse than an empty one: a reader nobody updated would
+return last week's surface for ever, where an empty one gives the defaults and is noticed. A
+**source guard** keeps it that way: the only place `page_blocks` and `style_json` may be
+named together is the one INSERT that satisfies the NOT NULL column.
+
+**What the plan said and what was built are not the same, deliberately.** The approved plan
+had this step also splitting the renderer — `Sections::render()` and a `'none'` wrapper. While
+building it, that turned out to be unnecessary here: **while a section holds one block,
+`Blocks::render()` already draws exactly the right thing**, it is simply handed a style that
+came from another table. So this step is storage only, and "nothing is visible" stops being a
+risk to be proved and becomes a consequence of not having changed a line of rendering. The
+renderer split moves to step 3, where a section can hold more than one block, where it is
+needed, and where it can be tested. It costs nothing extra there.
+
+**Proved, with an instrument that was itself checked.** `tools/browser-suite/compare.mjs` is
+new and kept, because D-077's proof was a throwaway that had to be rebuilt from its
+description. It captures every demo page under all five characters at three widths — 60
+captures — as raw HTML and every computed property of every element. Before and after:
+**3,848,190 property comparisons, 0 differing.**
+
+Both halves of the instrument were checked first, because "0 differing" is also what a broken
+comparison says: two identical runs gave 0 of 3,848,190, and a deliberate
+`letter-spacing: 0.0001em` gave 6,835 differences, each named by element path and property.
+
+**What that proof does NOT cover, said plainly:** the harness applies a character with
+"design only", which never touches section styles, so `Composition::apply()` is not exercised
+by it. Its own test is, and passes.
+
+**The tests caught something the proof could not.** Order. The page's order moved to the
+section, and a block's own `sort` became its place inside its section — which is 0 while a
+section holds one. Six places still read `page_blocks.sort` as the page's order, including
+`Translations::create()`, which would have given every translated page a shuffled copy. They
+failed, which is what they are for.
+
+**`Composition::apply()` is where the design layer and sections meet**, and it is the file
+that will have to answer D-093's open question. A character composes layer 2 from a BLOCK
+TYPE — `surfaces[$type]`, `dividers[$type]` — so the two only meet through the block a section
+holds. While a section holds one block that is exact. When it can hold several, "Editorial
+gives a hero a tinted surface" has no single answer for a section holding a hero and a form.
+**The review does not mention this at all**; it is the real cost of the tree and it is the
+owner's decision when step 3 comes.
+
+**Also moved:** `MediaLibrary`'s `candidates()` and `usage()` now read the section's
+`style_json`. That is not cosmetic — `usedBy()` is what refuses to delete a picture, so a
+missed source would have unlinked one still painted behind a section.
+
 ### D-094: A block is named, not numbered
 
 **Status:** 2026-09-22. First step of D-093, and the one that changes nothing anybody can

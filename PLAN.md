@@ -2867,6 +2867,42 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-084: The icon every block declared, and a line saying what it is for
+
+**Status:** 2026-09-22. Fifth slice of D-080.
+
+**`icon` was wiring, not design.** Every block definition has carried one since the first
+block, `BlockDefinition` validates it, SPEC §5.3 requires it — and a grep through `app/`
+found nothing that draws it. Worse, the five names (`hero`, `text`, `image-text`, `columns`,
+`form`) were **none of them in the sprite**, so drawing them would have produced five empty
+squares. Nobody could notice while nothing drew them.
+
+The definitions now name Lucide icons — `panel-top`, `type`, `image`, `columns-3`,
+`clipboard-list` — and `tools/icons/build.php` carries them, which is a line in a list and a
+command, not a new dependency or a build step at install time. Renaming the definitions was
+chosen over drawing icons of our own so the sprite stays the one source: a block added later
+names a Lucide icon and the maintainer runs the builder.
+
+**A test now stands where a comment stood.** `tools/icons/build.php` ends with *"a name that
+is not in the sprite draws nothing, so check the screen"*, which is a rule nobody remembers
+on the day they add a block. The sprite is a committed file, so a test reads it and refuses a
+name it does not carry; the browser scenario measures that the drawn icon has a size, because
+a `<use>` at a missing symbol renders an empty box of zero pixels and no error at all.
+
+**One line under the name, saying what the block is for.** The picture shows the shape and
+the name labels it; neither answers the question somebody scrolling a library is actually
+asking. `block.{type}.summary` in `lang/en/pages.php`, written to finish "use this for…",
+kept to one line because a card that needs a paragraph is a block that needs a better name.
+A second test refuses a block with no summary — `t()` answers with the key when lang has no
+string, so without it a card reads `block.hero.summary` on the screen — and refuses two
+blocks sharing one.
+
+**And the gap that let D-083's literal colour through.** `blocks_test` already forbids a
+literal colour in a front-end stylesheet, and it missed `stroke='%23000'` because a data URI
+percent-encodes the `#`. The rule was never "no `#` character", it was "no colour of its
+own", so the guard now rejects `%23` followed by hex as well. Checked by putting the old
+value back and watching it fail.
+
 ### D-083: The library shows the block, not a grey slab
 
 **Status:** 2026-09-22. Fourth slice of D-080. Three separate lies on one panel, all fixed

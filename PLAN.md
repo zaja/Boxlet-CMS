@@ -2867,6 +2867,39 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-104: A block says which shelf it sits on, and the library can be searched
+
+**Status:** 2026-09-23. Closes **O-15**, and it is the first half of the review's step 5 —
+the half that has to exist before eight more blocks arrive.
+
+**Why now.** One column of cards is a list you read; with thirteen it is a list you scroll
+past. The filter and the shelves narrow the SAME cards — there is no second list, nothing is
+fetched, nothing is rebuilt — so without a script the library is exactly what it has always
+been.
+
+**A closed set of five:** text, media, layout, marketing, embed, the ones the design artifact
+names. A free string would let one block say "Media" and the next "media", and the library
+would grow a shelf for each. **Only the shelves that have a block on them are offered**, so
+the filter never finds nothing by being asked a question nobody can answer.
+
+**WHAT IS SEARCHED is what the server wrote onto the card** — the name, the shelf and the
+line saying what the block is for, lower-cased once. Searching the rendered text instead
+would reach into the preview's iframe, which holds the demo's own words, and would match a
+block for something it merely happens to say.
+
+**AND THE KEY IS OPTIONAL, WHICH IS NOT A LOOPHOLE.** The site's chrome goes through the same
+validator: a header and a footer are blocks by every other measure — fields, layouts, a
+template — and they are the two that can never be ADDED, so a shelf is a thing they cannot
+have. They say so by leaving it out. A page block that left it out would fall off the filter
+silently, so a test walks `app/Blocks` and refuses one without a shelf, and walks
+`app/Chrome` and refuses one WITH. It cost a 500 on the copy to notice they share a
+validator at all.
+
+**Still to come:** the eight new block types from the review's §2.3 — and `embed` is the one
+with a security shape, a closed list of providers with the id parsed out of a pasted URL and
+rendered in a sandboxed iframe. Free HTML is refused, for the reason `SectionStyle` refuses a
+free colour.
+
 ### D-103: The editor draws columns everywhere, and a drag has two levels
 
 **Status:** 2026-09-23, the last of the review's step 4.
@@ -4105,7 +4138,8 @@ the canvas that comes back is what the author had rather than what the database 
 
 ## 5. Open items
 
-*O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077.*
+*O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077. O-15 resolved by
+D-104. O-25 resolved by D-094.*
 
 **O-27. `12-picker` chooses a picture that never arrives.** After the scenario clears the
 control and reopens the panel, `pick()` clicks the first card and nothing is chosen: the

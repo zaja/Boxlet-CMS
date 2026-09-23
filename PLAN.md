@@ -2867,6 +2867,56 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-103: The editor draws columns everywhere, and a drag has two levels
+
+**Status:** 2026-09-23, the last of the review's step 4.
+
+**Dragging a block between columns** — which is what makes a column a place rather than a
+label. Bands reorder among themselves; blocks move within and between columns. The column
+sortables share one group name, which is the whole of what lets a block cross: Sortable's
+own mechanism rather than machinery of ours.
+
+**AND A DRAG IS REPLAYED AS PLACES, NOT AS AN ORDER.** A flat list of keys could say that
+two blocks swapped; it could not say that one of them crossed into another column — and the
+undo, which compared orders, called such a move "nothing happened" and made it un-undoable.
+Each block now says which band and which column it stands in, and the form is put in that
+order.
+
+**THE EDITOR'S CANVAS ALWAYS DRAWS COLUMNS.** A band of one block is drawn on a PAGE as the
+element it has always been — there the shape can be proven not to have moved, and D-097 says
+why. In the editor that band had no column, so there was nowhere to drop a block into and
+nowhere to hang its `+`; every part of the editor would have needed a branch for it. One
+boolean on `SectionRender::draw()`, so the two shapes stay described in one place. Nothing a
+stylesheet reads changes between them — D-093's measurement — so the page looks the same
+either way.
+
+**What that cost, and each of these is a real change a person will notice:**
+
+*A library card now needs somewhere to land.* Pressing one with nothing aimed at used to add
+the block as a band of its own at the end of the page — a guess, at the one place nobody
+meant. It now says where to press, which is what the library's own line has said since, and
+what the design artifact says.
+
+*A block's arrows move it within its column.* They used to move it one place on the PAGE,
+which is what a flat list had. In a tree the next place is in the same column, and stepping
+outside it would drop the block into a neighbouring band — one band emptied and another
+holding something nobody put there. Every block of every page today is alone where it
+stands, so both arrows are unavailable and the BAND's arrows are what move it down the page.
+
+*A duplicate stands beside the block it was copied from*, in the same column, rather than
+becoming a band of its own at the next position.
+
+*The tool bar goes in the gap above what it belongs to*, and which gap that is now depends:
+a band, or a block first in its column, straddles the BAND's top edge — the geometry every
+page had while a block was a band — and a block standing under another sits wholly above its
+own, in the gap the column keeps. Reading the block's own edge for the first block put half
+the bar on the first line, measured on the development site.
+
+**Eight scenario reads moved, none weakened.** They counted `> section` where they meant
+blocks, clicked a band where they meant a block, looked for a surface class on a block that
+carries it on its band, and pressed a library card with nowhere aimed. Every one of them was
+true while a block WAS a band.
+
 ### D-102: Where you are, and what you can do to a band
 
 **Status:** 2026-09-23, the rest of the artifact's navigation.

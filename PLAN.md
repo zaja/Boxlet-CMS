@@ -2867,6 +2867,63 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-107: The Section panel is rows of buttons, and the arrangement is a shape
+
+**Status:** 2026-09-23. The owner, after D-106: *"možemo li na dodavanje ili odabir sekcije
+imati automatski ovakav section property kao na artifaktu?"*
+
+**A `<select>` HIDES THE ANSWER TO THE QUESTION IT IS ASKING.** The one thing an owner wants
+to know while looking at a page is what else this band could be, and every field cost a click
+to find out. The closed sets are now rows of buttons — **the control the Appearance screen
+has had since D-065**, because this is the same question asked about a band instead of about
+the site. Radios, so the form still submits without a script, the names and values posted are
+unchanged, and a screen reader is told it is a radio group rather than a listbox.
+
+**AND THE ARRANGEMENT IS A DIAGRAM**, which `SectionLayout::LAYOUTS` has said its weights
+were for since it was written: *"the weights are what the panel draws as a little diagram, so
+the owner picks a shape rather than a word"*. Each button draws its columns in proportion,
+with the notation the page outline already uses under it — and it is drawn **from the
+weights**, so an arrangement added to that list arrives here already drawn rather than needing
+a rule of its own.
+
+**THE MARKUP MOVED TO A HELPER, because there were now two callers.** `segmented_group()` in
+helpers.php; Appearance calls it too, keeping its own readout and "still following the
+character" state around it. One definition of a control is one definition of its behaviour.
+
+**MOVING IT EXPOSED TWO NAME CLASHES THAT WERE ALWAYS THERE.** `.segmented` already meant a
+row of LINKS in `admin-parts.css`, and `.field-row` already meant a COLUMN of stacked fields
+inside the builder's panel (`builder-inspector.css`). Neither had ever met the Appearance
+version, because no screen loaded both — and putting the control in `admin.css`, which every
+screen loads, made every screen load both. The seven arrangements came out in one unreadable
+row and the readout fell to a line of its own. **Two controls, two names:**
+`.segmented-choice` and `.choice-head` / `.choice-value`.
+
+**`short_label()`** takes `style.<key>.short.<value>` where one is written and the ordinary
+label where it is not, so "Stack them, top to bottom" stays the right sentence in a hint and
+"Stack" is what goes on the button. A test refuses any value over fourteen characters, so a
+value added to a closed set is caught here rather than on the screen.
+
+**AND THE CONTROL BROUGHT A BUG NOBODY HAD NEEDED TO THINK ABOUT: an unchecked radio is not
+an answer.** A group of radios shares ONE name, so a serialiser that writes every field into
+a map by name leaves the LAST option standing. Changing the arrangement redraws the whole
+band on the server, so every other choice was posted — and posted wrong: the band came back
+gradient, centred, full width and curve-edged, every closed set's final value at once. The
+owner watched his page turn purple: *"provjeri zašto se nakon promjene broja kolumni cijela
+sekcija stilizira"*.
+
+**Three places serialised a group of fields and each had decided separately what to do about
+an unchecked control** — one skipped checkboxes, one skipped nothing, one skipped checkboxes
+in one of its two loops. Fixing the first left the bug alive in the other two, and it was
+still there on the next run. They are one function now, `collect()`, because the rule is one
+rule. `44-sections` asserts that changing the arrangement leaves every other class the band
+had, and that check was proved to fail against the bug — `surface-contrast` to
+`surface-gradient`, `width-wide` to `width-full`, `divider-line` to `divider-curve`.
+
+**A cleanup that could not find its own control shrugged.** `44-sections` set the band back to
+one column through `if (select) { … }`, and with the <select> gone it found nothing, did
+nothing and reported success, leaving the page arranged. It fails loudly now — the rule
+[[probe-cleanup-is-not-optional]] already states, met again in its quietest form.
+
 ### D-106: Seven things the owner saw while testing, and what they had in common
 
 **Status:** 2026-09-23, reported on sight while opening the editor to test D-105.

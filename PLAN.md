@@ -2944,6 +2944,24 @@ stylesheet that already held the edit being checked, so `--text-l` counted as ev
 `--text-l` existed. An instrument that includes the thing under test measures nothing; that
 is the same rule as "fix the instrument before judging the subject", one step earlier.
 
+**The browser suite gained `47-new-blocks`**, which adds all nine by hand on a page of its
+own and deletes the page afterwards. It earned its place on its first run: a page of nine
+untouched blocks is REFUSED, because five declare a required field and two of those are
+required once per repeater row. That is the blocks being honest — a `<summary>` with nothing
+in it is an unpressable control — so the scenario fills them as an owner would.
+
+**And six scenarios went red for reasons that were not defects, two of them lying about what
+they pressed.** `44-sections` and `45-add-section` took a block by reading the library's
+buttons and picking the first whose words began with "text" — the Text CARD until D-104 put a
+row of SHELVES above the cards, one named Text, which D-105 then gave a block so it is always
+offered. They pressed the filter, added nothing, and the failure surfaced three verdicts later
+as "the block landed in the wrong column". **A check that names a control by its words hands
+the next reader a wrong diagnosis**; they now aim at `data-add-type`, which is what the card
+IS. `32-contact` pressed a card on an empty page, which D-101 deliberately made do nothing.
+Three carried a literal band count and now count the page at the start. `20-page-links` was
+wrong rather than stale and predates this work: a link applied across a selection spanning two
+paragraphs is two anchors, so "exactly one more" could never hold for the block it picks.
+
 **WHAT THE DEMO STILL CANNOT SHOW: a section with columns.** `DemoSite::seed()` writes one
 band per block, so nothing in the demo exercises D-100 to D-104 — the arrangement work of
 this whole stretch is visible only to somebody who opens the editor and builds one. The

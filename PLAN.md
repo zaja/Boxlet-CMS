@@ -2867,6 +2867,60 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-100: The page outline, which the review asked for in the same slice and got later
+
+**Status:** 2026-09-23, after the owner opened the editor and said it plainly: *"ovo je
+prebugovito i neintuitivno, ovo je upravo onaj trenutak na koji sam upozorio, na kojem puca
+development i gubi se volja."* He was right, and the diagnosis is not that the direction was
+wrong.
+
+**Where the direction was NOT wrong.** The storage, the rendering, the seven layouts, the
+style on the section, the stable keys — that is the review's own plan, in the review's own
+order, step by step.
+
+**Where it was.** The review says of the outline: *"I would build it in the same slice as the
+tree, not later."* I built the tree and shipped it without the outline, without the panel's
+breadcrumb, without insertion points inside a column, and without two-level drag. Those four
+are not decoration: they are how a person navigates a tree. Without them the page became
+sections of columns in the database and nothing on the screen said so — which is why the
+owner asked whether sections could be added at all. In the editor a section was not a thing;
+it was a tab that appeared when a block was clicked.
+
+**The lesson, and it is about cutting rather than about direction.** I broke the review's one
+slice into small steps so each could be proved, and shipped the half that has no handles.
+Every step was green and the whole was unusable. A slice ends with something a person can
+use, not with a mechanism that works.
+
+**What the outline is**, following the design artifact the owner sent, which is the shape to
+build toward rather than my own reduction of it:
+
+| row | what it says |
+| --- | --- |
+| Section N | its arrangement as notation — `1`, `1/2`, `2/3+` |
+| Column N | how many blocks stand in it, and only when the band has more than one |
+| the block | its own name, and its key — `b42`, `n7`, what the rest of the editor calls it |
+
+Pressing a block row selects that block in the panel and on the canvas; pressing a band row
+turns to the Section tab, where that band's own fields are. The row you are on is marked
+with a tint AND a bar down its leading edge, because a tint alone is a colour difference and
+a bar is a shape.
+
+**DRAWN BY THE SERVER, rebuilt from the PANEL.** The rows arrive rendered, so the tree is
+right before a script has run, after a rejected save and with JavaScript off. The script
+rebuilds them from the field groups — which already say which band they stand in, what the
+block is called and which icon it wears — because that is the same data the save posts, and
+an outline built from anything else is a second copy of the page's shape to keep in step.
+
+**A key is not a key.** `data-block-key` on a group is the key the CANVAS is paired by; the
+block's own name is in its field names. Reading the first for the second drew an outline
+whose rows named blocks nothing could find, and it took a click that did nothing to notice.
+
+**Still to come, and this is the rest of the artifact:** `+ Section` between bands and at the
+end, with the layout chosen as a diagram rather than a word; `+ Block` under the content of
+EVERY column rather than only an empty one; a breadcrumb over the canvas; selecting a band on
+the canvas rather than its first block; dragging between columns; then the library's filter
+and groups, and the new block types.
+
 ### D-099: You choose the arrangement first, and the empty column asks to be filled
 
 **Status:** decided 2026-09-22 by the owner, before the visible half of D-093 step 3 was

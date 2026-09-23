@@ -2895,8 +2895,8 @@ the same fieldset again: two `<select name="sections[s7][style][surface]">` on o
 editing one does not move the other, and the last one in the document decides what is saved.
 Nobody would see it until they had set the surface on the wrong half of a band.
 
-So before a block can be added to a column, **the section's fields move into a group of
-their own** — `[data-section-group="s7"]` beside `[data-block-groups]` — and the Section tab
+**Done 2026-09-23.** Before a block can be added to a column, **the section's fields moved
+into a group of their own** — `[data-section-group="s7"]` beside `[data-block-groups]` — and the Section tab
 (D-086) shows the group belonging to the selected block's section instead of a fieldset
 folded into the block's own. That is the split D-086 described, done properly rather than by
 an attribute; it removes the duplication rather than managing it, and it is what makes

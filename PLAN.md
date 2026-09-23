@@ -3003,8 +3003,35 @@ bands and says so by their absence: null reaches `Sections::save()` as "leave it
 honest answer, since that revision does not know what the arrangement was and guessing "one
 column each" would flatten a page whose columns were never what the restore was about.
 
-**Still to come:** dragging a block between columns (step 4), and then the eight new blocks
-(step 5).
+**TWO REGRESSIONS THE OWNER FOUND BY OPENING THE EDITOR, on 2026-09-23**, both from moving
+the band's fields into a group of their own, and neither visible to any check I had written.
+He said: *"vidim samo kad odaberem neki blok da ima tab Section, ali što god tu odaberem ne
+radi ništa."*
+
+*Nothing chosen in the Section tab reached the canvas.* The live redraw listens for `change`
+on `[data-block-groups]`, and the band's fields had moved to `[data-section-groups]`. It had
+listened in the right way to the wrong container ever since.
+
+*And typing one letter took the band's look off the canvas.* A block redraw posts the
+group's fields to the insert endpoint, which drew the block with the character's composed
+style because no style arrived — so a tinted, airy, wide, centred band went plain, normal,
+narrow and left on the screen while the database held the truth. Nothing was lost; the
+editor simply stopped telling the truth about the page, which is the one thing it is for.
+
+**Fixed both, measured before and after.** A redraw carries the band's fields (`section[…]`
+beside `block[…]`), and the Section tab acts on the canvas the moment something is chosen:
+the five style keys are swapped straight onto the band's own `<section>`, which is instant
+and which a block redraw cannot reach when a band holds several, and the block is redrawn
+besides. `44-sections` now holds both, and both were watched failing before the fix.
+
+**WHAT STILL NEEDS A SAVE TO BE SEEN: the number of columns.** Changing "One column" to
+"Two columns" rearranges the band's markup, which no class swap can do and which the block
+redraw endpoint cannot draw — it draws one block, not a band. The honest fix is an endpoint
+that draws a BAND from its own fields and its blocks', reusing `SectionRender::draw()` so
+the two shapes stay declared once. Until then the canvas catches up on save.
+
+**Still to come:** the band redraw above, dragging a block between columns (step 4), and
+then the eight new blocks (step 5).
 
 ### D-097: Seven column layouts, and the section draws them
 

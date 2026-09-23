@@ -2867,6 +2867,27 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-099: You choose the arrangement first, and the empty column asks to be filled
+
+**Status:** decided 2026-09-22 by the owner, before the visible half of D-093 step 3 was
+built.
+
+**How a block comes to stand beside another.** You give the section an arrangement — two
+columns, thirds, a wide column with a narrow one — and the empty column appears with the
+same `+` that already adds a block to a page. Press it, choose a block, and it lands in that
+column. Moving a block that already exists into a column is DRAGGING, and that is step 4.
+
+**Why this and not the other two.** *A control on the block saying "put beside the block
+above"* is a sentence you read where the other is a shape you see, and what it will produce
+has to be imagined. *Dragging straight away* is the most natural of the three and it is also
+the largest piece of work — two-level selection on the canvas and every tool rewritten — so
+choosing it would mean the longest wait before anything at all is visible.
+
+**What it means for the build.** The insert endpoint stops meaning "at position N on the
+page" and starts meaning "into this section, this column, at this place" — which is the same
+address the renderer and the save already use, so the `+` in an empty column is the first
+control that speaks the new shape end to end.
+
 ### D-098: The editor carries a flat list of blocks and a map of sections, not a tree
 
 **Status:** 2026-09-22, while building the second half of D-093 step 3. The model half is
@@ -2910,10 +2931,29 @@ rather than dropped or attached to a neighbour. Visible, obviously wrong, and no
 page's order; then each block with its section, its clamped column, and its place counted
 DOWN that column. A block's `sort` finally means what SPEC §5.0 has said since 0026.
 
-**Still to come, and each one is named in the survey behind this decision:** `editable()`
-returning sections, both controllers parsing them, the canvas rendering through
-`SectionRender` so it cannot diverge from the page, `pending_canvas` and `PageRevision`
-carrying sections, the Section panel's controls, and the canvas's two-level selection.
+**Built on top of it, the same evening:** `editable()` says where each block stands and
+`editableSections()` says what the bands are; both controllers parse `sections[…]` and carry
+it through every re-render; `pending_canvas` carries the arrangement; **the canvas draws the
+page the way the page draws itself** — the same `Sections::group()` + `SectionRender::draw()`
+loop `PageController::show()` runs, which until now it did not, so the editor and the site
+agreed only by the accident of every section holding one block; and the Section panel has
+Columns and On a narrow screen.
+
+**Two things this cost, both found by measuring rather than by reading:**
+
+*Every block added in a session went into one band.* `nameGroup()` rewrites names, and
+`[section]` is a hidden input whose VALUE names the section — a clone kept the template's,
+so `m0` meant all of them. It now mints a section key beside the block key.
+
+*Choosing two columns replaced every section on the page.* The form posted the arrangement
+and the save ignored it, because `BlockForm::parse()` never read `[section]` off a block:
+every block named nothing, every block got the "give it a band of its own" fallback, and six
+section rows were quietly replaced by six new ones. Nothing looked wrong on the screen. It
+was found by reading the ids out of the copy's database after the save, and it is why the
+round trip now has a test that asserts the section row is **the same row**.
+
+**Still to come:** the `+` in an empty column (D-099), `PageRevision` carrying sections, and
+the canvas's two-level selection and drag (step 4).
 
 ### D-097: Seven column layouts, and the section draws them
 

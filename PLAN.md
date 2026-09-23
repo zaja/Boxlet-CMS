@@ -2888,6 +2888,22 @@ page" and starts meaning "into this section, this column, at this place" — whi
 address the renderer and the save already use, so the `+` in an empty column is the first
 control that speaks the new shape end to end.
 
+**AND IT NEEDS ONE THING FIRST, found while starting it (2026-09-23).** The section's fields
+are rendered INSIDE each block's group (`block.php`, where they have always been). That is
+exact while a section holds one block. The moment a second block joins, its group renders
+the same fieldset again: two `<select name="sections[s7][style][surface]">` on one form,
+editing one does not move the other, and the last one in the document decides what is saved.
+Nobody would see it until they had set the surface on the wrong half of a band.
+
+So before a block can be added to a column, **the section's fields move into a group of
+their own** — `[data-section-group="s7"]` beside `[data-block-groups]` — and the Section tab
+(D-086) shows the group belonging to the selected block's section instead of a fieldset
+folded into the block's own. That is the split D-086 described, done properly rather than by
+an attribute; it removes the duplication rather than managing it, and it is what makes
+"select any block in a band and set the band's style once" true. The plain editor keeps its
+single scroll: there the section group is rendered where the fieldset is today, above the
+blocks it holds.
+
 ### D-098: The editor carries a flat list of blocks and a map of sections, not a tree
 
 **Status:** 2026-09-22, while building the second half of D-093 step 3. The model half is

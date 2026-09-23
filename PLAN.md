@@ -2867,6 +2867,69 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-106: Five things the owner saw before he had finished looking
+
+**Status:** 2026-09-23, reported on sight while opening the editor to test D-105.
+
+> *"na prvu vidim da dodavanje sekcije i blok prostor prelaze izvan granice sekcije —
+> preview layout je kratak po visini"*
+
+**ONE ROOT CAUSE FOR THE FIRST: an empty column had no height.** On a page an empty column
+is nothing and should be; in the EDITOR it is the place a block goes, and at nought pixels
+everything belonging to it had to be drawn somewhere else — the "+ Block" area and the
+"+ Section" pill then stood outside the band's own edge. Measured on a freshly added band:
+band 128px tall, column 0. Given `min-block-size: 6rem` in the canvas only, the band is
+224px, the slot sits inside it, and nothing crosses an edge.
+
+**AND "+ Section" IS NOW A STRIP ON THE SEAM, not a pill across it.** It was centred on the
+boundary, so half of it stood in the band above and half in the one below, and it cut
+through the dashed outline of a selected band. It now wears exactly what a column's
+"+ Block" wears — a hairline strip the width of the page with the control centred in it —
+which is also what the design artifact draws, and reads AS the seam rather than as something
+poking through it. The two-tone rule is unchanged: ink inside, white outside, full opacity
+at rest.
+
+**THE SECOND WAS A GRID LEFT IMPLICIT.** `.builder-canvas` had two rows and named neither,
+so both were `auto` — and a grid's `align-content: normal` behaves as **stretch**, which
+shares the spare height between them. Measured: 708px of page and **242px of breadcrumb**,
+which is why the page looked short and the words sat a screenful below it. Now
+`grid-template-rows: minmax(0, 1fr) auto`: the page takes what is left, the trail is one line.
+
+**Three more came in the same breath, and one of them was the worst defect in the editor.**
+
+**A CLICK ON THE PAGE OPENED THE NEXT BLOCK'S FIELDS.** *"klik na blok Questions mi otvara
+postavke Image and text bloka"*. Selection travelled between the canvas and the panel as a
+**position**, and a position names a block only while both sides count the same order. Adding
+one block ends that: the canvas draws it where it stands on the page, its field group is
+appended at the END of the form. Measured — canvas `[n0, k0, k1 …]` against form
+`[k0, k1 … n0]` — so every click was off by one. **The key was on both sides all along and
+agreed; only the counting did not** (D-094 said exactly this and the message never carried
+it). Selection now travels as a key in both directions, with the position as a fallback for
+a message that carries none.
+
+It is the same shape as the bug that deleted the wrong block twice. That one was fixed where
+it was found; this one was the same mistake one message away, and nothing looked for it.
+
+**THE LIBRARY STAYED OPEN OVER A SELECTED BAND.** *"umjesto postavki sekcije ... imamo blokove
+desno"*, and then *"sekcija se nakon dodavanja ne može označiti da bi se vidjele njene
+postavke"* — two reports, one cause: the band's own fields were rendered UNDER the whole
+library, measured at 3,393px down a panel nobody scrolls that far. They were reachable and
+invisible, which is not a distinction worth having. A selected band now shows its settings
+and hides the library; the library is what you see once you have AIMED somewhere (D-099), and
+pressing "+ Block" in a column brings it back.
+
+**AND THE SEAM LOST THE EDGE I HAD JUST GIVEN IT.** The strip above was drawn with a dashed
+border, and over a band that is itself outlined the two sets of dashes read as one confused
+thing: *"preljevaju te linije preko sekcije"*. It is a place, not a frame — a neutral veil
+marks the seam and the control on it is what has to be legible, which is how the artifact
+draws it and what `contrast_test` now guards in both directions: the two tones on the control,
+and no edge on the strip.
+
+**Every one of the five is checked in `45-add-section`, and every check was proved to fail**
+against the behaviour it replaces — column 0; a 702px page under a 244px trail; the library
+open with the fields 3,347px down; and `n0 opened k2, k2 opened k3, k3 opened k4` — because a
+check written after a fix that cannot fail is not a check.
+
 ### D-105: The nine blocks — what people were making out of the wrong block
 
 **Status:** 2026-09-23, the second half of the review's step 5. The owner chose the set:

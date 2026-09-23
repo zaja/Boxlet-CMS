@@ -2995,8 +2995,16 @@ section rows were quietly replaced by six new ones. Nothing looked wrong on the 
 was found by reading the ids out of the copy's database after the save, and it is why the
 round trip now has a test that asserts the section row is **the same row**.
 
-**Still to come:** `PageRevision` carrying sections, and dragging a block between columns
-(step 4).
+**And the revisions carry it too (2026-09-23).** `data_json` holds the bands beside the
+blocks, so restoring a page that had two columns when it was recorded puts the columns back
+and not only the words — without it, a restore was last Tuesday's content poured into this
+week's bands, which is neither one page nor the other. A revision written before this has no
+bands and says so by their absence: null reaches `Sections::save()` as "leave it", the only
+honest answer, since that revision does not know what the arrangement was and guessing "one
+column each" would flatten a page whose columns were never what the restore was about.
+
+**Still to come:** dragging a block between columns (step 4), and then the eight new blocks
+(step 5).
 
 ### D-097: Seven column layouts, and the section draws them
 

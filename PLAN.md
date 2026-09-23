@@ -2867,6 +2867,57 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-101: A section is a thing you add, select and shape
+
+**Status:** 2026-09-23. The owner asked it in one sentence — *"imamo li sad opciju dodavanja
+sekcija u koje onda možemo dodavati blokove?"* — and the answer was no. The `+` between bands
+added a BLOCK, which then quietly brought a band with it. A section existed in the database
+and nowhere on the screen.
+
+**What changed, following the design artifact rather than a reduction of it.**
+
+- **`+ Section`** between bands and at the end. It adds an EMPTY band of one column and
+  selects it with the Section tab open, so the next thing on the screen is its arrangement —
+  which is the next thing a person wants. The controls carry the word: a line that says only
+  `+` leaves you to find out by pressing it.
+- **`+ Block`** in every column, not only an empty one. An empty column is the place itself,
+  so the control is the whole box; a column that holds something gets a line UNDER what it
+  holds, because a box over the content would cover the words.
+- **A band can be SELECTED**, which is not a block being selected. The panel has shown one
+  block at a time since it existed, and a band with nothing in it has no block to show. So it
+  is its own state: every block group hidden, the band's own group shown, the Section tab
+  turned to, a dashed edge on the canvas where a block gets a solid one — the band is a
+  container, and its selection is about what is inside it.
+
+**AN EMPTY BAND IS DRAWN IN THE EDITOR AND NEVER ON THE PAGE.** To a visitor it is a surface
+and a rhythm around nothing, and `Sections::prune()` removes it on the next save. To an
+author it is the band they just added and are about to fill, and a `+ Section` that appeared
+to do nothing would be the editor lying about what it had done.
+
+**Three things this turned up, none of which a test was asking about.**
+
+*A block added into a column could not be typed into.* The panel stayed on the Section tab,
+where a block's fields are `display: none` — so the block existed, was selected, and its own
+field could not even be focused. Adding a block now turns to the Content tab, because what
+you do with a new block is write in it.
+
+*A band of one block has no column element to hang a `+` on.* `SectionRender` gives it the
+shape it has always had — the band IS the block — so looking for `.section-column` found a
+place to add a block in exactly the bands that did not need one. The band's own `.container`
+is that column, numbered 0, which is what the save calls it too.
+
+*The `+ Section` pill and the `+ Block` strip met on a band's edge* where the padding is
+small, and the last one drawn won. The smaller target has to be the one that can be hit, so
+the pill sits above.
+
+**And the outline had to learn about empty bands.** It ordered bands by walking the BLOCKS,
+so a band with nothing in it vanished — which is precisely the band somebody has just added
+and is looking at. The page order is the canvas's; the outline reads it from there.
+
+**Still to come:** a breadcrumb over the canvas, a band's own tools (move, duplicate, remove
+a section), dragging between columns, and then the library's filter and groups with the new
+block types.
+
 ### D-100: The page outline, which the review asked for in the same slice and got later
 
 **Status:** 2026-09-23, after the owner opened the editor and said it plainly: *"ovo je

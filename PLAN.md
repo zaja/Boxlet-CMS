@@ -2867,6 +2867,67 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-105: The nine blocks — what people were making out of the wrong block
+
+**Status:** 2026-09-23, the second half of the review's step 5. The owner chose the set:
+*"Reviewovih osam + Slika"* — the review's §2.3 eight, plus Picture.
+
+**quote, gallery, accordion, cta, stats, embed, divider, logos, picture.** Every one of them
+is something an owner is doing TODAY with a block that was never meant for it: a testimonial
+typed into a Text block as italics, a row of client marks pushed through a Gallery that crops
+them, a closing "get in touch" built out of a Hero, which is the block that OPENS a page. The
+set is not "more blocks"; each one is a misuse with a name.
+
+**PICTURE ONLY BECOMES POSSIBLE WITH COLUMNS.** Alone in a full-width band a picture is a
+poster, and `image_text` already covered a picture with words beside it. In a column it is
+the commonest thing there is, and nothing in the set could say it — which is why it was worth
+adding to the review's eight and was not worth adding before D-100.
+
+**`embed` IS THE ONE WITH A SECURITY SHAPE, and the rule is not validation.** The pasted
+address is NEVER the iframe's src. `App\Support\Embed` reduces it to a provider and an id
+and BUILDS the src from a fixed template, so whatever is stored — a typo, an old paste, a
+string put there through a database somebody had access to — the only thing that can ever be
+framed is one of four addresses with an id of that provider's own shape. A test asserts that
+property over hostile pastes on the right hosts, not merely a list of bad strings. The frame
+is sandboxed without `allow-popups` or `allow-top-navigation`, and YouTube goes through
+`youtube-nocookie.com`.
+
+**The four are YouTube, Vimeo, OpenStreetMap and Google Maps.** A fifth needs its own
+decision. An `http`/`https` scheme is required: a scheme-less paste could not be dangerous,
+since the src is rebuilt regardless, but a paste out of a browser's address bar always has
+one, so refusing it costs an owner nothing and is a rule that fits in a sentence.
+
+**AND IT IS NOT VALIDATED ON SAVE, DELIBERATELY.** The field-type set is closed (SPEC §5.3)
+and holds no type that could check a provider, and a block-by-block validation hook with one
+caller is the abstraction this project refuses. An address nothing recognises draws a note in
+the CANVAS — `blocks.css` hides it on the page, `canvas.css` shows it, the same device the
+Columns block uses for an empty column — which puts the message where the owner is looking at
+the moment they paste one.
+
+**`accordion` CARRIES NO JAVASCRIPT.** `<details>`/`<summary>` fold by themselves, fold
+before any script has loaded, print open, are opened by the browser's own find-in-page, and
+are what a screen reader already knows. `open` is written from the block's own `start`
+setting and is never state: the page a visitor is handed looks the same every time.
+
+**`logos` IS NOT A GALLERY WITH A SWITCH.** A gallery crops so a grid lines up; cropping a
+logo is the one thing nobody is allowed to do to one. The marks are set to one height and
+keep their own width, and a mark with a name and no picture shows the NAME in the site's own
+type — which is a legitimate way to run the block, not a fallback, because half the marks a
+small studio can show never arrived as a file.
+
+**THE DEMO GAINED A FIFTH PAGE, AND THE OTHER FOUR GAINED REAL USES.** `tests/demo_test.php`
+requires every block in every layout to appear on a published demo page, which is what makes
+the demo a visual fixture rather than a sample. Rather than relax it: the home page's
+blockquote-in-a-Text-block became a Quote and its closing Hero became a CTA (the exact misuse
+the block was written for), About gained the numbers, a quotation and the MAP under its own
+address, Services gained the questions and a closing CTA — and a fifth page, `/blocks`,
+sweeps up the shapes that no studio page would honestly have. Keeping the two kinds apart is
+the point: a demo where every page is a catalogue teaches nobody what a page looks like.
+
+**Each block has its own icon.** Nine blocks sharing `image` is nine cards nobody can tell
+apart, and the library card is read by its picture before its name. `tools/icons/build.php`
+gained eight Lucide names and the sprite was rebuilt.
+
 ### D-104: A block says which shelf it sits on, and the library can be searched
 
 **Status:** 2026-09-23. Closes **O-15**, and it is the first half of the review's step 5 —
@@ -2895,10 +2956,9 @@ silently, so a test walks `app/Blocks` and refuses one without a shelf, and walk
 `app/Chrome` and refuses one WITH. It cost a 500 on the copy to notice they share a
 validator at all.
 
-**Still to come:** the eight new block types from the review's §2.3 — and `embed` is the one
-with a security shape, a closed list of providers with the id parsed out of a pasted URL and
-rendered in a sandboxed iframe. Free HTML is refused, for the reason `SectionStyle` refuses a
-free colour.
+**The other half arrived as D-105:** nine new block types, and `embed` with the security
+shape this predicted — a closed list of providers, the id parsed out of a pasted URL, a
+sandboxed iframe. Free HTML is refused, for the reason `SectionStyle` refuses a free colour.
 
 ### D-103: The editor draws columns everywhere, and a drag has two levels
 

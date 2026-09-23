@@ -2867,6 +2867,37 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-102: Where you are, and what you can do to a band
+
+**Status:** 2026-09-23, the rest of the artifact's navigation.
+
+**A breadcrumb over the page:** `Section 2 › Column 1 › Text`. A page used to be a list of
+blocks, and the block under the cursor said everything there was to say about where it
+stood. On a page of bands and columns it does not — the same block can be the whole of one
+band or one of four things in another. The column is named only where there is more than
+one, the same rule the outline follows. It sits ABOVE the canvas rather than over it, so it
+never covers the first band, which is the one a person looks at most.
+
+**A band's own four**, the same four a block has, acting on the band and everything standing
+in it: move up, move down, duplicate, remove. A band is three things at once — an element on
+the canvas, a group of fields, and the blocks it holds — so each of them moves all three.
+
+**AND THE BUG THIS FOUND, which nothing was asking about.** `Page::update()` writes the
+bands in the order they are SUBMITTED, and that is the order their field groups stand in the
+form. A band added in the middle of the page had its group appended at the END — so the
+canvas said middle, the outline said middle, and the save said last. Three views, two
+answers, and the two that agreed were the two you can see.
+
+**Fixed by deriving rather than maintaining.** The canvas is where a band's place on the page
+actually is, so the groups are put into the canvas's order after every structural change,
+instead of every change being careful to insert in the right spot. Nothing is moved when
+nothing differs, which keeps the keyboard where it was. The scenario now adds a band in the
+MIDDLE for exactly this reason: adding at the end cannot tell a right answer from a wrong
+one.
+
+**Still to come:** dragging a block between columns, and then the library's filter and groups
+with the new block types.
+
 ### D-101: A section is a thing you add, select and shape
 
 **Status:** 2026-09-23. The owner asked it in one sentence — *"imamo li sad opciju dodavanja

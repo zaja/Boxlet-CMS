@@ -2888,6 +2888,33 @@ page" and starts meaning "into this section, this column, at this place" — whi
 address the renderer and the save already use, so the `+` in an empty column is the first
 control that speaks the new shape end to end.
 
+**Built 2026-09-23, and it dragged one more thing in with it.** An empty column draws a
+dashed slot with the same `+` the page already has, and pressing it inserts a block into
+that column: `data-bx-section` names the band on the canvas, `[data-insert-into]` and
+`[data-insert-column]` are the address, and `PageBlockController` draws the block with
+SectionRender's wrapper-less shape because the band around it already draws the surface.
+
+**THE CANVAS HAD TO START COUNTING BLOCKS INSTEAD OF BANDS,** and this was NOT optional.
+Everything in the editor pairs a field group with a canvas element by ordinal, and that
+element was `[data-bx-blocks] > section` — a band. Clicking a block in the second column
+selected the band, which pairs with the band's FIRST block, so the tools acted on the wrong
+one: pressing Remove deleted the block beside the one that was clicked. It did, on the copy,
+twice, and the second time was the cleanup written after the first. So `blocks()` and
+`api.sections()` now return one element per block — the band itself where a band holds one,
+which is every page written before this, so nothing about existing pages changes — and the
+tool bar is positioned from a rect rather than `offsetTop`, because a block in a column has
+its band as its offset parent and the bar was landing at the top of the band.
+
+The `+` BETWEEN bands still counts bands, because what it adds is a band; and `place()`
+counts how many blocks stand in the bands above, because a band's position and a group's
+position stopped being the same number.
+
+**`44-sections` is the scenario**, and it is the one that saves. The others deliberately do
+not: 24-columns leaves the editor without saving, because the canvas is the server's drawing
+of what the form would post and so agrees with itself whether the save is right or not. Only
+the served page settles whether a block that DRAWS in a column is STORED in one. Three
+defects hid behind that distinction in one evening.
+
 **AND IT NEEDS ONE THING FIRST, found while starting it (2026-09-23).** The section's fields
 are rendered INSIDE each block's group (`block.php`, where they have always been). That is
 exact while a section holds one block. The moment a second block joins, its group renders
@@ -2968,8 +2995,8 @@ section rows were quietly replaced by six new ones. Nothing looked wrong on the 
 was found by reading the ids out of the copy's database after the save, and it is why the
 round trip now has a test that asserts the section row is **the same row**.
 
-**Still to come:** the `+` in an empty column (D-099), `PageRevision` carrying sections, and
-the canvas's two-level selection and drag (step 4).
+**Still to come:** `PageRevision` carrying sections, and dragging a block between columns
+(step 4).
 
 ### D-097: Seven column layouts, and the section draws them
 

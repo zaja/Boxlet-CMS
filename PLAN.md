@@ -2867,7 +2867,7 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
-### D-106: Five things the owner saw before he had finished looking
+### D-106: Seven things the owner saw while testing, and what they had in common
 
 **Status:** 2026-09-23, reported on sight while opening the editor to test D-105.
 
@@ -2925,7 +2925,29 @@ marks the seam and the control on it is what has to be legible, which is how the
 draws it and what `contrast_test` now guards in both directions: the two tones on the control,
 and no edge on the strip.
 
-**Every one of the five is checked in `45-add-section`, and every check was proved to fail**
+**A BAND COULD NOT BE PRESSED IN THE PAGE.** Found while checking his third report rather
+than reported: the canvas could be TOLD which band was marked but could never say so itself,
+so a band was reachable only from the outline — and an empty one, which is what you have the
+moment you add a section, has nothing else to press. Pressing it cleared the selection, which
+is the opposite of what pressing a thing means. It now sends the band's key.
+
+**AND "+ Block" HAD NOWHERE TO STAND, which took three wrong answers.** It is a line under
+what a column holds; "+ Section" lies across the band's bottom edge; a band whose content
+reaches that edge has room for neither. Raising the line covered the words — *"sada dodavanje
+bloka prelazi prema gore preko sadržaja blokova"* — and shrinking it clipped its own label.
+The owner asked the question none of the three answered: *"zašto u prevju ne bi mogli imati
+dole mjesta kao u artifaktu?"* **A preview may keep room for the editor's own controls.**
+Every column now holds 3.5rem under its content in the canvas, which is enough for the strip,
+the gap and the seam's upper half.
+
+That is the second place the canvas is deliberately not pixel-identical to the page, after
+the empty column, and the rule behind both is the same: **an editor has to show the places
+things go, and a place with no size is not one.** Where D-097 proved the canvas moved
+nothing, that was about the PAGE's own drawing; the editor's marks were always allowed their
+own space, and this is where that becomes explicit.
+
+**Every one of the seven is checked in `44-sections` and `45-add-section`, and every check
+was proved to fail**
 against the behaviour it replaces — column 0; a 702px page under a 244px trail; the library
 open with the fields 3,347px down; and `n0 opened k2, k2 opened k3, k3 opened k4` — because a
 check written after a fix that cannot fail is not a check.

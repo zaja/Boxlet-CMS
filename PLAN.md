@@ -2928,6 +2928,27 @@ the point: a demo where every page is a catalogue teaches nobody what a page loo
 apart, and the library card is read by its picture before its name. `tools/icons/build.php`
 gained eight Lucide names and the sprite was rebuilt.
 
+**AND A NEW RULE ABOUT TOKENS, because three of the ones this slice used did not exist.**
+`--text-l` for `--text-lg`, `--text-s` for `--text-sm`, `--leading-tight` for
+`--leading-heading`. A `var()` naming a token nobody defines is **silent** — the declaration
+is dropped and the element inherits — so the Quote block shipped set at body size and looked
+merely underwhelming. The existing rule asks only that a size come FROM a custom property,
+never that the property exists. `blocks_test` now reads what the design layer compiles over
+every preset, plus what the stylesheets define for themselves, and refuses any `var()`
+**with no fallback** naming something outside that set. Only unfallbacked reads:
+`var(--chrome-header-bg, …)` is the documented shape of a token emitted only when the owner
+set one (D-076).
+
+**How it got through is worth more than the typo.** The token list was grepped out of a
+stylesheet that already held the edit being checked, so `--text-l` counted as evidence that
+`--text-l` existed. An instrument that includes the thing under test measures nothing; that
+is the same rule as "fix the instrument before judging the subject", one step earlier.
+
+**WHAT THE DEMO STILL CANNOT SHOW: a section with columns.** `DemoSite::seed()` writes one
+band per block, so nothing in the demo exercises D-100 to D-104 — the arrangement work of
+this whole stretch is visible only to somebody who opens the editor and builds one. The
+seed's data shape has no grouping to say it with. Recorded as **O-28**.
+
 ### D-104: A block says which shelf it sits on, and the library can be searched
 
 **Status:** 2026-09-23. Closes **O-15**, and it is the first half of the review's step 5 —
@@ -4200,6 +4221,15 @@ the canvas that comes back is what the author had rather than what the database 
 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077. O-15 resolved by
 D-104. O-25 resolved by D-094.*
+
+**O-28. The demo cannot show a section with columns.** `DemoSite::seed()` writes one band
+per block — the page data in `app/Modules/Demo/pages.php` is a flat list of
+`[type, content, style, layout]` with nowhere to say which band a block stands in. So the
+columns, the arrangements and the stacking of D-100 to D-104 appear nowhere a visitor or the
+owner can see, and `tests/demo_test.php` — which is what keeps the demo a complete visual
+fixture — cannot require them, because it can only check what the seed can express. Fixing
+it means giving the seed a band shape, which is a change to the demo's data format and
+deserves its own slice rather than being smuggled into one.
 
 **O-27. `12-picker` chooses a picture that never arrives.** After the scenario clears the
 control and reopens the panel, `pick()` clicks the first card and nothing is chosen: the

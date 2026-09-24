@@ -2867,6 +2867,39 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-109: The floor under the cities is the owner's number
+
+**Status:** 2026-09-24, asked for by the owner after reading his own statistics:
+*"nema neke logike da se ne prikazuju najposjećeniji gradovi, može li se to dati u postavke
+statistike pa neka svaki admin odluči za svoj cms?"*
+
+**He was right about the symptom.** D-055 fixed the floor at five, from the specification's
+own k-anonymity rule. On a site with twenty visitors a month **no city ever reaches five**, so
+the Cities panel showed one row — `Other (fewer than 5) — 20 visitors` — and the feature was
+not protecting anybody, it was simply not working. Small sites are Boxlet's whole audience.
+
+**`stats_city_min`, one of 1 / 2 / 3 / 5 / 10, default five.** It travels on the query rather
+than as a parameter on `top()`, because every caller asking for a dimension would otherwise
+carry a number that concerns two of them. **The map and the CSV obey the same floor**: a dot
+and an exported row name a city exactly as the table does, and a floor the table kept while
+they did not would be the same disclosure by another door.
+
+**THE PART THAT MATTERS: IT IS NOT ONLY A DISPLAY SETTING.** The site's own privacy text —
+the paragraph an owner pastes into their privacy page — ended with *"places with very few
+visitors are counted together, so that a total cannot point at one person"*. That was a fact
+about a floor fixed at five. **At a floor of one it is a lie**, and `PrivacyText` exists
+precisely to stop the text claiming what the site does not count. The sentence is its own
+string now (`privacy.city_floor`, English and Croatian) and is **withheld below two**.
+
+**The owner was offered a floor at two and chose no floor at all**, knowing the cost: he was
+shown that two is exactly where that sentence stops being true, and took the version that
+includes one. Recorded because it is his decision and not mine — the screen carries the
+consequence in words (`stats.city_min_one`), and the statistics page swaps its note for one
+that says every city is named and a row of one is a person.
+
+**Five stays the default**, which is where the protection actually lives: a setting is a
+default that most people never change.
+
 ### D-108: The Section tab says whose settings it opens, and gives way to the block
 
 **Status:** 2026-09-24. The owner: *"kako to da klik na bilo koji blok ima i tab Section, kad

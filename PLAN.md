@@ -2867,6 +2867,49 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-108: The Section tab says whose settings it opens, and gives way to the block
+
+**Status:** 2026-09-24. The owner: *"kako to da klik na bilo koji blok ima i tab Section, kad
+je section postavka samo za sekcije?"*
+
+**THE ANSWER WAS ALREADY RIGHT, AND UNSAID.** The Section tab shows the fields of the band a
+block stands in — one group per band, which is what makes *"a tinted band of three text
+blocks is one setting"* true rather than three that must be kept in step (D-095). **The
+design artifact does the same**: pressing its Heading block gives `Content / Section` and a
+trail reading `Section 1 › Heading` — checked by opening it, not remembered.
+
+**But his instinct found a real gap, one step over.** Nothing in the panel said that changing
+Surface from a block's own view would repaint every other block in that band. The only thing
+that said which band it was, was the trail **under the canvas** — at the opposite end of the
+screen from the controls being pressed. The tab now carries the band's name, `Section 2`
+rather than `Section`, taken from the same line the trail is built from so the two cannot
+drift.
+
+**AND PRESSING A BLOCK TURNS THE PANEL BACK TO ITS OWN FIELDS.** The tab persisted across
+selections, so pressing a block while Section was open left a band's settings under a block's
+name — *"zbunjuje"*, and fairly: you asked for the block and were shown its container. Only a
+selection somebody MADE does this (`api.chooseBlock()`, used by the canvas and the outline);
+`api.show()` runs for a dozen other reasons — an undo, a redraw, a block moved with the
+arrows — and turning the tab on those would snap the panel away mid-edit. Selecting a BAND
+still turns to Section.
+
+**The cost, stated:** styling several bands in a row now costs a press of the tab each time.
+That is the trade the owner asked for, and the confusion it removes is the commoner event.
+
+**THE BLOCK FILTER WAS NOT A FIELD.** *"filter input nije u stilu"* — it carried only a width,
+so it fell through to the browser's own input: a pale box with a hairline border in a dark
+panel, no focus ring, no placeholder colour, because `admin-forms.css` scopes all of that to
+`.field input`. Its wrapper is marked `.field` now rather than the declarations being copied:
+one definition of what an admin input looks like, not two that drift — the lesson of D-107's
+two name clashes, applied before it could happen a third time. `42-library` compares its
+computed look with a real field rather than with written-down values, for the same reason.
+
+**And a latent trap removed while passing:** `showTab()` puts `data-panel-tab` on the FORM,
+so once the Section tab is open `[data-panel-tab="section"]` matches the form as well as the
+button — and the form comes first. Four scenarios clicked the tab by that selector and had
+been getting the button only because the attribute happened not to match yet. They are scoped
+to `.panel-tablist` now.
+
 ### D-107: The Section panel is rows of buttons, and the arrangement is a shape
 
 **Status:** 2026-09-23. The owner, after D-106: *"možemo li na dodavanje ili odabir sekcije

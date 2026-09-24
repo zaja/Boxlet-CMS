@@ -669,7 +669,9 @@ spacing           compact | normal | roomy | generous         --space-xs … --s
 radius            none | subtle | round | pill                --radius-s/m/l/button
 shadow            none | soft | hard | layered                --shadow-s/m/l, --border-width/card
 container         36–88, in rem, in steps of 2                --container-width/narrow/wide
-frame             thin | narrow | normal | wide               --page-frame (0 when not boxed)
+frame             thin | narrow | normal | wide               --page-frame, the sides (0 when not boxed)
+sheet_width       40–120, in rem, in steps of 2               --page-sheet-width (none when not boxed)
+sheet_gap         0–8 spacing units                           --page-frame-block, above and below (0 when not boxed)
 sheet_radius      square | soft | round                       --page-sheet-radius (0 when not boxed)
 sheet_shadow      none | shadow | hairline                    --page-sheet-shadow (none when not boxed)
 header_bleed      sheet | full                                read by the LAYOUT, not a token
@@ -739,7 +741,7 @@ header_surface      plain | tinted | contrast | gradient         never painted w
 footer_surface      plain | tinted | contrast | gradient
 header_edge         none | line | shadow
 brand               logo | name | both                           the name whatever this says when there is no logo
-nav_style           plain | caps | pills
+nav_style           plain | caps | pills | bar | chips              submenus follow it
 nav_ink             accent | ink
 header_button       filled | outline | text
 density             compact | normal | roomy                     header and footer alike
@@ -750,11 +752,16 @@ small_print_row     left | split | centred                       the languages a
 footer_columns      2 | 3 | 4                                    the footer MENU's columns
 ```
 
-Two more footer settings are not closed sets (D-113): `chrome_footer_menu` names the
-footer's own menu — `''` for the header's, `none` for none — and the footer's text is
-rich text, cleaned with `RichText::INLINE` (a paragraph, a break, bold, italic, a link) rather
-than the page's whitelist. A footer text stored before D-113 is plain and is drawn, and handed
-to the editor, as one paragraph with its breaks (`ChromeWords::asHtml`).
+**The footer is columns of content** (D-115): up to three, each a title and words per
+language (`chrome_footer_title:{locale}`, `chrome_footer_text:{locale}`,
+`chrome_footer_col{2,3}_{title,text}:{locale}`) and a menu the same in every language
+(`chrome_footer_menu`, `chrome_footer_col{2,3}_menu`: `header` the header's, `none` none, else
+a name; nothing stored, or `''`, is the header's in column 1 and none in the others). `footer_layout` says how many are
+drawn — one, one centred, two, one with its menu first, three — and a column past that count
+is kept, not drawn. The words are rich text, cleaned with `RichText::INLINE` (a paragraph, a
+break, bold, italic, a link) rather than the page's whitelist; words stored before D-113 are
+plain and are drawn, and handed to the editor, as one paragraph with their breaks
+(`ChromeWords::asHtml`). Column 1's words keep the key the footer's text always had.
 
 `header_layout` (left, centred, transparent, sticky) and `header_rule` (on, off) were the
 names before D-112. They are still read wherever a look is loaded and never written again:

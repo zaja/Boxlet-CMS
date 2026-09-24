@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 1,146 on both drivers, PHPStan clean at level 8 (2026-09-24) |
+| Tests | 1,149 on both drivers, PHPStan clean at level 8 (2026-09-24) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -311,7 +311,9 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    site's name, a logo for dark surfaces, a menu style, an outline button, an edge, a
    gradient surface — built 2026-09-24; (4) D-113, the footer: five arrangements, a menu
    of its own, an edge, text that can hold a link, the small-print row — built 2026-09-24.
-   All four wait for the owner's look at the screenshots in the review.
+   The owner's look, 2026-09-24, brought a second round: D-114 (the header on a phone, the
+   submenu, two menu styles), D-115 (the footer's columns hold content), D-116 (a boxed page
+   is a box of a width) — built the same day. ← *current*
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
    variants (O-13, D-048) and two-step login (O-4, D-050).
@@ -2876,6 +2878,75 @@ a form about to be submitted.
 **A seam to watch:** `builder-blocks.js` is at 345 lines. Like `Blocks.php` at D-041, it is
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
+
+### D-116: A boxed page is a box of a width, with the chrome glued to it if wanted
+
+**Status:** 2026-09-24, from the owner's second round on the review: *"može li page ako se
+odabere boxed da stvarno bude boxed na neku širinu, a ne da se oko nje postavi margina?"* and
+the slider for the vertical margin so a full-width header and footer can sit against the box.
+
+**`sheet_width`**, 40–120 rem in steps of two, is the sheet's own width, centred in the
+window; the frame gave it a margin and left it the rest, which at 1600px is a wide sheet with
+a thin edge and not what anyone means by boxed. **`sheet_gap`**, 0–8 spacing units, is the
+room ABOVE and BELOW the sheet apart from the sides, so a header and footer that break out of
+the sheet (D-067) sit glued to it at 0; the side margin stays the frame's and only shows when
+the window is narrower than the sheet. Both are zero — `none` and `0` — when the page is not
+boxed, for the reason the frame is. Every character ships 80rem and a gap of three units, so
+Soft's frame of three units is what it was above and below; its sheet is now 80rem wide
+rather than the window's, which is the change asked for. **And "full width" for the header
+follows the sheet** (the owner's detail, the same day): on a boxed page the header's contents
+run to the sheet's width, not the window's, which lined up with nothing over a box narrower
+than it; unboxed, the sheet is the window and full is 100%.
+
+### D-115: The footer's columns hold content — a title, words and a menu each
+
+**Status:** 2026-09-24, from the owner's second round: *"recimo da odaberem 3 kolumne, kako se
+dodaje sadržaj u treću… u svaku od kolumni footera admin može dodati naslov i text i menu."*
+D-113 gave the footer five arrangements but one text and one menu, so "three columns" was
+one column of words and two of nothing. This is the model D-113 should have had.
+
+**Three columns, each a title, words and a menu.** The titles and words are per language and
+stand with the footer's words on the screen; the menus are the same in every language and
+stand with the look, one select per column — none, the header's menu, or a menu of its own.
+`footer_layout` says how many columns are drawn (one; one centred; two; one with its menu
+first; three), a column is drawn when it has anything, and a column past the arrangement's
+count is kept, not drawn, so trying an arrangement and coming back loses nothing. The block
+declares the columns as a repeater of title and rich text, which the block machinery already
+knows how to clean; a column's menu is resolved by the layout and arrives in `$resolved`, as
+the header's does. A title is an `h2`: it is what a screen reader lands on walking the footer.
+
+**What stays where it was.** Column 1's words keep the key and the field the footer's text
+always had (`chrome_footer_text`, `footer_text_{locale}`), so nothing written before this
+moved and the scenario that types into it still does. Column 1's menu keeps D-113's key AND
+its convention — `header`, `none`, a name; nothing stored is the header's — for all three
+columns, so the copy the browser suite runs against, which saved under D-113, kept its footer.
+A first version of this changed the convention to `''` for none, and the copy lost its footer
+within the hour; the suite caught it. The `columns` arrangement
+is two equal columns now rather than two thirds and a third, because each holds what its
+owner put in it.
+
+### D-114: The header on a phone, the submenu, and two more menu styles
+
+**Status:** 2026-09-24, from the owner's second round on the review.
+
+- **A hamburger, drawn**, in the bar's own ink with the word for a screen reader, where the
+  word "Menu" stood in a bordered box. The border stays: the icon is a control at rest.
+- **The logo is capped on a phone** at 2.25em and 60vw of width, whatever its size on a
+  desktop: a large logo pushed the button onto a second line under it (the owner's screenshot).
+  The name beside or instead of it is capped a step down too.
+- **Submenus open under a resting mouse**, and still from their button for the keyboard and
+  for a finger. From the script, asking the pointer event its kind, not from a
+  `@media (hover: hover)` rule: a first version used the media query, and the headless
+  browser reports no hover at all — which no emulation changed — so it could not be checked;
+  and a device can have both kinds of pointer, where the one in use is what counts. The
+  parent carries a little room below it so the pointer can travel into the panel. **The panel has no border**: a
+  bordered box under a bar of plain words read as a form control. It sits on the bar's own
+  surface with the character's lift, and the words inside follow the menu's style — capitals,
+  pills, chips — because the same rules match them. The chevron is drawn, not typed: the glyph
+  came out a dot in the monospace face.
+- **Two more menu styles**, `bar` (a rule under the current page and under the pointer) and
+  `chips` (every entry a bordered box, the current one filled), beside plain, capitals and
+  pills. The owner's "više verzija menua"; each is one row of classes on the bar.
 
 ### D-113: The footer — five arrangements, a menu of its own, an edge, words with a link
 

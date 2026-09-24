@@ -305,8 +305,9 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 8e. **Appearance, header and footer, second round** (the review of 2026-09-24, at
    https://claude.ai/artifact/RsQXJWFoyt7qGpH47eMJ6E; the owner chose every item). Four
    steps, fixes first: (1) D-110, the four faults under the chrome — done 2026-09-24;
-   (2) the screen: six tabs, short segment labels, an own colour drawn as a palette row, the
-   words folded per language, a page to preview; (3) the header: arrangement and behaviour as
+   (2) D-111, the screen: six tabs, short segment labels, an own colour drawn as a palette
+   row, the words folded per language, a page to preview — built 2026-09-24, waiting for
+   the owner's look; (3) the header: arrangement and behaviour as
    two choices, the site's name, a logo for dark surfaces, a menu style, an outline button, an
    edge, a gradient surface; (4) the footer: five arrangements, a menu of its own, an edge,
    text that can hold a link, the small-print row. ← *current*
@@ -2875,6 +2876,70 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-111: The Appearance screen, tidied: six tabs, short buttons, one kind of colour row
+
+**Status:** 2026-09-24, the second of the four steps of 8e. The owner judges the screen from
+screenshots before this is taken as done.
+
+**Six tabs.** Colour · Type · Shape · Page · Header · Footer. "Header" held the footer too,
+and every language's words under both — the longest column on the screen, growing by four
+fields per language, beside a Shape tab a third as tall. Each of the two now holds what a
+person asks about THAT part. The header's width and the two bleeds moved with them: they
+stay design decisions in `Tokens` (D-067), only their place on the screen changed, because a
+person setting up the header looks for them there. A test now reads every panel and asserts
+that every decision and chrome choice the form reads is on exactly one tab — the edit that
+splits a tab is exactly the edit that drops a field, and a dropped field is one the owner
+cleared (D-059).
+
+**Two even rows of three**, not one row of six: six names in 280px cut "Colour", "Header" and
+"Footer" to "Col…", "Hea…", "Foo…" in English, and a tab whose name cannot be read is not a
+tab. D-075 allowed even rows and refused ragged ones.
+
+**The words fold per language.** With several languages each language's words are a
+`<details>`, open for the language the picture is drawn in; with one language they are a
+group like any other. A `<details>` works without a script, and a folded language is still
+on the form and still saved.
+
+**A segment is one or two words.** "Low: surfaces barely differ", "Yes: the page is a sheet
+with a margin around it", "Hard, with thick rules", "Stays at the top when scrolling" broke
+their rows into ragged halves; they are "Low", "Yes", "Hard", "Sticky" now, and what they
+said moved into the hints, which already existed for exactly that. The group names were
+shortened the same way ("Sheet lifts off the page" → "Sheet lift").
+
+**And the reason the names wrapped was never the flex rule.** D-110 tuned `.field-row` in
+`admin.css` so the label would keep its words and the readout give way, and the readouts did
+stay inside the column — but the labels went on wrapping, and with the segments shortened it
+was plain that a two-word name in a 260px column had no business wrapping. Measured: the row
+computed to `display: grid` with the label at 84px of 261. `admin-forms.css`, loaded after
+`admin.css`, draws every `.field-row` as a third-and-two-thirds grid for the settings ledger,
+and had won on this screen since D-065. The inspector now says its rows are flex rows, and the
+browser check asserts that no group's name on any tab takes more than one line — measured on
+all six, because the fault was the same on all and the labels differ. **D-110's account of
+the row is therefore half right:** the readout part held, the label part never applied until
+now.
+
+**A colour of one's own is a palette row.** It was a lone square under a three-line label,
+with no hex, under the header, the footer and the page — the one colour control on the screen
+that did not look like the others. It is the same row as a role of the palette (D-074): the
+swatch is the picker, the hex follows the hand, one button gives the colour back. Until the
+colour is the owner's the row says "palette" where the hex would be, because the hex it would
+show is the shade the page was rendered with, which does not follow the palette live.
+
+**The picture can be of any published page.** A select in the strip over the picture, the
+home page by default. A header laid over the first section looks different over a page with
+no hero, and a sticky header cannot be judged on a page that does not scroll. Only a published
+page of the language being drawn is offered or drawn; a draft or another language falls back
+to the home page. Hidden until a script runs, as the viewport tools are (D-060), because
+without one the picture is the home page and a select that changed nothing would teach people
+not to trust selects. `page` joined the reload list in `appearance.js`.
+
+**The character cards say what header they give** — "Editorial · 42rem · Roomy · full bleed
+· Left" — a card that said nothing about the chrome was a card about half the design.
+
+**What this cost:** `19-chrome` and `03-design` open the tab a field is on before typing into
+it; `ensureHeaderMenu()` in the harness opens Header. The tab called "chrome" is gone from the
+markup, the strings and every scenario.
+
 ### D-110: Four faults under the chrome, found by looking at every character
 
 **Status:** 2026-09-24. The first of four steps agreed with the owner after a review of the
@@ -4544,6 +4609,14 @@ the canvas that comes back is what the author had rather than what the database 
 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077. O-15 resolved by
 D-104. O-25 resolved by D-094.*
+
+**O-30. `19-chrome` expects a language switcher the site cannot draw.** Its verdict *"one
+language switcher, in the footer"* counts zero on the copy — and on the development site, at
+`cb9c8c1` as at HEAD before it: both have Croatian enabled and no Croatian page, so
+`Alternates::for()` offers one language and the switcher draws nothing, which is right
+(D-043). The scenario assumes test data it does not make (CLAUDE.md, rule 9). Found 2026-09-24
+running it for D-111; not this step's, and fixed by giving the scenario a Croatian home page
+of its own, or by a copy reinstalled with the demo.
 
 **O-29. `03-design` restyles a section that is no longer where it looks.** Its last part
 reads the second section's surface off the plain editor as `select[name$="[style][surface]"]`

@@ -744,9 +744,17 @@ nav_ink             accent | ink
 header_button       filled | outline | text
 density             compact | normal | roomy                     header and footer alike
 logo_size           small | medium | large
-footer_layout       simple | columns
+footer_layout       simple | centred | columns | menu_first | three
+footer_edge         none | line | slant | curve                  a section divider, on the footer
+small_print_row     left | split | centred                       the languages and the small print
 footer_columns      2 | 3 | 4                                    the footer MENU's columns
 ```
+
+Two more footer settings are not closed sets (D-113): `chrome_footer_menu` names the
+footer's own menu — `''` for the header's, `none` for none — and the footer's text is
+rich text, cleaned with `RichText::INLINE` (a paragraph, a break, bold, italic, a link) rather
+than the page's whitelist. A footer text stored before D-113 is plain and is drawn, and handed
+to the editor, as one paragraph with its breaks (`ChromeWords::asHtml`).
 
 `header_layout` (left, centred, transparent, sticky) and `header_rule` (on, off) were the
 names before D-112. They are still read wherever a look is loaded and never written again:

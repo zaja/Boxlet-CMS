@@ -88,7 +88,7 @@ still recognise it.
 | | |
 | --- | --- |
 | Last commit | see `git log`; a commit is pushed once its tests pass on both drivers and PHPStan is clean |
-| Tests | 1,069 on both drivers, PHPStan clean at level 8 (2026-09-22) |
+| Tests | 1,146 on both drivers, PHPStan clean at level 8 (2026-09-24) |
 | CI | read after every push from GitHub's public API (CLAUDE.md) |
 | Development site | https://boxlet.svejedobro.hr, MySQL `boxletcms`, demo site (D-002). It is this checkout: no separate clone, no deploy step (D-033) |
 | Demo admin | `acceptance@example.com`; the password is never in the repository |
@@ -309,8 +309,9 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    row, the words folded per language, a page to preview — built 2026-09-24, waiting for
    the owner's look; (3) D-112, the header: arrangement and behaviour as two choices, the
    site's name, a logo for dark surfaces, a menu style, an outline button, an edge, a
-   gradient surface — built 2026-09-24; (4) the footer: five arrangements, a menu of its own, an edge,
-   text that can hold a link, the small-print row. ← *current*
+   gradient surface — built 2026-09-24; (4) D-113, the footer: five arrangements, a menu
+   of its own, an edge, text that can hold a link, the small-print row — built 2026-09-24.
+   All four wait for the owner's look at the screenshots in the review.
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
    variants (O-13, D-048) and two-step login (O-4, D-050).
@@ -2875,6 +2876,61 @@ a form about to be submitted.
 **A seam to watch:** `builder-blocks.js` is at 345 lines. Like `Blocks.php` at D-041, it is
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
+
+### D-113: The footer — five arrangements, a menu of its own, an edge, words with a link
+
+**Status:** 2026-09-24, the last of the four steps of 8e. Every item the owner chose (F1–F5).
+
+**Five arrangements** where there were two: one column; centred; the words beside the menu;
+the menu in a row above the words; three columns — the words, the menu, and the languages
+with the small print. Minimal's footer is centred now, Soft's in three columns under a curved
+edge, Brutalist's menu first under a slant; every arrangement is some character's.
+
+**A menu of its own.** The footer drew the header's menu and nothing else could be chosen; a
+real site's footer holds Privacy, Imprint and Terms. `chrome_footer_menu` names it — `''` for
+the header's, `none` for none, else a name — chosen on the Footer tab beside the header's,
+stored and followed through a rename exactly as the header's is, and a name no menu carries any
+more is cleared rather than kept (as the header's). Not a look choice: it is which content,
+so a kept design does not carry it.
+
+**An edge.** The dividers a section may carry — line, slant, curve — were never offered to
+the one band drawn by the same machinery. `footer_edge` is passed as the section's own
+`divider` key, so `sections.css` draws it exactly as on a band. One rule was missing: the
+section above a shaped edge keeps room for it, and the footer's neighbour is `<main>`, not a
+section, so the last section inside `<main>` now keeps that room too.
+
+**The last row.** The languages and the small print are one box, `.site-footer-foot`, so an
+arrangement can place it as one thing; `small_print_row` says whether it stacks, splits, or
+centres. It is drawn only when it would hold something.
+
+**Words with a link.** The footer's text was a `textarea` run through `nl2br`, so the one
+thing a footer most often holds — an email, a phone number — could not be clicked. It is rich
+text now, with a short whitelist of its own (`RichText::INLINE`: paragraph, break, bold,
+italic, link) and a toolbar that offers only that — no headings, lists or quotations, which
+the sanitiser would throw away; the same rule the page editor's toolbar follows (D-017). The
+sanitiser took a second caller for its `$allowed`, which is the rule about abstractions. A bare
+email or phone number in a link becomes `mailto:` or `tel:` as everywhere (D-039). **A text
+stored before this is plain and moves not at all:** `ChromeWords::asHtml()` turns it into one
+paragraph with its breaks, which is what the page drew for it, and both the page and the
+editor are handed that; the first save through the editor stores it as that HTML. The preview
+cleans the text being typed before it draws it, as a save would store it.
+
+**One thing the browser found that had been there since D-017.** With an email typed into
+the rich text link panel's address box, Publish did nothing: the box was `type="url"`, an
+email is not a URL to the browser, and a form with an invalid field is refused before it
+leaves the page — silently, since the box stood on a folded tab. Measured on the copy:
+`checkValidity()` false, one bad field, `rt-link-input[url]=hello@example.com`. The page
+editor's plain form had the same box. It is a text input with `inputmode="url"` now — an
+email or a phone number IS a link as typed (D-039), so a url input was the wrong type for
+what the product accepts — and the script empties it once the link is applied.
+
+**Checked:** `chrome_look_test` for every arrangement, edge and row on the served page; the
+footer's own menu, none, the header's, a name no menu carries, a rename followed, and the
+preview drawing a menu being tried without writing it; a footer text with a heading, a list,
+a script, a bold word and an email — what stays, what goes, and the `mailto:` that reaches the
+visitor — and a plain text from before drawn with its break and handed to the screen as a
+paragraph. `19-chrome` types the footer's text into the editor with an email made a link
+through the panel, and reads the link off the site.
 
 ### D-112: The header — arrangement and behaviour apart, and what stands for the site
 

@@ -307,9 +307,9 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    steps, fixes first: (1) D-110, the four faults under the chrome — done 2026-09-24;
    (2) D-111, the screen: six tabs, short segment labels, an own colour drawn as a palette
    row, the words folded per language, a page to preview — built 2026-09-24, waiting for
-   the owner's look; (3) the header: arrangement and behaviour as
-   two choices, the site's name, a logo for dark surfaces, a menu style, an outline button, an
-   edge, a gradient surface; (4) the footer: five arrangements, a menu of its own, an edge,
+   the owner's look; (3) D-112, the header: arrangement and behaviour as two choices, the
+   site's name, a logo for dark surfaces, a menu style, an outline button, an edge, a
+   gradient surface — built 2026-09-24; (4) the footer: five arrangements, a menu of its own, an edge,
    text that can hold a link, the small-print row. ← *current*
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
@@ -2875,6 +2875,79 @@ a form about to be submitted.
 **A seam to watch:** `builder-blocks.js` is at 345 lines. Like `Blocks.php` at D-041, it is
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
+
+### D-112: The header — arrangement and behaviour apart, and what stands for the site
+
+**Status:** 2026-09-24, the third of the four steps of 8e. Every item the owner chose on
+2026-09-24 (H1–H7). The chrome's choices are settings and the list of them is documented in
+SPEC §5.4 now, with what each old name means.
+
+**Two choices where there was one.** `header_layout` held left, centred, transparent and
+sticky — two arrangements and two behaviours in one list — so a centred header could never
+be sticky and a header over the hero could never be centred. `header_arrangement` (left,
+inline, centred, split, masthead) says where the name, the menu and the button stand;
+`header_behaviour` (static, sticky, over) says what the bar does as the page scrolls. Five by
+three is fifteen headers where there were four. Split draws the menu as two lists around the
+name inside one nav, so the phone's one button still folds everything; the first half takes
+the odd item. The behaviour is a class on the bar, and `:has()` reads it onto the `<header>`
+element, which is what sticks or floats — the wrapper's classes belong to the block
+machinery and stay the section's layers plus the arrangement.
+
+**The old names are read for ever and written never.** `ChromeLook::LEGACY` says what each
+old value meant (`transparent` → left + over, `sticky` → left + sticky, `header_rule: on` →
+`header_edge: line`), and `modernise()` applies it wherever a look is loaded — the settings
+and a kept design's row alike, one function, two readers — only where the new choices are
+silent. A site that saved `sticky` before this keeps the header it had until it chooses
+again. D-062's pattern for `container`.
+
+**What stands for the site: `brand`.** The logo, the name in the heading face, or both in
+one link; the name whatever this says when there is no logo (D-110). **And a second logo for
+dark surfaces**, `site_logo_dark` under Settings → Branding beside the first: a dark wordmark
+vanished on Bold's navy hero in the review and no stylesheet can fix a picture. Which one is
+drawn is decided by the INK the palette puts on the header — `PageLayoutData::inkIsLight()`,
+measured in OKLCH on the same ink the header's words take — never by the surface's name: Soft's
+contrast surface is cream, and a page set dark by hand makes a plain header dark. Over the
+first section it is that section's ink, which is why `PageController` and the preview now
+hand the layout the first section's surface; on a colour of the owner's own it is the ink
+derived for it (D-076). Both logos are resolved before the template sees them, so the one it
+picks is never a missing lookup.
+
+**The menu's words and the button.** `nav_style` — plain, small capitals with tracking, or
+the current page on a pill; `nav_ink` — the accent or the text colour; `header_button` —
+filled, outlined in the bar's own ink (a pair the palette already measures), or a plain
+link. `header_edge` — none, line, shadow — replaces the on/off rule. **Gradient** joins the
+three surfaces for the header and the footer: the class is the sections' own and its pairs are
+measured; a picture does not, because the chrome is on every page and a picture there is a
+picture repeated.
+
+**Every choice is demonstrated by a character** (D-062's rule): Editorial a masthead with a
+line and the menu in capitals in the text colour, an outlined button; Minimal centred, the
+button a link; Bold over the hero, the current page a pill, a gradient footer; Soft inline and
+sticky, logo and name together; Brutalist the name split between its menu, a shadow under the
+bar, capitals in the accent.
+
+**`chrome.css` passed the hard limit and is two files.** `chrome-header.css` holds where the
+header's parts stand, what the bar does as the page scrolls, and how the menu folds on a
+phone; `chrome.css` keeps what the header and footer look like. The seam the file already
+had. Linked after `chrome.css`, listed everywhere the front-end stylesheets are listed, and
+SPEC §5.4 names it.
+
+**Two things the browser found that reasoning had not.** The split header's two lists, folded
+on a phone, stood one at the right edge and one at the left: a block-level list keeps the
+`justify-self: end` it had as a grid item, and Chrome honours `justify-self` on block-level
+boxes. And a gradient footer painted the page colour under white words, 1:1 — `footer.block`
+set its colour with the `background` shorthand, which resets `background-image`, and a
+gradient surface is a background image. Both are `background-color` now; the second would have
+shipped with the first character to carry a gradient footer, which is Bold, which is why a
+character demonstrates every choice.
+
+**Checked:** `chrome_look_test` for every arrangement and behaviour on the served page, split's
+two lists, the brand's three answers and the name without a logo, the dark logo chosen on
+Minimal's graphite contrast surface and gradient and not on its plain one nor over a plain
+first section, and chosen on a near-black colour of the owner's own; the old names read and
+the new ones winning; `branding_test` for the second logo; `22-chrome-look` tries every
+arrangement through the preview at desktop and on a phone with the menu open, and a centred
+header over the first section — the pair the old single choice could not make.
 
 ### D-111: The Appearance screen, tidied: six tabs, short buttons, one kind of colour row
 

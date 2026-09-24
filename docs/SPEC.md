@@ -627,7 +627,7 @@ written anywhere. The file is a real file on disk, so Apache's file-exists rewri
 condition and nginx's `try_files` serve it without PHP. Layers 2 and 3 render as class
 names on the section wrapper. Nothing is inlined as a style attribute.
 
-`site.css`, `blocks.css`, `chrome.css` and `sections.css` are shipped files rather than
+`site.css`, `blocks.css`, `chrome.css`, `chrome-header.css` and `sections.css` are shipped files rather than
 generated ones, so they
 cannot carry a hash in the name without a build step the install cannot run. They are
 linked with a hash of their content in the query string instead, which busts the same
@@ -694,7 +694,7 @@ full-width bar over a narrow column is one decision, not a second container.
 sheet or outside the frame, where they reach the window's edge. They are read by the layout
 rather than compiled into a token, so no rule in the stylesheet asks whether the page is
 boxed — the property the frame's own docblock has always been proud of. A header laid over
-the first section (`header_layout: transparent`) can only do that inside the sheet; outside
+the first section (`header_behaviour: over`) can only do that inside the sheet; outside
 it there is nothing to overlay, and it draws as an ordinary header.
 
 The background is a shade **from the palette**, or a colour of the owner's own
@@ -724,9 +724,41 @@ step: a fixed one is comfortable in the middle of the range and fails at both en
 refused a pure black and a pure white header. A surface that already passes at the first
 step is unchanged, so no design in use moved.
 
-A header laid over the first section (`header_layout: transparent`) is excluded: that layout
+A header laid over the first section (`header_behaviour: over`) is excluded: that behaviour
 exists to paint nothing and take the colours beneath it, and the two choices contradict each
 other.
+
+**The chrome's own choices** (PLAN.md D-032, D-036, D-067, D-112) are settings, not layer-1
+decisions: `ChromeLook::OPTIONS` is the list, each a closed set, each `''` until the owner
+chooses and then the character's (`ChromeLook::CHARACTER`). As of D-112:
+
+```
+header_arrangement  left | inline | centred | split | masthead   where the name, menu and button stand
+header_behaviour    static | sticky | over                       what the bar does as the page scrolls
+header_surface      plain | tinted | contrast | gradient         never painted when over
+footer_surface      plain | tinted | contrast | gradient
+header_edge         none | line | shadow
+brand               logo | name | both                           the name whatever this says when there is no logo
+nav_style           plain | caps | pills
+nav_ink             accent | ink
+header_button       filled | outline | text
+density             compact | normal | roomy                     header and footer alike
+logo_size           small | medium | large
+footer_layout       simple | columns
+footer_columns      2 | 3 | 4                                    the footer MENU's columns
+```
+
+`header_layout` (left, centred, transparent, sticky) and `header_rule` (on, off) were the
+names before D-112. They are still read wherever a look is loaded and never written again:
+`ChromeLook::LEGACY` says what each old value means, and `modernise()` applies it only where
+the new choices are silent, so a site or a kept design saved under the old names keeps the
+header it had.
+
+A second logo, `site_logo_dark` (Settings → Branding), is drawn whenever the INK the palette
+puts on the header is light: on a contrast or gradient surface whose ink is light, on a page
+set dark by hand, over a first section that is contrast, a picture or a gradient, or on a
+colour of the owner's own whose derived ink is light. Measured on the ink, never on the
+surface's name.
 
 **Palette.** Derived in OKLCH from the seed: background, tinted surface, border, text and
 muted text carry a trace of its hue; the seed itself is the accent and link colour; the

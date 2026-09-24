@@ -2896,7 +2896,11 @@ Soft's frame of three units is what it was above and below; its sheet is now 80r
 rather than the window's, which is the change asked for. **And "full width" for the header
 follows the sheet** (the owner's detail, the same day): on a boxed page the header's contents
 run to the sheet's width, not the window's, which lined up with nothing over a box narrower
-than it; unboxed, the sheet is the window and full is 100%.
+than it; unboxed, the sheet is the window and full is 100%. Less the container's own side
+padding: the container is content-box, so the padding stood outside the sheet's edge —
+measured, 1464px of header over a 1408px sheet — and the logo sat on the edge itself. The
+owner's own site had "content width" stored, which is why his header did not follow the
+sheet; that choice lines up with the page's content column, and is right to.
 
 ### D-115: The footer's columns hold content — a title, words and a menu each
 

@@ -2924,6 +2924,11 @@ editor's plain form had the same box. It is a text input with `inputmode="url"` 
 email or a phone number IS a link as typed (D-039), so a url input was the wrong type for
 what the product accepts — and the script empties it once the link is applied.
 
+**And one of my own, for the record:** `1b177a4` went out with two level-8 findings and CI red
+on one job, because the analyser and the commit were chained in one command and a `| tail`
+swallowed the analyser's exit — the very mistake the working notes warn about. `7a60ead`
+fixed both; the analyser runs in a call of its own and is read.
+
 **Checked:** `chrome_look_test` for every arrangement, edge and row on the served page; the
 footer's own menu, none, the header's, a name no menu carries, a rename followed, and the
 preview drawing a menu being tried without writing it; a footer text with a heading, a list,

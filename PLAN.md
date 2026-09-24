@@ -302,6 +302,14 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    (2) the feedback loop closes (D-058); (3) the two screens become one `/admin/appearance`
    with five tabs (D-059), the old addresses go (D-077), and the toolbar over the
    picture — viewport, zoom, Compare — follows.
+8e. **Appearance, header and footer, second round** (the review of 2026-09-24, at
+   https://claude.ai/artifact/RsQXJWFoyt7qGpH47eMJ6E; the owner chose every item). Four
+   steps, fixes first: (1) D-110, the four faults under the chrome — done 2026-09-24;
+   (2) the screen: six tabs, short segment labels, an own colour drawn as a palette row, the
+   words folded per language, a page to preview; (3) the header: arrangement and behaviour as
+   two choices, the site's name, a logo for dark surfaces, a menu style, an outline button, an
+   edge, a gradient surface; (4) the footer: five arrangements, a menu of its own, an edge,
+   text that can hold a link, the small-print row. ← *current*
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
    variants (O-13, D-048) and two-step login (O-4, D-050).
@@ -2867,6 +2875,85 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-110: Four faults under the chrome, found by looking at every character
+
+**Status:** 2026-09-24. The first of four steps agreed with the owner after a review of the
+Appearance screen and the chrome (the review, with screenshots, is at
+https://claude.ai/artifact/RsQXJWFoyt7qGpH47eMJ6E; the four steps are §3, 8e). Fixes first,
+because nothing is built on a weak feature (CLAUDE.md, rule 10).
+
+**A custom property may not name itself, not even in a fallback.** D-076 set every
+`--section-*` token on the chrome's `.container` as `var(--chrome-footer-text, var(--section-text))`,
+on the belief — written into the stylesheet — that the inner `var()` reads the value inherited
+from the parent. It does not. A declaration that references its own property is a cycle on
+whatever element it sits, and a cycle makes the property invalid at computed-value time,
+silently. **Measured, on the served page:** every `--section-*` token on the footer's
+container computed to `""`, so every link inside a contrast footer fell back to the page's
+ACCENT — under Bold, `rgb(109, 40, 217)` on `rgb(30, 16, 69)`, **2.43:1**, below the AA line
+the palette exists to guarantee; under Brutalist blue on yellow read at 7.62:1 by luck. A
+colour of the owner's own, once set, DID reach its links: the browser resolves the primary
+and never reads the fallback, so the cycle only bit where no colour was set — which is every
+site, since no character ships one. (A first probe said the opposite; it had queried the
+preview without the design, so its stylesheet carried no `--chrome-*` tokens at all. The
+control run below, with the old stylesheet, is the measurement that stands.) Three days of
+green tests, because no PHP test resolves a custom property and the browser scenario only
+photographed.
+
+The tokens are set only where the colour IS the owner's, with no fallback: the template
+emits `own-colour` on the bar when the decision holds a colour, and `Derived::chrome()` emits
+the `--chrome-*` tokens under the same condition, so neither can exist without the other. That
+reverses D-076's "no class, no rule generated per site", deliberately: the alternative was
+measured broken. The preview builds the flag from the query it draws
+(`AppearancePreview::page()`), a visitor's page from `Design::load()`
+(`PageLayoutData::design()`), so both renderers agree. A transparent header still claims no
+colour — the template does not emit the class there.
+
+**Proved with a control, not only by passing:** the old `chrome.css` put back on the copy
+fails exactly the two new verdicts — Bold's footer links at 2.43:1, and Bold's open menu on an
+unpainted bar — and the new one passes all twenty-seven.
+
+**Three guards, so it cannot come back:** `tests/blocks_test.php` refuses any front-end
+custom property whose value names itself; the same file's "read with no fallback" test now
+compiles a design WITH chrome colours among its sources, since the `--chrome-*` tokens are read
+bare under the class; and `22-chrome-look` measures every link and line in the header and
+footer against the surface it stands on, in the browser, for all five characters and once with
+a colour of the owner's own.
+
+**A header laid over the first section, on a phone, with its menu open.** It is absolutely
+positioned, so opening the menu grew it downward over the hero and the first section did not
+move: the items landed on the picture and the headline with nothing behind them (Bold; seen
+in the review). While the menu is open the bar paints the first section's own colour, which
+the existing `:has(> main > .block:first-child…)` rules now hand it as `--section-bg`, so the
+words stand on the surface they were measured against. Scenario 22 asserts the bar is painted
+for every character with its phone menu open.
+
+**A bare key on the Shape tab.** `design.space_ramp` stood on the screen as itself, in
+capitals, from D-065 (`dffc74e`) until now: `t()` returns a missing key as the key, which
+keeps a page from breaking and also keeps anyone from noticing. Translated, and
+`tests/design_test.php` now scans the rendered screen for anything shaped like a key, with the
+prefixes read off `lang/en/` rather than listed.
+
+**The inspector's row said nothing about who gives way.** `.field-row` was a flex row where
+both the label and the readout could shrink, so "HEADER ARRANGEMENT" folded into two lines
+AND "Stays at the top when scrolling" ran past the edge of the column and was cut there. The
+label keeps its words, the readout shrinks first to at most half the row, and the whole phrase
+is in its `title` — kept current by `appearance-readouts.js` when the server's answer rewrites
+it. Scenario 03 measures that no readout on the header tab leaves the column.
+
+**A site without a logo had no name.** The header drew the logo or nothing in its place, so a
+site with no logo — most sites on their first day — was a page with a menu and no name
+anywhere on it. The site's name (Settings → General) stands where the logo would, set in the
+heading face and sized by the same three logo-size classes. **This changes a rule
+deliberately:** a header is drawn whenever it has anything to show, and a name is something to
+show, so a site whose header held nothing else now has one. The tests that asserted "no
+header without a menu" asserted it through `render()` directly and are untouched; the new case
+asserts both halves — a name alone draws a header, and no nav is drawn for a menu that is not
+there.
+
+**Trade-offs.** One class more on two elements, and a PLAN entry that says D-076's stylesheet
+comment was wrong. In return the palette's guarantee holds in the chrome again, which is where
+it was least true.
+
 ### D-109: The floor under the cities is the owner's number
 
 **Status:** 2026-09-24, asked for by the owner after reading his own statistics:
@@ -4457,6 +4544,14 @@ the canvas that comes back is what the author had rather than what the database 
 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077. O-15 resolved by
 D-104. O-25 resolved by D-094.*
+
+**O-29. `03-design` restyles a section that is no longer where it looks.** Its last part
+reads the second section's surface off the plain editor as `select[name$="[style][surface]"]`
+and expects the name to start `blocks[`. Since D-095 a section's style is
+`sections[<key>][style][surface]`, and since D-107 it is a row of radio buttons, not a select,
+so the check ends in *"the form has no section 1 to restyle"* every run. Found 2026-09-24
+while running the scenario for D-110, which it predates; the same class of weakness as O-26
+and O-27 — the scenario's, not the slice's — and fixed when the screen is next worked on.
 
 **O-28. The demo cannot show a section with columns.** `DemoSite::seed()` writes one band
 per block — the page data in `app/Modules/Demo/pages.php` is a flat list of

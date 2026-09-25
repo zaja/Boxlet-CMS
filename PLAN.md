@@ -2887,6 +2887,31 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-122: The header's contents and its background, said apart; a boxed page's controls only on one
+
+**Status:** approved by the owner 2026-09-25 (*"može"*), after *"postavke širine headera i širine
+sadržaja headera su totalno zbunjujuće, npr čemu služi postavka 'Content width' u Header width
+kad postavlja sadržaj headera preusko?"* He had also set a sheet width on a page that was not
+boxed, seen nothing happen, and taken the page to be boxed — measured: the stored `boxed` was
+`no`, the compiled tokens said `--page-sheet-width: none`, and the Appearance form agreed.
+
+**Two decisions, each named for what it moves.** `header_width` is now **Header contents** —
+*Line up with the text* (the page's content column, the old "Content width") or *Line up with the
+page edges* (the sheet's, when boxed, the window's otherwise; the old "Full width"). `header_bleed`
+is now **Header background** — *Inside the page* or *Across the whole window*. The same for the
+footer. Values and stored keys are unchanged; only the words and hints are.
+
+**Shown only where they do something — which reverses a line of D-067.** D-067 kept the sheet's
+controls on screen on an unboxed page with a hint saying so, arguing that a control that
+disappears is worse than one that explains itself. The owner's afternoon is the answer to that:
+the hint shows only with hints on, and a slider that moves nothing reads as a setting that
+holds. So *Around the page*, its own colour, the sheet's width, gap, side margin, corners and
+lift, and the header's and footer's *background* rows are now shown only when *Boxed page* is
+Yes — hidden by one stylesheet rule on the form's own radio (`:has()`), so they come and go the
+moment the choice is pressed, and still posted either way. Measured on the development site:
+three groups shown under Yes, none under No, nothing published. `03-design` boxes the copy's page
+before pressing the header's background and puts it back after.
+
 ### D-121: The focal point is back on a picture's page
 
 **Status:** approved by the owner 2026-09-25 (*"ok, idemo onda vratiti točku fokusa u media, ja

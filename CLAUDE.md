@@ -95,7 +95,7 @@ permits, are in `docs/SPEC.md` §5.3.
 
 ## Media
 
-The model — variants generated on upload and never on demand, the five presets, resumable
+The model — variants generated on upload and never on demand, the six presets, resumable
 generation, EXIF orientation, originals outside the web root — is in `docs/SPEC.md` §5.1
 and §5.5.
 
@@ -182,7 +182,7 @@ id**. Never by a `LIKE` pattern over user-facing text.
 ## Security rules that are easy to forget
 
 - CSRF token on every state-changing request.
-- Media URLs use named presets only (`thumb`, `card`, `wide`, `hero`, `full`). Never accept
+- Media URLs use named presets only (`thumb`, `card`, `natural`, `wide`, `hero`, `full`). Never accept
   free-form dimensions from the URL.
 - Cached images and pages are served without touching PHP on a hit. How that is done on
   both nginx and Apache is open — PLAN.md O-2.

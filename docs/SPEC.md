@@ -253,7 +253,7 @@ URL prefix. Every additional locale always carries its prefix.
 /m/{preset}/{id}-{slug}.{ext} media
 ```
 
-**Media variants are generated on upload, not on demand.** There are five presets;
+**Media variants are generated on upload, not on demand.** There are six presets;
 generating them at upload costs about a second per image and means a request for a
 variant is always a request for a file that exists on disk. Serving never touches PHP,
 works identically on Apache and nginx, and needs no server rule the user may be unable
@@ -897,6 +897,7 @@ turn the resize endpoint into a disk-filling vector.
 ```
 thumb   200×200  crop
 card    600×400  crop
+natural max 960 wide, no crop   (PLAN.md D-119)
 wide    1200×630 crop
 hero    1920×1080 crop
 full    max 2400 wide, no crop
@@ -931,7 +932,15 @@ image_text picture          card, wide        (max-width: 40rem) 100vw, 50vw
 columns picture             card, wide        (max-width: 40rem) 100vw, then 50/33/25vw
                                               for two, three or four in a row
 section background (D-024)  wide, hero, full  100vw
+picture, gallery — natural  natural, full     as their block; the others card, wide
+logos mark                  natural, full     10rem
+header logo                 natural, full     20em
 ```
+
+`natural` and `full` are the two presets that keep a picture's own shape, so anything that
+must never be cut — a logo, a picture set to its natural shape — asks for those and no
+other (D-119). A picture uploaded before `natural` existed has none until the remake
+migration 0028 starts is carried out, and `full` stands in for it meanwhile.
 
 `thumb` is the admin's own size — the library grid and the picker — and is never
 offered to the front end: it is smaller than any area a page gives a picture.

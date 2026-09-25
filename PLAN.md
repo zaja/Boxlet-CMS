@@ -317,7 +317,8 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
 8f. **The page editor, reviewed and repaired** (the owner, 2026-09-25: an analysis of the
    editor's code and a plan to improve it; the review is in D-117). Three phases, in the
    owner's order: (0) the faults the review measured, fixed first because a weak feature is
-   fixed before anything is built on it — D-117, done 2026-09-25; (1) a hero whose own picture
+   fixed before anything is built on it — D-117, done 2026-09-25, and the uncropped preset
+   it led to, D-119; (1) a hero whose own picture
    fills the block behind its words, the owner's choice of the two ways offered ("za cover
    put A") — D-118, next; (2) sections ready-made in the library, typing as an undo step of
    its own (done in 0), and the blocks after that. ← *current*
@@ -2886,6 +2887,33 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-119: A sixth preset, `natural` — small, and never cut
+
+**Status:** approved by the owner 2026-09-25 (*"ok, možeš dodati mali preset bez rezanja"*),
+after he could not see the cropping O-31 described on photographs, and was given it measured on his own
+wordmark: 320×69, made into `thumb` 69×69 and `card` 103×69.
+
+**`natural`: at most 960 px wide, height following the picture, never cropped, never
+enlarged.** It is a change to SPEC §5.5's preset list, which is frozen after v0.1 and named in
+CLAUDE.md; both say six now. **Wider than "small", on purpose, and said:** looking for where
+else a cropped preset stood in for an uncropped one found the Picture block — whose default
+shape is "natural" — and the Gallery's natural shape asking for `card` and `wide`, so a portrait
+photograph (1000×1333) came out 600×400 landscape. One preset serves both if it is big enough
+for a picture in a column, and 960 is: the browser takes `full` beside it when the screen wants
+more. A logo 160 px wide takes `natural` over `full` by the `sizes` it states.
+
+**Who asks for it:** Logos, the header's logo (which asked for `full` alone, and so sent a mark
+of 20em at up to 2400 px), and Picture and Gallery in their natural shape — each as
+`natural, full`, the two presets that keep a picture's shape. The other shapes (wide, square,
+round) are drawn by the stylesheet over a crop and keep asking for `card, wide`.
+
+**Pictures already uploaded:** migration 0028 marks every finished picture as owed a remake,
+the resumable pass D-048 built "after a preset changes"; the Media screen offers it and carries
+on by itself. Until a picture has been remade, `full` stands in, so nothing is drawn cut — only
+heavier. On the development site the remake ran through the Media screen in 107 seconds for
+eighteen pictures; the wordmark's `natural` is 320×69 and the portrait's 960×1280, and both were
+looked at on the canvas.
+
 ### D-118: A hero whose own picture fills the block, behind its words
 
 **Status:** direction approved by the owner 2026-09-25 (*"za cover put A"*); the details are
@@ -4974,11 +5002,7 @@ text, and a gallery in the first section — measured failing identically on the
 D-117. The scenario asserts a shape the page does not promise to keep; it should pick a block that
 is alone, or make one. The same class as O-26 and O-29.
 
-**O-31. Logos crops the marks it promises never to crop** (D-117). It draws from `thumb`
-(200×200) and `card` (600×400), and both are cropped presets, so a wide mark loses its ends.
-The fix is a sixth preset — small and uncropped, bounded by width like `full` — which changes
-the preset list SPEC §5 freezes and CLAUDE.md names, so it is the owner's to allow. Until then
-the block keeps its shape and cuts its logos.
+*O-31 resolved by D-119.*
 
 **O-30. `19-chrome` expects a language switcher the site cannot draw.** Its verdict *"one
 language switcher, in the footer"* counts zero on the copy — and on the development site, at

@@ -627,7 +627,7 @@ written anywhere. The file is a real file on disk, so Apache's file-exists rewri
 condition and nginx's `try_files` serve it without PHP. Layers 2 and 3 render as class
 names on the section wrapper. Nothing is inlined as a style attribute.
 
-`site.css`, `blocks.css`, `chrome.css`, `chrome-header.css` and `sections.css` are shipped files rather than
+`site.css`, `blocks.css`, `blocks-words.css`, `blocks-media.css`, `chrome.css`, `chrome-header.css` and `sections.css` are shipped files rather than
 generated ones, so they
 cannot carry a hash in the name without a build step the install cannot run. They are
 linked with a hash of their content in the query string instead, which busts the same

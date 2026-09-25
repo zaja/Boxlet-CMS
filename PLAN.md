@@ -313,7 +313,14 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    of its own, an edge, text that can hold a link, the small-print row — built 2026-09-24.
    The owner's look, 2026-09-24, brought a second round: D-114 (the header on a phone, the
    submenu, two menu styles), D-115 (the footer's columns hold content), D-116 (a boxed page
-   is a box of a width) — built the same day. ← *current*
+   is a box of a width) — built the same day.
+8f. **The page editor, reviewed and repaired** (the owner, 2026-09-25: an analysis of the
+   editor's code and a plan to improve it; the review is in D-117). Three phases, in the
+   owner's order: (0) the faults the review measured, fixed first because a weak feature is
+   fixed before anything is built on it — D-117, done 2026-09-25; (1) a hero whose own picture
+   fills the block behind its words, the owner's choice of the two ways offered ("za cover
+   put A") — D-118, next; (2) sections ready-made in the library, typing as an undo step of
+   its own (done in 0), and the blocks after that. ← *current*
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
    variants (O-13, D-048) and two-step login (O-4, D-050).
@@ -2879,6 +2886,141 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-118: A hero whose own picture fills the block, behind its words
+
+**Status:** direction approved by the owner 2026-09-25 (*"za cover put A"*); the details are
+proposed and wait for his look at pictures. Not built.
+
+He asked for a Hero that shows a picture behind the whole block with the heading, words and
+button over it in several arrangements. Something close exists — a hero in a band whose
+surface is Image — but it is reached through two tabs, is as tall as its words, places them
+only left or centre, and lays one fixed veil (55% of the contrast colour) over every picture.
+Two ways were offered: **A**, cover arrangements on the Hero itself, its own picture filling
+the block; **B**, the band's Image surface given a height and a veil, the Hero only placing
+its words. He chose A: the picture and the words are chosen in one place, on the block just
+added.
+
+**The shape proposed, all closed sets (no free numbers):** cover arrangements for the words —
+centred, left, low left; a height — as tall as the words, tall, the whole screen; a veil —
+light, medium, strong, whose kind (an even veil, a gradient from below) the character decides.
+Text on the veil takes the contrast tokens the Image surface already uses, and
+`contrast_test` measures it. What it needs beside it: the focal point back in the picture's
+own screen (it was removed, PLAN.md D-038), because a picture a phone crops to its middle
+needs one; and a header laid over the first section (D-067) laying over a cover hero too.
+
+**Before it is built**, pictures of it under more than one character, for him to judge the
+arrangements, the heights and the veils. The tension with the principle of one way to do a
+thing is real and was said: a hero in an Image band still exists, and the two are kept apart
+by what they are — a band's picture is its style, a cover hero's is its content.
+
+### D-117: The canvas and the form are paired by key, and undo takes back an edit
+
+**Status:** 2026-09-25. The owner asked for a review of the page editor's code, then reported
+two faults while it ran: *"ponekad kad ubacim par blokova, ikona za brisanje bloka ne radi sve
+dok ne spremim stranicu"*, and blocks that *"kad se ubace ne vide se u previewu ili se vide
+tako da izlazi sadržaj izvan linija bloka"*, with a screenshot. He said to go ahead
+(*"može, kreni"*). Every fault below was measured in the browser before it was fixed, and
+`48-editor-keys` fails 12 of its 14 checks on the code before this entry (the other two are
+halves that held already: the copy's blocks paired with their fields, and the second undo).
+
+**ONE CAUSE UNDER MOST OF THEM: the canvas and the form were paired by position.** D-106 found
+it for selection and fixed selection; every other action kept it. Remove, move, duplicate and
+the live redraw found their canvas element as `api.sections()[index]`, where `index` is the
+FORM's position — and the form's order is not the page's the moment a block goes into a band
+that has no group yet (its group goes to the end of the form), or a band is dragged. Measured:
+a block added fourth on the page stood seventh in the form, and Remove took the page's LAST
+block, off the screen, while the one pressed stayed; after a save the pressed one was gone and
+the other back, which is exactly "does not work until I save". **The server now writes the
+key on both halves** — `data-bx-key="b<id>"` on each block the canvas draws (`SectionRender`
+in the editor's shape, the band endpoint, a refused save's canvas keeping the keys it was
+submitted under) and `data-block-key` on each field group — and the editor finds a block's
+canvas element only by that key (`api.canvasBlock`). `pairKeys()`, which reconstructed the
+pairing by counting when the canvas said it was ready, and `api.sections()` are gone. The
+band redraw takes the keys back from the server instead of zipping them on by position, looks
+its band up when the answer arrives rather than when it asked (a second quick change used to
+be lost), and drops an answer an undo or a later change overtook.
+
+**Five more, each measured:**
+
+- **Two "+ Section" in a row made two bands called `m0`**, and "+ Block" in the second filled
+  the first: `mintSection()` counted only the sections blocks named, and a new band holds none.
+  It counts the bands' own groups too.
+- **A band's copy kept its original's id** (`m0` carrying `s159`'s), and by the server's code
+  the save wrote both into one row: the original held every block twice and the copy vanished.
+  The copy's id is removed like its blocks' always were, and `SectionForm::parse()` now lets an
+  id be claimed once — a second section sending one is new — so no form can merge two bands.
+- **Undo forgot the bands' own fields.** They are a sibling of the blocks' groups in the panel
+  and were never in the snapshot: remove a band, undo, and it came back with an empty Section
+  tab, and a save would have put each of its blocks in a band of its own at the page's foot.
+- **Undo took everything typed since the last structural change with it**: remove A, rewrite
+  B's heading, undo — A back, B's heading gone ("… else PROBE" to "… else"). **An edit is now a
+  step of its own**: the page is recorded when something among the fields is entered (focus,
+  or a press, which can change a value before focus moves) and pushed when a value changes, one
+  step per entry however many keystrokes. Undo takes back the writing first, then the
+  structure. So the band redraw no longer takes a step when its answer arrives — that one held
+  the new arrangement in the form beside the old canvas, and undoing it could only restore the
+  mix. A band's surface or columns can now be undone, which they could not before.
+- **Escape was answered twice**: closing the link box or the picture picker also dropped the
+  selection and hid the panel being worked in. The picker marks its Escape as handled, in the
+  capture phase, and the editor ignores a handled one.
+
+- **No drag could ever be undone** — found while checking this, and true of the code before
+  it too, measured on the copy with a drag driven the way Sortable drives it. The undo file
+  compared the drag's result with the FORM, read after builder.js had already replayed the
+  drag onto the form (its listener runs first), so the two always agreed and no step was
+  kept. The arrangement is now read from the canvas when the drag starts. What had hidden it:
+  `46-drag-columns` saw the undo control lit, but only because the band redraw before it had
+  taken a step.
+
+**The owner's second report was two faults.** *Four blocks drew nothing when added* — Text,
+Call to action, Quote and Form measured 0px tall, so a new one could not be seen or pressed.
+The rule D-106 wrote for an empty column holds for an empty block: canvas.js marks a block
+that measures no height, and canvas.css gives it a place with the words "Empty — fill it in on
+the right", ink on white; on the page it is still nothing. Measured rather than read from the
+fields, because a Form with no form chosen has no required field and draws nothing all the
+same. *And the Logos pictures spilled out of their block*: the img's height is a share of the
+mark's, and the `<picture>` between them is a box of no height, so every logo drew at its
+natural size — 107 and 160 pixels in a mark of 84. The picture now steps aside
+(`display: contents`).
+
+**The files the review found past the hard limit are split along their seams**:
+`builder-blocks.js` (888 lines) into adding (`builder-blocks.js`), drawing again as it is
+edited (`builder-redraw.js`) and the tools (`builder-actions.js`); `builder.js` gave up the
+trail and the page's own settings (`builder-trail.js`, `builder-page.js`); `canvas.js` its tool
+bar and dragging (`canvas-tools.js`, `canvas-drag.js`), which hang on `window.bxCanvas` and are
+reached through it, the first drawing waiting for DOMContentLoaded so every part is there;
+`blocks.css` its nine D-105 blocks, as `blocks-words.css` and `blocks-media.css` (SPEC §5.4
+lists them). The D-079 note above called the `builder-blocks.js` seam at 345 lines; it was
+passed without anyone splitting it, which is how three files came to be over 600.
+
+**And the owner asked, while this was being checked, for the Columns control to lose its
+empty eighth cell** (*"možemo li … maknuti/promijeniti ovaj zadnji prostor u drugom redu da
+nije obojan ovako?"*): seven arrangements in a grid of four left one cell standing in the
+group's line colour. The options now fill their rows — four equal ones, then the three
+unequal ones sharing the whole width — which holds for any number of arrangements.
+
+**The whole browser suite, run for this, damaged the development site, and not through this
+entry's code.** `13-choosing` ended by setting EVERY picture field of the first page to nothing,
+believing the demo's first page has none; the owner had since given it a gallery and pictures,
+and every one went (the save at 13:19:05). `09-maintenance` and `17-settings` ended by opening
+the site whatever they found, and the owner had closed it at 12:09. Both put back through the
+application — the page from its revision 314, the state just before `13-choosing`, and the
+switch from Settings — and the three scenarios now record what they find and restore exactly
+that, checked from a closed site (09, 17) and on the page with its pictures (13). `17-settings`
+also counted three picture pickers where there are four since D-112, and counts them now.
+The rule was already D-090; these three predate it or missed it.
+
+**Four tests read source from a file that has moved** and now read it where it is; what each
+guards is unchanged. `builder_test` asserted the canvas's exact column markup, which now
+carries the key: the column check allows it and the key is asserted apart.
+
+**Left open, for the owner:** the words on an empty block name no block, so two empty ones
+look the same; naming it ("Text — empty") needs the block's name in the canvas. And **Logos
+still crops**: it asks for `thumb` and `card`, and both presets are cut to a shape (200×200,
+600×400), so a wide logo loses its ends — the template's own "never cropped" is not true.
+There is no small uncropped preset; adding one changes the five named presets, which are
+frozen in SPEC §5 and named in CLAUDE.md (O-31).
+
 ### D-116: A boxed page is a box of a width, with the chrome glued to it if wanted
 
 **Status:** 2026-09-24, from the owner's second round on the review: *"može li page ako se
@@ -4825,6 +4967,19 @@ the canvas that comes back is what the author had rather than what the database 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077. O-15 resolved by
 D-104. O-25 resolved by D-094.*
 
+**O-32. `23-block-tools` expects every block on the first page to stand alone in its column.**
+Its *"alone in its column, a block has nowhere to move to"* and *"the copy stands beside the
+block it was copied from"* fail on the development site since the owner put a hero, an image and
+text, and a gallery in the first section — measured failing identically on the code before
+D-117. The scenario asserts a shape the page does not promise to keep; it should pick a block that
+is alone, or make one. The same class as O-26 and O-29.
+
+**O-31. Logos crops the marks it promises never to crop** (D-117). It draws from `thumb`
+(200×200) and `card` (600×400), and both are cropped presets, so a wide mark loses its ends.
+The fix is a sixth preset — small and uncropped, bounded by width like `full` — which changes
+the preset list SPEC §5 freezes and CLAUDE.md names, so it is the owner's to allow. Until then
+the block keeps its shape and cuts its logos.
+
 **O-30. `19-chrome` expects a language switcher the site cannot draw.** Its verdict *"one
 language switcher, in the footer"* counts zero on the copy — and on the development site, at
 `cb9c8c1` as at HEAD before it: both have Croatian enabled and no Croatian page, so
@@ -4837,7 +4992,8 @@ of its own, or by a copy reinstalled with the demo.
 reads the second section's surface off the plain editor as `select[name$="[style][surface]"]`
 and expects the name to start `blocks[`. Since D-095 a section's style is
 `sections[<key>][style][surface]`, and since D-107 it is a row of radio buttons, not a select,
-so the check ends in *"the form has no section 1 to restyle"* every run. Found 2026-09-24
+so the check ends in *"the form has no section 1 to restyle"* every run. `14-front` has the
+same fault, looking for `select[name="sections[s1][style][surface]"]` (found 2026-09-25). Found 2026-09-24
 while running the scenario for D-110, which it predates; the same class of weakness as O-26
 and O-27 — the scenario's, not the slice's — and fixed when the screen is next worked on.
 

@@ -2887,6 +2887,27 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-124: A cover hero sharing a band of one column still reaches both edges
+
+**Status:** approved by the owner 2026-09-25 (*"da, može"*). His two cover heroes stood one under
+the other in one band, so by D-118 each was a panel in its own box, sharp-cornered under his
+character — which read as a boxed page, and started the header question of D-122 and D-123.
+
+**Across to the band's edges, down only its own height.** In a band of one column that holds
+more than the hero, the hero now widens to the band's edges — the box's on a boxed page, the
+window's otherwise — and keeps its own height, so it never lies under the block above or below,
+whose words are set for the band's surface. Its words stay in line with the column. A band of two
+columns still keeps it a panel: there the neighbour stands beside it.
+
+**How, and the first try that did not work.** The band holding a cover hero is an inline-size
+container, and the hero takes side margins of `calc(50% - 50cqi)` with padding of the opposite, so
+it steps out by exactly the gap on each side. Given `inline-size: 100cqi` as well, it widened its
+own wrapper — which the column sizes to its content — so the 50% it was measured against grew
+with it, and the margins came to nothing: measured, the hero 1280 wide starting at the column's
+edge, 32px past the band's. With no width of its own, measured on the development site's own page:
+hero 160–1440 over a band 160–1440 at 1600 wide, 12–379 over 12–379 at 390, the words at the
+column's 192, and no sideways scroll at either width.
+
 ### D-123: Header width and Header content, in the owner's words
 
 **Status:** approved by the owner 2026-09-25, superseding D-122's names within the hour: *"Header

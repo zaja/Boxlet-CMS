@@ -2942,8 +2942,9 @@ arrangements, the heights and the veils. The tension with the principle of one w
 thing is real and was said: a hero in an Image band still exists, and the two are kept apart
 by what they are — a band's picture is its style, a cover hero's is its content.
 
-**As built.** Three layouts on the Hero — `cover-center`, `cover-left`, `cover-low` — and two
-choices beside them, `height` (as tall as the words, tall at 70svh, the whole screen) and `veil`
+**As built.** Four layouts on the Hero — `cover-center`, `cover-left`, `cover-right`,
+`cover-low` — and two choices beside them, `height` (as tall as the words, tall at 56svh, the
+whole screen) and `veil`
 (light, medium, strong). The picture is the hero's own `image`, from `wide, hero, full`, and
 keeps its alt. **How far it reaches is said in CSS, not stored:** a cover hero alone in its band
 (one column, one block — `:has()` over both of the band's shapes, the page's and the editor's)
@@ -2971,6 +2972,11 @@ first option instead of failing the save** (BlockForm): adding the two choices f
 save from a form that had never heard of them — an editor opened before the update, and three
 tests on both drivers — with "Choose one of the options" against fields the author could not see. A value sent
 and not among the options is still refused.
+
+**The owner's look, 2026-09-25:** *"trebala bi i opcija desno"* — `cover-right`, the column of
+words against the right edge, ranged left inside it (a paragraph ranged right is hard to read
+past its first line), the veil clearing to the left; *"Tall je malo previsok, treba ga smanjiti
+za 20%"* — 70svh to 56svh; the veil's strengths and the low arrangement stay as they are.
 
 **Not yet:** the focal point back in the picture's own screen, which D-038 took away and a
 picture a phone crops needs; and whether a character should START a hero as a cover (D-069

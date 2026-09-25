@@ -2887,6 +2887,44 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-121: The focal point is back on a picture's page
+
+**Status:** approved by the owner 2026-09-25 (*"ok, idemo onda vratiti točku fokusa u media, ja
+sam tražio micanje jer nisam vidio svrhu"*), after it was explained to him: a picture cut to a
+shape keeps its focal point in frame, and the cover hero (D-118) cuts its picture to a phone's
+tall shape, where the sides go. D-038 had taken the control away; stored points kept their
+meaning all along, so nothing about how pictures are cut changed — only that the point can be
+set again.
+
+**On the picture's page, on the picture itself.** The preview is the uncropped `full`, so a
+click means what it looks like; a two-ring marker shows the point on any photograph; two sample
+cuts beside it — wide, as on a computer, and tall, as on a phone — follow the point as it moves.
+Without a script the two number fields are the control, and they are what the form posts either
+way; the samples appear only with the script that moves them.
+
+**Saving does not do what it did before D-038.** That emptied the picture's sizes and made them
+again under the same addresses: until it finished, pages showed a placeholder, and afterwards a
+browser that had seen the picture kept the old cut. Now `MediaLibrary::moveFocalPoint()` moves
+the point only, and `MediaRemake::now()` makes the CUT sizes again through D-048's safe pass —
+each file written beside the old and moved over it, the revision (part of every address) raised
+at the end — counting `natural` and `full` as made, since they hold the whole picture wherever
+its point is. What the request's time does not allow stays owed, and the Media screen finishes
+it; the notice says which happened. The crop dialog's own use, on a picture that has no sizes
+yet, keeps `setFocalPoint()`. Checked in `media_item_test` and in `49-focal` on the copy, by real
+clicks: marker and both samples at 20% 80%, the value kept after the save.
+
+### D-120: A character's reset leaves a cover hero's picture behind its words
+
+**Status:** 2026-09-25. The owner applied Minimal with *Save design and reset section styles*
+and found his cover hero turned into a centred one, its picture dropped under the words:
+*"Možda je to očekivano ponašanje, nisam siguran?"* It was what the button says — it gives every
+block the character's layouts, and Minimal's hero is `center` — but not what it should do to a
+cover. A cover arrangement says what the picture IS, the thing behind the words, and that is
+content (D-118), which a character does not own. `Composition::apply()` now resets every
+arrangement except a hero's `cover-*`, and the button's hint says so. His own hero stays as the
+reset left it, `center`, for him to set back: it is his content, and a session does not put it
+back for him.
+
 ### D-119: A sixth preset, `natural` — small, and never cut
 
 **Status:** approved by the owner 2026-09-25 (*"ok, možeš dodati mali preset bez rezanja"*),
@@ -2978,8 +3016,7 @@ words against the right edge, ranged left inside it (a paragraph ranged right is
 past its first line), the veil clearing to the left; *"Tall je malo previsok, treba ga smanjiti
 za 20%"* — 70svh to 56svh; the veil's strengths and the low arrangement stay as they are.
 
-**Not yet:** the focal point back in the picture's own screen, which D-038 took away and a
-picture a phone crops needs; and whether a character should START a hero as a cover (D-069
+**Not yet:** whether a character should START a hero as a cover (D-069
 keeps the arrangement the block's).
 
 ### D-117: The canvas and the form are paired by key, and undo takes back an edit

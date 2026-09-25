@@ -251,6 +251,7 @@ URL prefix. Every additional locale always carries its prefix.
 /{locale}/                    home page in an additional locale
 /admin/...                    admin
 /m/{preset}/{id}-{slug}.{ext} media
+/download/{id}/{name}         a file from the library, saved as an attachment (PLAN.md D-126)
 ```
 
 **Media variants are generated on upload, not on demand.** There are six presets;
@@ -359,6 +360,7 @@ media (
   id, filename, original_name, path, mime, size,
   width, height, hash, focal_x, focal_y, created_at,
   revision, remake            -- a remake pass's progress and count (PLAN.md D-048)
+  kind, downloads             -- 'picture' or 'file'; a file's visitor downloads (PLAN.md D-126)
 )
 media_meta (id, media_id, locale, alt, caption)
 
@@ -920,6 +922,14 @@ without a rewrite rule. The page cache still uses the file-exists rewrite.
 
 AVIF is best-effort. If the server cannot produce it, ship WebP and move on. Never
 block on it.
+
+**Files for visitors to download** (PLAN.md D-126) share the library: PDF, ZIP, DOCX, XLSX,
+PPTX, ODT, ODS, ODP, TXT, CSV, each accepted only when its name and finfo agree, and never
+HTML, SVG or a script whatever it is called. A file is stored whole beside the pictures'
+originals, outside the web root, as `kind = 'file'`: no variants, no focal point, no alt. It
+is served only through `/download/{id}/{name}`, by PHP, as an attachment of its own type with
+`nosniff` and a sandboxing CSP, and each download by a visitor — not the admin, not a crawler
+— is counted.
 
 **Which presets a block asks for.** A caller names the presets that can sensibly fill
 its area, largest last. Every one that exists becomes a `srcset` candidate; the largest

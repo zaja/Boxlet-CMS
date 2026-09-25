@@ -2887,6 +2887,40 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-126: Files for visitors to download, in the library — step one of O-17
+
+**Status:** approved by the owner 2026-09-25 (*"slažem se, kreni s prvom točkom"*), on the five
+recommendations given him: the types, the files outside the web root and served through PHP so
+downloads can be counted, the server's own upload limit, a Downloads block later, and the files
+beside the pictures in Media with a filter. This is the first step — upload and the library; the
+block comes next. Video was advised against for now (no encoder on shared hosting, large files,
+and YouTube and Vimeo already through *Video or map*), and he did not ask for it.
+
+**What is accepted:** PDF, ZIP, DOCX, XLSX, PPTX, ODT, ODS, ODP, TXT, CSV — the name on the list
+and finfo agreeing, as for a picture; never HTML, SVG or a script, whatever it is called. The
+office formats are ZIP archives inside and an older libmagic says so (measured here: a minimal
+DOCX is `application/zip`), so `application/zip` is accepted for them; the file is still only
+ever served as an attachment of its format's own type.
+
+**Stored and served:** migration 0029 adds `media.kind` ('picture', the default every existing
+row keeps, or 'file') and `media.downloads`. A file goes in beside the pictures' originals under
+its hash, complete at once, with nothing made from it. It is served by `DownloadController` at
+`/download/{id}/{name}` — a new public address, added to SPEC's URL scheme before v0.1 on
+purpose — as an attachment with `nosniff` and a CSP that sandboxes everything, streamed from disk
+(`Response::download()`), never held in memory. A download is counted for a visitor only: not
+the admin (the session cookie, as the page statistics tell it) and not a crawler (`Bots::is()`;
+an empty User-Agent is a program, which the first test run measured). A picture's id asked for
+at that address is the site's own 404.
+
+**In the library:** a *Pictures / Files / Everything* filter beside the existing one; a file's row
+shows a file tile and "PDF · 3 downloads" where a picture shows its size; its own short page —
+what it is, the address, the count, Delete — and none of a picture's controls. Everything that
+reads the library for pictures now asks for pictures: the picker, the choices a picture field
+offers, a remake of every picture's sizes; crop, focal point and Replace refuse a file.
+Checked by `media_files_test` (both drivers) and `50-files` on the copy, which uploads through
+the real chooser, downloads as a visitor from a fresh browser context, and deletes what it
+uploaded.
+
 ### D-125: No ready-made sections for now; two blocks that broke in a column, fixed
 
 **Status:** 2026-09-25. **Ready-made sections are declined, for now.** Six were put together on the
@@ -5289,7 +5323,8 @@ zip extension. Measured — zip is on this server and on most shared hosting, it
 in PHP, and it does not matter: a ZIP is a local header, the data, a central directory and
 an end record, and `crc32()` and `gzdeflate()` are zlib, which is everywhere.
 
-**O-17. Downloads: documents and archives in Media.** The owner wants to offer visitors
+**O-17. Downloads: documents and archives in Media.** *Step one done — upload, storage, serving
+and the library (D-126); the Downloads block to place a file on a page is next.* The owner wants to offer visitors
 files to download (PDF, ZIP, TAR and similar) from the same library, which is why it is
 called "Media" rather than "Pictures". Not built now. To decide when it is scheduled:
 which types are allowed (a whitelist such as pdf, zip, tar, gz, docx, xlsx, pptx, odt, ods,

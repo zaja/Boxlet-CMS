@@ -2887,9 +2887,33 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-123: Header width and Header content, in the owner's words
+
+**Status:** approved by the owner 2026-09-25, superseding D-122's names within the hour: *"Header
+background je pogrešan naziv … ne radi se o backgroundu već o smještaju u box ili izlasku iz njega
+preko pune širine browsera. Zašto jednostavno nemamo 'Header width: boxed | full' i 'Header
+content: boxed | text | full'"*. He was right on both counts: the bar's reach is its width, not
+its background, and the words he uses for the page are box and full.
+
+**Header width** (`header_bleed`): *Boxed* or *Full* — the bar inside the box or across the
+window; shown only on a boxed page (D-122). **Header content** (`header_width`): *Text*, *Boxed* or
+*Full* — the logo and menu in line with the text, the box's edges, or the bar's own width. **Full
+is new** (`window`): on a boxed page with a full-width bar, the contents can now run across the
+window too, which no answer allowed before; everywhere else it is the bar's width, 100%. The stored
+names stay, so nothing saved changes meaning; Bold and Brutalist, whose pages are not boxed, now
+ask for `window` by name rather than `full`, which on their page meant the window already and would
+read "Boxed" on screen. The footer has the same two.
+
+**An answer that changes nothing is not offered, and one already chosen never hides:** *Boxed*
+content on a page that is not boxed, and *Full* content under a boxed bar, which can be no wider
+than the bar. One stylesheet rule each, on the form's own radios. Measured on the development site
+without publishing: under his published state (boxed page, boxed bar) Header content offers Text
+and Boxed; with the page unboxed, Text and Full, and Boxed only because it is the one chosen.
+
 ### D-122: The header's contents and its background, said apart; a boxed page's controls only on one
 
-**Status:** approved by the owner 2026-09-25 (*"može"*), after *"postavke širine headera i širine
+**Status:** approved by the owner 2026-09-25 (*"može"*); its names superseded by D-123 the same
+hour, its hiding kept, after *"postavke širine headera i širine
 sadržaja headera su totalno zbunjujuće, npr čemu služi postavka 'Content width' u Header width
 kad postavlja sadržaj headera preusko?"* He had also set a sheet width on a page that was not
 boxed, seen nothing happen, and taken the page to be boxed — measured: the stored `boxed` was

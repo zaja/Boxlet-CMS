@@ -2900,7 +2900,13 @@ than it; unboxed, the sheet is the window and full is 100%. Less the container's
 padding: the container is content-box, so the padding stood outside the sheet's edge —
 measured, 1464px of header over a 1408px sheet — and the logo sat on the edge itself. The
 owner's own site had "content width" stored, which is why his header did not follow the
-sheet; that choice lines up with the page's content column, and is right to.
+sheet; that choice lines up with the page's content column, and is right to. **The footer's
+contents got the same decision**, `footer_width`, the owner's third round the same day: content
+or full, full following the sheet less the container's padding, every character at content.
+And the control "Footer menu columns: One / Two / Three" is "Long menu: One list / Two lists /
+Three lists" now — the owner set it looking for the footer's three columns, which are the
+arrangement, and found his second and third columns' words (stored, as measured) drawn
+nowhere.
 
 ### D-115: The footer's columns hold content — a title, words and a menu each
 

@@ -678,6 +678,7 @@ header_bleed      sheet | full                                read by the LAYOUT
 footer_bleed      sheet | full                                read by the LAYOUT, not a token
 surface_contrast  low | medium | high                         lightness of --color-surface
 header_width      content | full                              --page-header-width
+footer_width      content | full                              --page-footer-width (D-116)
 boxed             no | yes                                    --page-frame (0 when no)
 page_background   surface | border | contrast                 --page-bg, from the palette
 page_background_colour  '' | #rrggbb                          --page-bg, instead of the shade

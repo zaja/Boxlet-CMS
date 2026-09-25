@@ -5148,7 +5148,9 @@ surface lays the contrast colour over its picture at 0.55 (`--section-picture-ve
 a pure white or black picture that leaves the words at 3.5–3.8:1 under four characters of five
 (Soft 4.7:1) — below the 4.5:1 every other surface is held to. The cover hero's weakest veil is
 0.65 for this reason. Raising the section's is a change every page with a picture surface will
-show, so it is the owner's to see first.
+show, so it is the owner's to see first. **The owner, 2026-09-25: left at 0.55** — *"izgleda mi
+dovoljno tamno ali provjeriti ću u praksi pa lako izmjenimo"*; one token to change if practice
+says otherwise.
 
 **O-32. `23-block-tools` expects every block on the first page to stand alone in its column.**
 Its *"alone in its column, a block has nowhere to move to"* and *"the copy stands beside the

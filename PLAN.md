@@ -320,7 +320,7 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    fixed before anything is built on it — D-117, done 2026-09-25, and the uncropped preset
    it led to, D-119; (1) a hero whose own picture
    fills the block behind its words, the owner's choice of the two ways offered ("za cover
-   put A") — D-118, built 2026-09-25 and waiting for his look; (2) sections ready-made in the library, typing as an undo step of
+   put A") — D-118, built 2026-09-25 and waiting for his look; (2) sections ready-made in the library — declined for now, D-125 — typing as an undo step of
    its own (done in 0), and the blocks after that. ← *current*
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
@@ -2886,6 +2886,25 @@ a form about to be submitted.
 **A seam to watch:** `builder-blocks.js` is at 345 lines. Like `Blocks.php` at D-041, it is
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
+
+### D-125: No ready-made sections for now; two blocks that broke in a column, fixed
+
+**Status:** 2026-09-25. **Ready-made sections are declined, for now.** Six were put together on the
+copy from the blocks there are — an opening with a picture, a story with numbers, a client's word
+and a call, questions with a way out, a contact, work and clients — and photographed under Editorial
+and Bold. The owner's answer: *"ja ne bi radio uopće sekcije s blokovima kao presete, barem ne za
+sada"*; more blocks instead, downloads first (O-17). The phase-2 item in the order of work goes with
+it.
+
+**What the pictures showed, fixed because it is broken whatever is built next.** *Numbers* in a
+narrow column ran its values into each other — measured, three in a column 211 pixels wide, "120+"
+110 wide in a track of 70 — because it narrowed only for a narrow WINDOW. The block now measures its
+own room (`container-type: inline-size`): two columns under 36rem, one under 18rem. *Logos* took its
+marks' height from the spacing scale (`--space-2xl`), so Editorial drew every mark 120 pixels tall
+with 80 between rows, and a name that wrapped stood alone far below the rest. A mark is 3.5rem tall
+now, one carrying only a name as tall as its words, and rows stand closer than the marks across.
+Measured after: the three numbers one under another at the column's full width; the five names in
+two rows 30 pixels tall.
 
 ### D-124: A cover hero sharing a band of one column still reaches both edges
 

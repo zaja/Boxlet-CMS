@@ -320,7 +320,7 @@ Approved as D-009. Each step gets its own architect's checklist before it starts
    fixed before anything is built on it — D-117, done 2026-09-25, and the uncropped preset
    it led to, D-119; (1) a hero whose own picture
    fills the block behind its words, the owner's choice of the two ways offered ("za cover
-   put A") — D-118, next; (2) sections ready-made in the library, typing as an undo step of
+   put A") — D-118, built 2026-09-25 and waiting for his look; (2) sections ready-made in the library, typing as an undo step of
    its own (done in 0), and the blocks after that. ← *current*
 9. **Slice 8, operations:** ← *next*. The page cache (D-053, decided and not yet built), backup,
    update by ZIP upload, revisions. Done already: the sitemap (D-049), regenerating media
@@ -2916,8 +2916,9 @@ looked at on the canvas.
 
 ### D-118: A hero whose own picture fills the block, behind its words
 
-**Status:** direction approved by the owner 2026-09-25 (*"za cover put A"*); the details are
-proposed and wait for his look at pictures. Not built.
+**Status:** direction approved by the owner 2026-09-25 (*"za cover put A"*). Built the same
+day as described under **As built** below; the arrangements, heights and shades wait for his
+look at the pictures sent with it.
 
 He asked for a Hero that shows a picture behind the whole block with the heading, words and
 button over it in several arrangements. Something close exists — a hero in a band whose
@@ -2940,6 +2941,40 @@ needs one; and a header laid over the first section (D-067) laying over a cover 
 arrangements, the heights and the veils. The tension with the principle of one way to do a
 thing is real and was said: a hero in an Image band still exists, and the two are kept apart
 by what they are — a band's picture is its style, a cover hero's is its content.
+
+**As built.** Three layouts on the Hero — `cover-center`, `cover-left`, `cover-low` — and two
+choices beside them, `height` (as tall as the words, tall at 70svh, the whole screen) and `veil`
+(light, medium, strong). The picture is the hero's own `image`, from `wide, hero, full`, and
+keeps its alt. **How far it reaches is said in CSS, not stored:** a cover hero alone in its band
+(one column, one block — `:has()` over both of the band's shapes, the page's and the editor's)
+lays its picture over the whole band, padding included, like a section picture; sharing a band,
+it is a panel in its own box, so it never lies under a neighbour whose words are set for another
+surface. Measured on the editor's canvas: picture 860×693 over a band of 860×694 alone; in a
+band of two columns, picture and hero both 617×477.
+
+**The veil is measured, not chosen by eye.** The words are the contrast surface's ink and the
+veil is the contrast colour; the worst picture is pure white or pure black under it. At 0.55,
+the section picture's veil, Minimal's words reach 3.5:1; the first strength that clears 4.5:1
+under all five characters is 0.65 (Minimal 4.7:1). So the three are 0.65, 0.75 and 0.85, and
+`hero_cover_test` reads the weakest from the stylesheet and checks all five characters against
+white and black. **The veil follows the words**: even behind centred words; dense across the
+left 55% and clearing to the right behind words on the left; dense over the lower half behind
+low words when the hero is taller than its words. On a phone the words span the width, and the
+veil is even. Left and low words are ranged left whatever the band's alignment says — the first
+pictures showed them centred inside their column under a centred band.
+
+**What else it touched.** The hero's rules are `blocks-hero.css`, linked before `blocks.css`
+(which would otherwise have passed 450 lines); a header laid over the page reads a first band
+that is a cover hero as a contrast one, after the gradient and tinted rules so neither wins over
+a picture. The showroom page `/blocks` shows all three. And **a select not sent now takes its
+first option instead of failing the save** (BlockForm): adding the two choices failed every
+save from a form that had never heard of them — an editor opened before the update, and three
+tests on both drivers — with "Choose one of the options" against fields the author could not see. A value sent
+and not among the options is still refused.
+
+**Not yet:** the focal point back in the picture's own screen, which D-038 took away and a
+picture a phone crops needs; and whether a character should START a hero as a cover (D-069
+keeps the arrangement the block's).
 
 ### D-117: The canvas and the form are paired by key, and undo takes back an edit
 
@@ -4994,6 +5029,13 @@ the canvas that comes back is what the author had rather than what the database 
 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077. O-15 resolved by
 D-104. O-25 resolved by D-094.*
+
+**O-33. A section's picture veil does not guarantee its words** (found for D-118). The Image
+surface lays the contrast colour over its picture at 0.55 (`--section-picture-veil`), and over
+a pure white or black picture that leaves the words at 3.5–3.8:1 under four characters of five
+(Soft 4.7:1) — below the 4.5:1 every other surface is held to. The cover hero's weakest veil is
+0.65 for this reason. Raising the section's is a change every page with a picture surface will
+show, so it is the owner's to see first.
 
 **O-32. `23-block-tools` expects every block on the first page to stand alone in its column.**
 Its *"alone in its column, a block has nowhere to move to"* and *"the copy stands beside the

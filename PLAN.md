@@ -2887,6 +2887,38 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-127: The Downloads block, and a `file` field — step two of O-17
+
+**Status:** approved by the owner 2026-09-25 (*"odlično, kreni s blokom"*). O-17 is done with it.
+
+**A new field type, `file`** — added to SPEC §5.3's closed set before v0.1, on purpose. `media` is a
+picture and goes through the picture picker; a file is chosen from a plain select of the library's
+files by name, type and size (`MediaFiles::choices()`), with no script between the choice and what
+is posted. The two point into the same table and are kept apart: on save a `media` field keeps only a
+picture and a `file` field only a file, an id of the other kind nulled like one nobody has
+(`MediaReference::resolve()`, which now reads each id's `kind`). `MediaReference::REFERENCES` names
+both, and every question of whether a library item is USED asks for both — the Media table, and
+the refusal to delete, which now names the page offering a file exactly as it names one showing a
+picture. Drawing pictures still asks for `media` alone.
+
+**The block:** a heading, and up to twenty items, each a file, a title (empty, the file's own name
+stands in) and a line about it; *list* or *cards*. Each item is one link — `download` attribute,
+the file's address — with the type as a label in the section's button colours, the title, the line
+and "PDF · 58 B" read from the file, never typed. The files come to the template resolved
+(`MediaFiles::forBlocks()`, in `$resolved['files']` beside the forms) on the page, the canvas and
+both redraw endpoints. **An item with no file is never a download of nothing:** marked `.is-empty`,
+hidden by `blocks-downloads.css` on the page and shown by `canvas.css` as the place to choose one —
+the Embed block's pattern. The hairline edge is `--border-width`, not `--border-card`, which a
+character may set to nothing (measured, 0 on the development site) and would leave the link with
+nothing to see at rest. Its own stylesheet, `blocks-downloads.css`, rather than more of
+`blocks-media.css` near the guidance; the showroom page shows both arrangements, with no files, as
+the demo ships none.
+
+Checked by `media_files_test` on both drivers (the link, the type, the fallback title, the empty
+item; each field keeping only its kind; the delete refused naming the page) and on the copy with two
+real files, under Editorial: four items drawn, the two without a file hidden on the page and shown
+in the editor, the panel offering `price-list-2026.pdf · 58 B`. The block set test names fifteen.
+
 ### D-126: Files for visitors to download, in the library — step one of O-17
 
 **Status:** approved by the owner 2026-09-25 (*"slažem se, kreni s prvom točkom"*), on the five
@@ -5323,8 +5355,8 @@ zip extension. Measured — zip is on this server and on most shared hosting, it
 in PHP, and it does not matter: a ZIP is a local header, the data, a central directory and
 an end record, and `crc32()` and `gzdeflate()` are zlib, which is everywhere.
 
-**O-17. Downloads: documents and archives in Media.** *Step one done — upload, storage, serving
-and the library (D-126); the Downloads block to place a file on a page is next.* The owner wants to offer visitors
+**O-17. Downloads: documents and archives in Media.** *Done: upload, storage, serving and the
+library (D-126), and the Downloads block (D-127).* The owner wants to offer visitors
 files to download (PDF, ZIP, TAR and similar) from the same library, which is why it is
 called "Media" rather than "Pictures". Not built now. To decide when it is scheduled:
 which types are allowed (a whitelist such as pdf, zip, tar, gz, docx, xlsx, pptx, odt, ods,

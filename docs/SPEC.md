@@ -417,7 +417,9 @@ return [
 
 Field types (closed set for v1): `text`, `textarea`, `richtext`, `media`,
 `media_multi`, `link`, `select`, `toggle`, `number`, `repeater`, `form` (a form's id, for the
-Form block; added 2026-09-19, PLAN.md D-046).
+Form block; added 2026-09-19, PLAN.md D-046), `file` (a library item of kind `file`, for the
+Downloads block; added 2026-09-25, PLAN.md D-127). A `media` field keeps only a picture and a
+`file` field only a file: an id of the other kind is nulled on save, like one nobody has.
 
 `translatable: true` marks a field the AI translator touches. Everything else is
 copied verbatim across locales.
@@ -629,7 +631,7 @@ written anywhere. The file is a real file on disk, so Apache's file-exists rewri
 condition and nginx's `try_files` serve it without PHP. Layers 2 and 3 render as class
 names on the section wrapper. Nothing is inlined as a style attribute.
 
-`site.css`, `blocks-hero.css`, `blocks.css`, `blocks-words.css`, `blocks-media.css`, `chrome.css`, `chrome-header.css` and `sections.css` are shipped files rather than
+`site.css`, `blocks-hero.css`, `blocks.css`, `blocks-words.css`, `blocks-media.css`, `blocks-downloads.css`, `chrome.css`, `chrome-header.css` and `sections.css` are shipped files rather than
 generated ones, so they
 cannot carry a hash in the name without a build step the install cannot run. They are
 linked with a hash of their content in the query string instead, which busts the same

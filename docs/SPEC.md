@@ -251,7 +251,8 @@ URL prefix. Every additional locale always carries its prefix.
 /{locale}/                    home page in an additional locale
 /admin/...                    admin
 /m/{preset}/{id}-{slug}.{ext} media
-/download/{id}/{name}         a file from the library, saved as an attachment (PLAN.md D-126)
+/download/{id}/{name}         a file from the library, saved as an attachment (PLAN.md D-126);
+                              {name} carries no extension, for a host to claim as static (D-128)
 ```
 
 **Media variants are generated on upload, not on demand.** There are six presets;

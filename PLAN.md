@@ -2887,6 +2887,43 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-128: A download's address never ends in the file's extension
+
+The owner added a ZIP to the library and a Downloads block to the home page. Every click
+gave the browser "Nema datoteke": this server's nginx serves `.zip` from disk as a static
+file and answers its own 404, so `/download/81/admin-kao-radni-stol.zip` never reached PHP.
+Measured by curl against the development site: of the ten accepted extensions only `.zip`
+is claimed here (a bare nginx 404, `text/html`, no Boxlet headers). The other nine, and the
+same address with no extension, reach PHP. Neither the tests nor scenario 50 could see it:
+the tests dispatch without a web server, and the scenario ran a PDF on `php -S`.
+
+**The address is now `/download/{id}/{name}` with the name and no extension.** It is not
+a rule written for this host. Which extensions count as static is each host's own list; the
+next host may claim `.pdf` or `.txt`. An address with no extension can't be claimed by any
+of them. The visitor still saves `admin-kao-radni-stol.zip`: the name and extension come
+from `Content-Disposition`, which browsers prefer to the address, and the scenario now
+checks that header's filename. An address that does carry an extension still reaches the
+controller wherever the host lets it through, because the route ignores the name. SPEC §5's
+URL table says so; this is a deliberate change before v0.1.
+
+**Then the count stayed at 0, for two reasons.** The first is the rule working: the owner
+downloads while logged in, and the admin is never counted. Visitors could not download at
+all, because the development site is in maintenance (curl with no cookie: 503).
+
+The second was a real defect found while measuring the first. With maintenance on, the
+gate opened the session on every request to see whether it was the admin's. That handed
+each visitor a `boxlet_session` cookie (curl, no cookie in: `set-cookie: boxlet_session`
+out). That cookie is exactly how the statistics and the download count recognise the admin
+without opening a session. So everyone who met the maintenance page went on being skipped
+as the admin after the site reopened, until they closed the browser.
+
+`UpdateGate::isAdmin()` now asks for the cookie before it opens the session, and a request
+without one is a visitor's. `maintenance_test` has a new case that fails on the old gate
+and passes on the new one: a cookieless request to a closed site resolves no session. The
+admin case now sends the cookie, as the admin's browser does. That is a change of rule, not
+a test bent to fit. Scenario 50 now checks that the library reads "1 download" after a
+visitor's download.
+
 ### D-127: The Downloads block, and a `file` field — step two of O-17
 
 **Status:** approved by the owner 2026-09-25 (*"odlično, kreni s blokom"*). O-17 is done with it.

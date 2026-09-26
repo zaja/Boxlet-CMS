@@ -2937,6 +2937,28 @@ page. The markup does not need one.
   site address.
 - Measured on this host: an old address ending in `.php` (other than `/index.php`) gets
   nginx's own 404 and never reaches PHP. The form's hint says so; Boxlet cannot change it.
+- Step 3 followed the same day.
+  - `PagePaths` works each page's path out from the tree. `Url::usePaths()` hands it to
+    every `Url::page()`, so the twenty call sites did not change.
+  - `PagePaths::changed()` makes a resolver loaded earlier in a request load again after a
+    write. The editor saves and then writes the sitemap in one request.
+  - The test runner clears the resolver between tests.
+  - The page route takes several segments. `PageController::show` finds the page by the
+    last one and sends a wrong path on with a 301.
+  - That redirect happens only when every segment in front of the slug is a slug a page
+    of that locale has, or had (`PagePaths::known`).
+    - The first version sent any prefix on. The routing tests caught it: `/de/hello`, with
+      German not enabled, went to `/hello`, which SPEC §5.1 forbids as a soft 404.
+  - The page route never matches under a system word, a negative lookahead built from
+    `Slug::SYSTEM`. Otherwise a POST to an admin address no route answered became a 405
+    from the page route; the stats test caught that.
+  - `BreadcrumbList` JSON-LD goes in the head of a page below the top level: the home page,
+    the published ancestors, then the page.
+  - Both editors show the whole address under the slug field. The parent field's hint,
+    which said a parent does not change the address, now says it does.
+  - `download` and `sitemap` joined the reserved words; routes of their own answer those
+    addresses. That is my own extension, stated here.
+  - No page on the development site had a parent, so no address there changed.
 
 ### D-128: A download's address never ends in the file's extension
 
@@ -5467,12 +5489,7 @@ variants can be regenerated (O-13). *Before release.*
 
 *O-19 resolved by D-044.*
 
-**O-10. Nested page addresses.** Addresses are one path segment, unique per locale, while
-`parent_id` expresses hierarchy only in the admin, so the data model and the address
-disagree. Planned: nested paths (`/about/team`) together with a redirects table. The two
-are inseparable: renaming a parent otherwise regenerates every descendant's address into a
-404. A redirects table is needed regardless, since renaming any slug breaks an existing
-address today. *Not scheduled; must be placed in the order before the release.*
+*O-10 resolved by D-129.*
 
 **O-11. Repeater blocks.** Three block types are too few for a real site. The missing
 shape is repeating content: a team grid, a features row, a logo strip. `repeater` is in

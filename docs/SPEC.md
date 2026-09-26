@@ -1152,8 +1152,10 @@ nothing more.
 **Accept:** upload a 4 MB photo, place it in a hero, confirm the served file is AVIF or
 WebP and, for a typical photograph, under 200 KB — a high-frequency texture may exceed
 that. Measured over the ten demo photographs at `hero`/AVIF: nine between 18 KB and
-83 KB, one flat wood-plank texture at 234 KB. A cropped AVIF over 250 KB is written once
-more at a lower quality (§5.5). Confirm a second request does not hit PHP — which a dev
+83 KB, one flat wood-plank texture at 234 KB. An AVIF over 200 KB is written once more
+at a lower quality (§5.5); for `full`, whose size follows the photograph, the figure is
+200 KB for every 1920×1080 of pixels (PLAN.md O-35). A cover hero fills the window, so a
+2x screen is served `full`, and is held to that budget. Confirm a second request does not hit PHP — which a dev
 server cannot show, every request there being PHP; that proof needs the server's own
 configuration (O-2).
 

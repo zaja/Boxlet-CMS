@@ -2887,6 +2887,34 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-130: The largest picture gets the second AVIF attempt too, against a budget for its size
+
+**Status:** approved by the owner 2026-09-26 ("super, može"). Resolves O-35.
+
+A cover hero (D-118) fills the window, so on a 1920 screen at 2x it asks for 3840 pixels
+and is served `full`. §8's photograph came out at 707 KB there. The owner asked how an
+AVIF could be that heavy. Measured:
+- **The photograph.** It is the hardest one on purpose: close wood planks, grain a codec
+  reads as noise. Across the library, `full` AVIFs of ordinary photographs are 25 to
+  140 KB. Only the two copies of this texture are over 600 KB.
+- **The rule.** The second attempt at quality 40 over 200 KB (MediaVariants::smallerAvif)
+  left `full` out as "the largest version by design". The same photograph at 2400×1590 is
+  707 KB at q50, 415 KB at q40 and 166 KB at q30. Side by side, q40 looked the same as
+  q50, while q30 visibly softened the grain. The comparison was shown to the owner.
+- **ImageMagick's chroma options** changed nothing here (4:2:0 asked: the same bytes).
+
+**Decided:**
+- `full` gets the second attempt too, over `MediaVariants::retryOver()`: 200 KB for each
+  1920×1080 of pixels, and never less than 200 KB. That is about 368 KB for 2400×1590.
+- Ordinary photographs are under that budget and untouched.
+- The cover hero keeps asking for `full`, so it stays sharp on a retina screen. Capping it
+  at `hero` was the other way offered, and was not taken.
+- Scenario 16's size verdict now checks the served file against the budget for its size,
+  not a flat 200 KB. That is a rule changed on purpose, stated in the scenario; SPEC §8
+  says the same.
+- Existing pictures are brought to it by the Regenerate pass that already exists (D-048).
+  It calls the same smallerAvif().
+
 ### D-129: Old addresses keep working, rules for an old site's addresses, nested addresses
 
 **Status:** approved by the owner 2026-09-26 ("napravimo sve troje"). Resolves O-10.
@@ -5354,16 +5382,7 @@ D-104. O-25 resolved by D-094.*
 wants it kept as a topic for later. It could be a block, or a header option. *Not
 scheduled.*
 
-**O-35. A cover hero on a 2x screen is served the `full` picture.** Found by the whole
-suite of 2026-09-26: `16-slice5-accept` measured 707 KB, over SPEC §8's 200 KB.
-- The page it measures carries the owner's cover hero (D-118), whose picture is
-  `sizes="100vw"` over `wide, hero, full`.
-- A 1920-wide window at 2x asks for 3840 pixels, so it gets `full`: 707 KB AVIF, against
-  `hero`'s 147 KB. A half-width hero asked for 1920 and got `hero`.
-- The choice is the owner's, because the trade is visible: cap the cover at `hero`, softer
-  on a retina screen, or accept the weight for a full-bleed picture and restate the §8
-  limit for cover heroes.
-- *Not scheduled; to ask.*
+*O-35 resolved by D-130.*
 
 **O-34. A download is counted per request, not per visitor.** Every visitor request for a
 file adds one, so fifty clicks from one person read "50 downloads". Offered 2026-09-26:

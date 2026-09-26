@@ -2925,8 +2925,8 @@ path above it may have changed since. Rules hold a whole path, with its query if
 one, and are matched as typed. Rules are checked first. Both are looked up only after
 nothing else answered, so a live page always wins and a normal request costs nothing.
 
-Open for the owner, not blocking: whether a visible breadcrumb trail should appear on the
-page. The markup does not need one.
+A visible breadcrumb trail on the page: the owner chose to leave it out for now and keep it
+as a topic for later (2026-09-26). The markup does not need one. O-36.
 
 **Progress.**
 - Step 1 was built 2026-09-26 (`8754722`).
@@ -5348,6 +5348,11 @@ the canvas that comes back is what the author had rather than what the database 
 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077. O-15 resolved by
 D-104. O-25 resolved by D-094.*
+
+**O-36. A visible breadcrumb trail.** Search engines are told a nested page's trail
+(D-129), but visitors are not shown one. The owner left it out for now (2026-09-26) and
+wants it kept as a topic for later. It could be a block, or a header option. *Not
+scheduled.*
 
 **O-35. A cover hero on a 2x screen is served the `full` picture.** Found by the whole
 suite of 2026-09-26: `16-slice5-accept` measured 707 KB, over SPEC §8's 200 KB.

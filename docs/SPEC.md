@@ -287,6 +287,11 @@ Example with primary `en` and `hr` enabled:
 /nope         404                  /hr/nope      404
 ```
 
+**An address nothing answers may still lead somewhere** (PLAN.md D-129): an old slug of a
+published page, or a rule the owner made for an old site's address, answers with a 301 to
+where that page is now. The home page with a query asks the rules for that exact query
+first, because an old WordPress address `/?p=12` is the home page's.
+
 A code that is not enabled is never redirected to another language; that would be a
 soft 404. All ISO 639-1 codes are reserved as top-level page slugs and rejected on
 save, so a page can never collide with a locale enabled later.
@@ -340,6 +345,13 @@ page_blocks (
 -- block_group_id links the same block across locales
 
 page_revisions (id, page_id, data_json, created_at)
+
+redirects (id, kind, locale, path, page_id, url, hits, last_hit_at, created_at)
+-- addresses that used to lead somewhere (PLAN.md D-129). kind 'history': an old slug of a
+-- published page, matched against a request's last segment in its locale. kind 'rule': an
+-- address the owner typed, lower case with its query sorted, locale ''. page_id is SET
+-- NULL so a rule outlives its page; a page's history is deleted with it by Page::delete().
+-- Looked up only after nothing else answered; always a 301. unique (kind, locale, path)
 
 menus (id, locale, name, created_at, updated_at)
 -- unique (locale, name): a menu belongs to one locale, so a translation has its own

@@ -2887,6 +2887,47 @@ a form about to be submitted.
 under the 300-line guidance but not past the hard limit, and the split when it comes is
 insert/remove/move on one side and the redraw conversation with the server on the other.
 
+### D-129: Old addresses keep working, rules for an old site's addresses, nested addresses
+
+**Status:** approved by the owner 2026-09-26 ("napravimo sve troje"). Resolves O-10.
+
+The owner asked for all three parts, and for Google's breadcrumb markup to go with nested
+addresses. Three steps, in this order, each shipped and verified before the next:
+
+1. **Address history.** When a page that has been published changes its slug, the old slug
+   is kept. A request for it gets a 301 to wherever the page is now. The row points at the
+   page, not at an address, so after two renames both old slugs lead straight to the
+   current one, never through a chain. A page that takes over an old slug wins, and the
+   history row for it is removed. A deleted page's history goes with it: its old addresses
+   answer 404. An unpublished target answers 404, as the page itself would. A draft's slug
+   changes are not kept, because nobody outside knew them.
+2. **Rules for addresses from an old site.** A screen where the owner maps an address, as
+   typed (`/usluge.html`, `/index.php?id=12`), to a page or to a URL. This is the common
+   case when a client's old site is replaced. Each rule counts its uses and shows when it
+   was last used, so a dead one can be seen and removed. The screen also lists the kept
+   history, which can be deleted. A rule whose page is deleted stays, marked as pointing
+   nowhere, as a menu item does (`ON DELETE SET NULL`).
+3. **Nested addresses.** A page under a parent is addressed `/usluge/web-dizajn`.
+   - **The slug stays unique per language**, the existing constraint. So the last segment
+     alone finds the page, and the path in front of it is checked. A request with the
+     wrong path, such as after a parent was renamed or a page moved, is a 301 to the
+     right one. That needs no history at all: only a slug change does.
+   - **The address is not stored.** `Url::page()` maps a slug to its whole path from one
+     query over the pages, made once per request. So none of the twenty call sites
+     changes, and no writer can leave a stored path stale.
+   - The home page's children sit at the top level, since the home page has no segment.
+   - Every page below the top level carries `BreadcrumbList` JSON-LD built from its
+     published ancestors.
+
+One table for both kinds: `redirects (kind, locale, path, page_id, url, hits, last_hit_at)`.
+History rows hold an old slug and are matched by the request's last segment, because the
+path above it may have changed since. Rules hold a whole path, with its query if it had
+one, and are matched as typed. Rules are checked first. Both are looked up only after
+nothing else answered, so a live page always wins and a normal request costs nothing.
+
+Open for the owner, not blocking: whether a visible breadcrumb trail should appear on the
+page. The markup does not need one.
+
 ### D-128: A download's address never ends in the file's extension
 
 The owner added a ZIP to the library and a Downloads block to the home page. Every click

@@ -5265,6 +5265,12 @@ the canvas that comes back is what the author had rather than what the database 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077. O-15 resolved by
 D-104. O-25 resolved by D-094.*
 
+**O-34. A download is counted per request, not per visitor.** Every visitor request for a
+file adds one, so fifty clicks from one person read "50 downloads". Offered 2026-09-26:
+count one per visitor, per file, per day, with the statistics' daily visitor key. The owner
+chose to leave it as it is for now: an inflated number is how the admin sees a download
+being abused. *Not scheduled; the owner will ask.*
+
 **O-33. A section's picture veil does not guarantee its words** (found for D-118). The Image
 surface lays the contrast colour over its picture at 0.55 (`--section-picture-veil`), and over
 a pure white or black picture that leaves the words at 3.5–3.8:1 under four characters of five
@@ -5392,16 +5398,7 @@ zip extension. Measured — zip is on this server and on most shared hosting, it
 in PHP, and it does not matter: a ZIP is a local header, the data, a central directory and
 an end record, and `crc32()` and `gzdeflate()` are zlib, which is everywhere.
 
-**O-17. Downloads: documents and archives in Media.** *Done: upload, storage, serving and the
-library (D-126), and the Downloads block (D-127).* The owner wants to offer visitors
-files to download (PDF, ZIP, TAR and similar) from the same library, which is why it is
-called "Media" rather than "Pictures". Not built now. To decide when it is scheduled:
-which types are allowed (a whitelist such as pdf, zip, tar, gz, docx, xlsx, pptx, odt, ods,
-csv, txt; never html, svg, or anything executable); where the files live and how they are
-served (public under a safe generated name with `nosniff` and a download disposition, or
-kept outside the web root and served through PHP, which also allows counting downloads
-later); size limits; and how a download is placed on a page (a link from rich text, a
-link field, or a small "file" block). *After Slice 5, before release.*
+*O-17 resolved by D-126, D-127 and D-128.*
 
 *O-4 resolved by D-050.*
 

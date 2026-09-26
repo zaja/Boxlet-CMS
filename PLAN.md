@@ -2914,6 +2914,10 @@ AVIF could be that heavy. Measured:
   says the same.
 - Existing pictures are brought to it by the Regenerate pass that already exists (D-048).
   It calls the same smallerAvif().
+- The pass was run through the admin on the development site the same day, and every
+  picture finished. §8's photograph at `full` went from 707 KB to 415 KB, and the other
+  copy of the texture from 687 KB to 403 KB. Ordinary photographs kept their size:
+  workshop is 138 KB, a regenerated file of the same weight. See O-37 for the 415 KB.
 
 ### D-129: Old addresses keep working, rules for an old site's addresses, nested addresses
 
@@ -5376,6 +5380,21 @@ the canvas that comes back is what the author had rather than what the database 
 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077. O-15 resolved by
 D-104. O-25 resolved by D-094.*
+
+**O-37. §8's texture photograph is still over its `full` budget after the retry.**
+- Scenario 16, measuring the file's own pixels, gets 415 KB for 2400×1590 against a budget
+  of 368 KB, 13% over. The retry is written once at quality 40 and does not promise to
+  land under the budget; SPEC §8 allows a high-frequency texture to exceed it.
+- Before the retry it was 707 KB. This is the result told to the owner ("about 400 KB").
+- The verdict is left strict and failing, not loosened. It is a real measurement of the
+  worst case.
+- If it should pass, the choices are a second step at quality 35 (to be judged by eye
+  against q40 first, since q30 visibly softened the grain), or accepting the texture's
+  excess in the check by name.
+- The first attempt at this verdict read the `<img>`'s `naturalWidth`. That is divided by
+  the density `srcset` chose, so it said 1180×781 for a 2400×1590 file. It now decodes the
+  file.
+- *Not scheduled.*
 
 **O-36. A visible breadcrumb trail.** Search engines are told a nested page's trail
 (D-129), but visitors are not shown one. The owner left it out for now (2026-09-26) and

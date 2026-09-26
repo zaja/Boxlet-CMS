@@ -2959,6 +2959,17 @@ page. The markup does not need one.
   - `download` and `sitemap` joined the reserved words; routes of their own answer those
     addresses. That is my own extension, stated here.
   - No page on the development site had a parent, so no address there changed.
+- **The whole browser suite at the end of the slice, 2026-09-26:** 530 pass, 9 fail,
+  9 not checkable.
+  - Scenario 51 passes 9 of 9.
+  - Every failure was measured to a cause outside this slice:
+    - O-26 and O-29 (`03-design`, `14-front`); O-27 (`12-picker`); O-30 (`19-chrome`).
+    - `32-contact` and `38-stats`: the development site is in maintenance, which is the
+      owner's choice, so a visitor gets 503.
+    - `16-slice5-accept`'s 200 KB check, which is O-35.
+  - The development site was compared before and after, read only. Maintenance was still
+    on. Page 1 had five saves, but its nine blocks and five sections match its state before
+    the run exactly.
 
 ### D-128: A download's address never ends in the file's extension
 
@@ -5337,6 +5348,17 @@ the canvas that comes back is what the author had rather than what the database 
 
 *O-1 and O-2 resolved by D-019 and D-020. O-22 and O-24 resolved by D-077. O-15 resolved by
 D-104. O-25 resolved by D-094.*
+
+**O-35. A cover hero on a 2x screen is served the `full` picture.** Found by the whole
+suite of 2026-09-26: `16-slice5-accept` measured 707 KB, over SPEC §8's 200 KB.
+- The page it measures carries the owner's cover hero (D-118), whose picture is
+  `sizes="100vw"` over `wide, hero, full`.
+- A 1920-wide window at 2x asks for 3840 pixels, so it gets `full`: 707 KB AVIF, against
+  `hero`'s 147 KB. A half-width hero asked for 1920 and got `hero`.
+- The choice is the owner's, because the trade is visible: cap the cover at `hero`, softer
+  on a retina screen, or accept the weight for a full-bleed picture and restate the §8
+  limit for cover heroes.
+- *Not scheduled; to ask.*
 
 **O-34. A download is counted per request, not per visitor.** Every visitor request for a
 file adds one, so fifty clicks from one person read "50 downloads". Offered 2026-09-26:

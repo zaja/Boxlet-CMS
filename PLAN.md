@@ -2928,6 +2928,16 @@ nothing else answered, so a live page always wins and a normal request costs not
 Open for the owner, not blocking: whether a visible breadcrumb trail should appear on the
 page. The markup does not need one.
 
+**Progress.**
+- Step 1 was built 2026-09-26 (`8754722`).
+- Step 2 followed the same day: `/admin/redirects`, in the rail under Administration, with
+  the icon `signpost`. `RedirectList` holds the screen's side of the table. A rule is
+  refused, in words, when it could never be used, because a live page, the admin or
+  Boxlet's own files answer it first, or when its target is not a page or an http(s) or
+  site address.
+- Measured on this host: an old address ending in `.php` (other than `/index.php`) gets
+  nginx's own 404 and never reaches PHP. The form's hint says so; Boxlet cannot change it.
+
 ### D-128: A download's address never ends in the file's extension
 
 The owner added a ZIP to the library and a Downloads block to the home page. Every click
